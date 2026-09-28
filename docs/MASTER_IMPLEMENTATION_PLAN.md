@@ -3550,7 +3550,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-048 — Companion Spec: Session Control & Session Descriptor
 
-**Status:** `NOT_STARTED` · **Klasse:** `V13_COMPATIBLE_ADDENDUM` · **Löst:** GAP-005, GAP-024
+**Status:** `IMPLEMENTED` · **Klasse:** `V13_COMPATIBLE_ADDENDUM` · **Löst:** GAP-005, GAP-024
 
 ### Implementieren
 
