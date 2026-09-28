@@ -434,7 +434,7 @@ src/esp/
   estimators/ simulation/ demo/             estimators, simulator, esp-demo CLI + UI
 tests/      unit · property · conformance · fuzz · integration · milestone gates
 vectors/    golden conformance vectors (CC BY 4.0)
-docs/       master plan, status ledger, ADRs, regulatory mapping, licensing
+docs/       guides (docs/guide/, runnable examples), master plan, status ledger, ADRs, regulatory mapping, licensing
 scripts/    milestone runner, plan sync, schema/vector generators, dataset fetcher
 ```
 

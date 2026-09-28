@@ -3513,7 +3513,7 @@ Keine invasive Hardware erforderlich.
 
 ## WP-046 — Documentation and Reference Examples
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Pflichtdokumente
 
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M11
-next_work_package: WP-046
+current_milestone: M12
+next_work_package: WP-047
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
@@ -5051,8 +5051,8 @@ license_model: "ACCEPTED (ADR-0005)"
 open_gaps: 4        # GAP-015 (partial), 016, 017, 023 (partial)
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
-experiencebench_status: "DESIGN"
-independent_implementation_status: "NOT_STARTED"
+experiencebench_status: "SMOKE_IMPLEMENTED (preregistered runs need real corpora, GAP-023)"
+independent_implementation_status: "VERIFIED (rust/esp-rs, M10)"
 ```
 
 Dieses Statusobjekt ist bei jedem abgeschlossenen Arbeitspaket zu aktualisieren.
