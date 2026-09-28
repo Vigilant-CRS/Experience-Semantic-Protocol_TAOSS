@@ -2483,7 +2483,7 @@ Mindestens 10.000 generierte gültige und ungültige Objekte.
 
 ## WP-002 — Observation Model
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
