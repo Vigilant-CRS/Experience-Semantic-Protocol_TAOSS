@@ -1,0 +1,3 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""Core types shared by all ESP layers (plan WP-001)."""

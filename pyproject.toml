@@ -27,6 +27,7 @@ classifiers = [
 dependencies = [
     "cryptography>=43",
     "numpy>=2.0",
+    "pydantic>=2.9",
 ]
 
 [project.urls]

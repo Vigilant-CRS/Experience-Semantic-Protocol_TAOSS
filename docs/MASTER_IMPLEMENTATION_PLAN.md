@@ -2453,7 +2453,7 @@ Fresh clone → install → Tests grün.
 
 ## WP-001 — Core Types and Validation
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
