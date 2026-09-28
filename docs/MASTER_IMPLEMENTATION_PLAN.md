@@ -3365,15 +3365,16 @@ moment matched
 
 ## WP-038 — Human Interpretability Study Harness
 
-**Status:** `DEFERRED`
+**Status:** `VERIFIED` (software) · die Human Study selbst bleibt bis zur Ethikfreigabe gesperrt
 
 ### Grund
 
 Software kann vorbereitet werden.
 
-Echte Human Study erst nach Ethikfreigabe.
+Echte Human Study erst nach Ethikfreigabe; `esp.study.harness.require_approval`
+erzwingt das technisch (Modus LIVE ohne passende Freigabe → keine Einschreibung).
 
-### Implementieren später
+### Implementiert
 
 - study protocol schemas,
 - randomization,
