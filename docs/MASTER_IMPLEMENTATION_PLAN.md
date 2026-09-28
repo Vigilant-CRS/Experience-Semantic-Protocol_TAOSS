@@ -2325,7 +2325,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | PARTIAL: Band-Prüfungen parametrisiert (`audit/hardening.py`), Default-Werte noch experimentell zu bestimmen |
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | OPEN |
 | GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | OPEN |
-| GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | OPEN |
+| GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | RESOLVED_IN_IMPLEMENTATION (ADR-0022 PROPOSED) |
 | GAP-019 | Transparenzlog für Key-Rotation/DP-Ledger (RFC 9162-artig) ohne Profil. | §Forward Secrecy, §Consent | mittel | Referenz: lokaler Merkle-Log nach RFC 9162-Struktur + Witness-Signaturen; externer Betrieb später. ADR-0023 | WP-053 | RESOLVED_IN_IMPLEMENTATION (ADR-0023 PROPOSED: Betreiber der Witnesses offen) |
 | GAP-020 | Repository-Rollen: V13 nennt das Movie-Engine-Repo „official implementation repository“; TAOSS-Repo ist dort nicht genannt. | Präambel, §L1, §V12→V13 | niedrig | V13-Errata: TAOSS-Repo als „reference implementation (wire/conformance)“ eintragen. | WP-085 | ERRATA_PROPOSED (docs/errata/V13-ERRATA.md) |
 | GAP-021 | Emotionstheorie-Pluralismus des Plans (Kategorien, Appraisal, Episode) geht über V13-Default (8 Anker + V/A/I) hinaus. | §6.4 EMO-Struktur | niedrig | bleibt `V13_COMPATIBLE_ADDENDUM`; nie im V13-Default-Profil Pflicht. | WP-004 | RESOLVED_IN_PLAN |
@@ -3999,7 +3999,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-068 — XCF Experience Capsules und Recall (0x51)
 
-**Status:** `NOT_STARTED` · **Stufe:** v2
+**Status:** `VERIFIED` · **Stufe:** v2
 
 ### Implementieren
 
@@ -4024,7 +4024,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-069 — Trust Vector
 
-**Status:** `NOT_STARTED` · **Stufe:** v2
+**Status:** `VERIFIED` · **Stufe:** v2
 
 ### Implementieren
 
@@ -4778,7 +4778,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0019 | Default Δ_clock pro Profil (GAP-013) | ACCEPTED |
 | ADR-0020 | Fehlercode-Register (GAP-014) | PROPOSED |
 | ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED |
-| ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED |
+| ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED (implementiert) |
 | ADR-0023 | Transparenzlog-Profil (GAP-019) | PROPOSED |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
 | ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |
@@ -5048,7 +5048,7 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 5        # GAP-015 (partial), 016, 017, 018, 023 (partial)
+open_gaps: 4        # GAP-015 (partial), 016, 017, 023 (partial)
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"

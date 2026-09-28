@@ -137,6 +137,15 @@ only once V13.1 adopts them. Each entry records:
 - Who operates the log and the witnesses is still open; the maintainer decides this in
   ADR-0023.
 
+**E-23 (GAP-018, PROPOSED, ADR-0022): XCF `GATED_CEK` gate protocol**
+
+- `access_material = gate_id ‖ wrap_nonce ‖ AEAD(gate_secret, CEK)`.
+- Release checks signature, tombstone, capability and types, then re-wraps the CEK with HPKE
+  to a session-bound key.
+- An optional guardian quorum holds Shamir shares of the gate secret.
+- A tombstone is signed by the lineage master.
+- Golden capsules: `vectors/xcf/capsules.json`.
+
 **E-16 (FINDING, capability scope and in-flight packets)**
 
 - A capability-scope revocation ignores `revoke_from_seq`.
@@ -192,5 +201,4 @@ only once V13.1 adopts them. Each entry records:
   the values need experiments.
 - **GAP-016:** replay watermark TLV code.
 - **GAP-017:** Typed Hive companion profiles (MLS, FROST, secure aggregation).
-- **GAP-018:** XCF `GATED_CEK` gate protocol.
 - **GAP-023:** real ExperienceBench corpora.

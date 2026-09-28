@@ -482,6 +482,67 @@ def dp_vectors() -> list[dict[str, Any]]:
     ]
 
 
+def xcf_vectors() -> list[dict[str, Any]]:
+    from esp.xcf.capsule import CapsuleSpec, EnvelopeAlg, PrivateBody, seal  # noqa: PLC0415
+    from esp.xcf.gate import gated_access  # noqa: PLC0415
+
+    out: list[dict[str, Any]] = []
+    parent = bytes(32)
+    for i, name in enumerate(("genesis_gated_cek", "child_gated_cek")):
+        seed = bytes([0x40 + i]) * 32
+        inputs = {
+            "cek": bytes([0x50 + i]) * 32,
+            "nonce": bytes([0x60 + i]) * 12,
+            "gate_id": bytes([0x70 + i]) * 16,
+            "gate_secret": bytes([0x80 + i]) * 32,
+            "wrap_nonce": bytes([0x90 + i]) * 12,
+        }
+        spec = CapsuleSpec(
+            types_bitmap=0x000B,
+            encoder_id=uuid.UUID("11111111-1111-4111-8111-111111111111"),
+            anchor_set_id=uuid.UUID("22222222-2222-4222-8222-222222222222"),
+            created_ns=1_727_000_000_000_000_000 + i,
+            packets_count=3,
+            dp_eps_spent=0.5,
+            dp_delta=float(np.float32(1e-6)),
+            parent_cid=parent,
+        )
+        body = PrivateBody(
+            policy_id=uuid.UUID("33333333-3333-4333-8333-333333333333"),
+            timeline_id=uuid.UUID("44444444-4444-4444-8444-444444444444"),
+            payload=b"typed-latent TLVs",
+        )
+        capsule, _ = seal(
+            spec,
+            body,
+            envelope_alg=EnvelopeAlg.GATED_CEK,
+            access_material=gated_access(
+                inputs["gate_id"], inputs["gate_secret"], inputs["wrap_nonce"]
+            ),
+            capsule_key=SigningKey.from_seed(seed),
+            cek=inputs["cek"],
+            nonce=inputs["nonce"],
+        )
+        out.append(
+            {
+                "name": name,
+                "signer_seed": seed.hex(),
+                **{k: v.hex() for k, v in inputs.items()},
+                "parent_cid": parent.hex(),
+                "created_ns": spec.created_ns,
+                "policy_id": str(body.policy_id),
+                "timeline_id": str(body.timeline_id),
+                "payload_hex": body.payload.hex(),
+                "header_hex": capsule.raw[:148].hex(),
+                "capsule_hex": capsule.raw.hex(),
+                "capsule_sig": capsule.raw[-64:].hex(),
+                "cid": capsule.cid.hex(),
+            }
+        )
+        parent = capsule.cid
+    return out
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -513,6 +574,11 @@ def documents() -> dict[Path, dict[str, Any]]:
         | {"spec": "ESP V13 section 9.5; ADR-0016", "vectors": replay_vectors()},
         OUT / "privacy" / "dp_accounting.json": meta
         | {"spec": "ESP V13 section 12; ADR-0018", "vectors": dp_vectors()},
+        OUT / "xcf" / "capsules.json": meta
+        | {
+            "spec": "ESP V13 XCF v1 (148-byte header, CID, capsule_sig); GAP-018",
+            "vectors": xcf_vectors(),
+        },
     }
 
 

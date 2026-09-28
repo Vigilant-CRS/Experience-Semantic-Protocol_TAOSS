@@ -10,7 +10,8 @@
     "replay/windows.json": "7890a8d24730b57ef79f6f047bf389c353f2ee8a5ae7686e04efbea5fba6e28a",
     "session/descriptor.json": "ec5baede6e1c332e0ef0453a53c4b910f22f71623f61378a22610543c2d6817f",
     "wire/header_valid.json": "7f1d52d5c8430307c302bae43f84663cbd6932f171197deaa6bc2e429f2f8d59",
-    "wire/latent_valid.json": "4f84e842d3f33dc7233d1b7ef6c344be77daa915a307949242206b35e88f71aa"
+    "wire/latent_valid.json": "4f84e842d3f33dc7233d1b7ef6c344be77daa915a307949242206b35e88f71aa",
+    "xcf/capsules.json": "5f6a2be7f0147faba2284732d0faeb535b81cb23b4034d2ff6f69af2641a2248"
   },
   "license": "CC-BY-4.0",
   "suite_version": "1.0.0"

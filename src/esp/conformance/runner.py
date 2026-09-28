@@ -202,6 +202,12 @@ class Suite:
             partial(_registry_digest, path.read_text().strip()),
         )
 
+    def xcf(self) -> None:
+        path = self.vectors / "xcf" / "capsules.json"
+        if path.exists():
+            for v in self.load("xcf/capsules.json"):
+                self.check("xcf", v["name"], partial(_capsule, v))
+
     def run_all(self) -> Report:
         for category in (
             self.index,
@@ -215,6 +221,7 @@ class Suite:
             self.replay,
             self.privacy,
             self.ontology,
+            self.xcf,
         ):
             category()
         return self.report
@@ -290,6 +297,31 @@ def _window(v: dict[str, Any]) -> None:
 
 def _registry_digest(expected: str) -> None:
     _require(basic8_registry().digest_hex() == expected, "registry digest differs")
+
+
+def _capsule(v: dict[str, Any]) -> None:
+    import uuid  # noqa: PLC0415
+
+    from esp.xcf.capsule import Capsule, Header, PrivateBody  # noqa: PLC0415
+
+    raw = bytes.fromhex(v["capsule_hex"])
+    c = Capsule(raw)
+    _require(len(bytes.fromhex(v["header_hex"])) == 148, "header is not 148 bytes")
+    _require(Header.decode(raw[:148]).encode() == raw[:148], "header re-encoding differs")
+    _require(c.header.parent_cid.hex() == v["parent_cid"], "parent_cid")
+    c.verify_signature()
+    _require(c.cid.hex() == v["cid"], "CID differs")
+    body = c.open_with_cek(bytes.fromhex(v["cek"]))
+    _require(
+        body
+        == PrivateBody(
+            uuid.UUID(v["policy_id"]), uuid.UUID(v["timeline_id"]), bytes.fromhex(v["payload_hex"])
+        ),
+        "private body",
+    )
+    tampered = bytearray(raw)
+    tampered[200] ^= 1
+    _rejects(Capsule(bytes(tampered)).verify_signature)
 
 
 def _rejects(fn: Callable[[], object]) -> None:
