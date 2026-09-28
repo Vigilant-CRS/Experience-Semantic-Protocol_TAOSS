@@ -51,6 +51,10 @@ ALLOWLIST = {
         "loads only checkpoints this harness wrote itself (optimizer and RNG state need pickling); "
         "never used for downloaded checkpoints"
     ),
+    ("eval_exec", "tests/unit/test_docs_examples.py"): (
+        "executes only the python blocks of this repository's own docs/guide (WP-046), never "
+        "external input"
+    ),
     ("tls_verification_disabled", "scripts/security_review.py"): "the pattern definition itself",
     ("shell_true", "scripts/security_review.py"): "the pattern definition itself",
     ("pickle_load", "scripts/security_review.py"): "the pattern definition itself",
