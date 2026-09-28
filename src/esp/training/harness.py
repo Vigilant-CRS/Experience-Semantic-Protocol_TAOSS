@@ -5,7 +5,10 @@
 - one JSON config pins everything (seed, steps, model, data, registry digests);
 - runs are deterministic on CPU (seeded torch/numpy generators, deterministic
   algorithms); resuming from a checkpoint continues *bitwise* identically;
-- checkpoints hold model, optimizer, RNG states and the step;
+- checkpoints hold model, optimizer, RNG states, the step and the early-stopping state;
+- stability mechanisms and certified mode (WP-073) are configured by
+  :class:`~esp.training.stability.StabilityConfig`; all are off by default, and the
+  default run is bitwise identical to the pre-WP-073 harness;
 - metrics are appended as JSON lines; experiment metadata records the
   config digest, registry binding, library versions and git commit.
 """
@@ -14,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import platform
 import subprocess
 from collections.abc import Mapping
@@ -25,7 +29,8 @@ import numpy as np
 import torch
 
 from esp.core.taoss_types import TaossType
-from esp.training.encoder import EncoderConfig, TaossEncoder
+from esp.training.encoder import EncoderConfig, TaossEncoder, project_attention, type_name
+from esp.training.stability import EarlyStopState, StabilityConfig, holdout_leakage
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +64,7 @@ class TrainConfig:
     data: DataConfig = field(default_factory=DataConfig)
     registries: Mapping[str, str] = field(default_factory=dict)
     """Registry name -> digest the trained encoder is bound to."""
+    stability: StabilityConfig = field(default_factory=StabilityConfig)
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
@@ -70,9 +76,20 @@ class TrainConfig:
     def from_json(cls, raw: str) -> TrainConfig:
         d = json.loads(raw)
         d["data"] = DataConfig(**d["data"])
+        d["stability"] = StabilityConfig.from_dict(d.get("stability", {}))
         return cls(**d)
 
-    def encoder_config(self) -> EncoderConfig:
+    def n_train(self) -> int:
+        """Samples used for training; the rest is the early-stopping holdout."""
+        es = self.stability.early_stop
+        return self.data.n if es is None else self.data.n - round(self.data.n * es.holdout_frac)
+
+    def encoder_config(self) -> EncoderConfig[TaossType]:
+        st = self.stability
+        if st.certified is not None:
+            st.certified.check(
+                tokens=len(self.modality_dims), d_model=self.d_model, heads=self.heads
+            )
         return EncoderConfig(
             modality_dims=dict(self.modality_dims),
             d_model=self.d_model,
@@ -82,6 +99,9 @@ class TrainConfig:
             lambda_cov=self.lambda_cov,
             beta_adv=self.beta_adv,
             lambda_grl=self.lambda_grl,
+            disc_capacities=st.disc_capacities,
+            standardize_fusion_input=st.standardize_fusion_input,
+            r_max=None if st.certified is None else st.certified.r_max,
         )
 
 
@@ -149,6 +169,61 @@ def _metadata(cfg: TrainConfig) -> dict[str, Any]:
     }
 
 
+def modality_dropout_mask(
+    modalities: tuple[str, ...], batch: int, p: float, gen: torch.Generator
+) -> dict[str, torch.Tensor]:
+    """Random absent modalities (trains the gates ``g_m``); every row keeps at least one."""
+    keep = (torch.rand(batch, len(modalities), generator=gen) >= p).float()
+    keep[keep.sum(1) == 0] = 1.0
+    return {m: keep[:, i] for i, m in enumerate(modalities)}
+
+
+def train_step[K: (TaossType, str)](
+    model: TaossEncoder[K],
+    opt: torch.optim.Optimizer,
+    inputs: Mapping[str, torch.Tensor],
+    targets: Mapping[K, torch.Tensor],
+    st: StabilityConfig,
+    *,
+    step: int,
+    steps: int,
+    steps_per_epoch: int,
+    gen: torch.Generator,
+) -> dict[str, float]:
+    """One optimizer step with the configured stability mechanisms (0-based ``step``)."""
+    batch = next(iter(inputs.values())).shape[0]
+    present = (
+        modality_dropout_mask(model.modalities, batch, st.modality_dropout, gen)
+        if st.modality_dropout > 0
+        else None
+    )
+    lat = model(inputs, present)
+    beta = st.beta(model.cfg.beta_adv, step, steps)
+    noise = st.noise(step, steps)
+    losses = model.losses(
+        lat, targets, beta=beta, instance_noise=noise, grad_penalty=st.grad_penalty
+    )
+    opt.zero_grad()
+    losses["total"].backward()  # type: ignore[no-untyped-call]
+    frozen = st.encoder_only(step, steps_per_epoch)
+    if frozen:  # Adam skips parameters without a gradient: discriminators stay frozen
+        for p in model.discriminator_parameters():
+            p.grad = None
+    opt.step()
+    if st.certified is not None:
+        project_attention(model, st.certified.sigma_max)
+    out = {k: float(v.detach()) for k, v in losses.items()}
+    if beta is not None:
+        out["beta"] = beta
+    if st.instance_noise > 0:
+        out["instance_noise"] = noise
+    if st.encoder_only_every:
+        out["encoder_only"] = float(frozen)
+    if model.last_input_radius is not None:
+        out["fusion_input_radius"] = model.last_input_radius
+    return out
+
+
 class Trainer:
     def __init__(self, cfg: TrainConfig, out_dir: Path) -> None:
         torch.use_deterministic_algorithms(True)
@@ -161,28 +236,47 @@ class Trainer:
         self.opt = torch.optim.Adam(self.model.parameters(), lr=cfg.lr)
         self.gen = torch.Generator().manual_seed(cfg.seed)
         self.step = 0
+        self.early = EarlyStopState()
         self.data = make_synthetic(cfg)
         (self.out / "config.json").write_text(cfg.to_json() + "\n", encoding="utf-8")
         (self.out / "metadata.json").write_text(
             json.dumps(_metadata(cfg), indent=2) + "\n", encoding="utf-8"
         )
 
+    @property
+    def stopped(self) -> bool:
+        return self.early.stopped_at is not None
+
     def train(self, until_step: int | None = None) -> dict[str, float]:
         end = self.cfg.steps if until_step is None else until_step
+        st = self.cfg.stability
+        n_train = self.cfg.n_train()
+        per_epoch = max(1, math.ceil(n_train / self.cfg.batch))
         last: dict[str, float] = {}
         self.model.train()
         with (self.out / "metrics.jsonl").open("a", encoding="utf-8") as log:
-            while self.step < end:
-                idx = torch.randint(0, self.cfg.data.n, (self.cfg.batch,), generator=self.gen)
-                lat = self.model({m: x[idx] for m, x in self.data.inputs.items()})
-                losses = self.model.losses(lat, {t: y[idx] for t, y in self.data.targets.items()})
-                self.opt.zero_grad()
-                losses["total"].backward()  # type: ignore[no-untyped-call]
-                self.opt.step()
+            while self.step < end and not self.stopped:
+                idx = torch.randint(0, n_train, (self.cfg.batch,), generator=self.gen)
+                last = train_step(
+                    self.model,
+                    self.opt,
+                    {m: x[idx] for m, x in self.data.inputs.items()},
+                    {t: y[idx] for t, y in self.data.targets.items()},
+                    st,
+                    step=self.step,
+                    steps=self.cfg.steps,
+                    steps_per_epoch=per_epoch,
+                    gen=self.gen,
+                )
                 self.step += 1
-                last = {k: float(v.detach()) for k, v in losses.items()}
+                es = st.early_stop
+                if es is not None and self.step % es.eval_every == 0:
+                    value = holdout_leakage(self.holdout_latents(), es, seed=self.cfg.seed)
+                    last["holdout_leakage"] = value
+                    if self.early.update(self.step, value, es):
+                        last["early_stopped"] = 1.0
                 log.write(json.dumps({"step": self.step, **last}, sort_keys=True) + "\n")
-                if self.step % self.cfg.checkpoint_every == 0:
+                if self.step % self.cfg.checkpoint_every == 0 or self.stopped:
                     self.save(self.out / f"ckpt-{self.step:06d}.pt")
         return last
 
@@ -195,6 +289,7 @@ class Trainer:
                 "opt": self.opt.state_dict(),
                 "gen": self.gen.get_state(),
                 "torch_rng": torch.get_rng_state(),
+                "early_stop": asdict(self.early),
             },
             path,
         )
@@ -208,11 +303,26 @@ class Trainer:
         t.gen.set_state(ck["gen"])
         torch.set_rng_state(ck["torch_rng"])
         t.step = ck["step"]
+        early = ck.get("early_stop")
+        if early is not None:
+            t.early = EarlyStopState(
+                history=[(int(s), float(v)) for s, v in early["history"]],
+                best=early["best"],
+                since_best=early["since_best"],
+                stopped_at=early["stopped_at"],
+            )
         return t
 
     @torch.no_grad()
-    def encode_all(self) -> dict[TaossType, np.ndarray]:
+    def _encode(self, lo: int, hi: int | None) -> dict[TaossType, np.ndarray]:
         self.model.eval()
-        lat = self.model(self.data.inputs)
+        lat = self.model({m: x[lo:hi] for m, x in self.data.inputs.items()})
         self.model.train()
         return {t: z.numpy().astype(np.float64) for t, z in lat.items()}
+
+    def encode_all(self) -> dict[TaossType, np.ndarray]:
+        return self._encode(0, None)
+
+    def holdout_latents(self) -> dict[str, np.ndarray]:
+        """Latents of the early-stopping holdout (never used for gradient steps)."""
+        return {type_name(t): z for t, z in self._encode(self.cfg.n_train(), None).items()}
