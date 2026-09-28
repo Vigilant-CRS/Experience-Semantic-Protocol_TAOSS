@@ -38,6 +38,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TextIO
 
+import numpy as np
+
 from esp.codec.frame_wire import WireOptions
 from esp.codec.header import HEADER_LEN, Header
 from esp.codec.tlv import ParsedPayload
@@ -49,13 +51,23 @@ from esp.core.provenance import AffectScope
 from esp.core.taoss_types import TaossType, bitmap_to_types, types_to_bitmap
 from esp.crypto.noise_ik import StaticKeyPair
 from esp.crypto.primitives import SigningKey
+from esp.decoder.core import (
+    Decoder,
+    DecodeRefused,
+    audit_absence_handling,
+    check_against_session,
+    run_decoder,
+)
+from esp.decoder.outputs import TextOutput
+from esp.decoder.reference import LinearDecoder, NearestAnchorDecoder
+from esp.decoder.render import transparency_panel
 from esp.demo.compose import DemoState, compose_frame
 from esp.demo.inspector import write_report
 from esp.frame.model import DisclosurePolicy, ExperienceFrame
 from esp.ontology.profiles import BASIC8_ID, basic8_registry
 from esp.regulatory.guard import DeploymentContext, Regime, RegulatoryDeclaration
 from esp.semantics.bindings import BindingPolicy, RelationClass
-from esp.session.descriptor import SessionDescriptor
+from esp.session.descriptor import DecoderPolicy, SessionDescriptor
 from esp.session.driver import establish_receiver, establish_sender
 from esp.session.endpoint import ReceiverEndpoint, ReceiveResult, SenderEndpoint
 from esp.session.profiles import custom_profile_digest
@@ -82,6 +94,7 @@ STATE: Final = DemoState(
 )
 ALL_BINDINGS: Final = BindingPolicy(allowed_relations=(RelationClass.ELICITED_BY,))
 HOUR_NS: Final = 3600 * 10**9
+_REALIZATION_TL: Final = uuid.UUID("7a7a7a7a-7a7a-4a7a-8a7a-7a7a7a7a7a7a")
 #: WP-078: the demo shares only the sender's own, self-declared affect; no biometric inputs.
 DECLARATION: Final = RegulatoryDeclaration(
     regimes=(Regime.EU_AI_ACT, Regime.EU_GDPR),
@@ -97,11 +110,18 @@ def wire() -> WireOptions:
     return WireOptions(addendum=True, anchor_sets={BASIC8_ID: registry.anchor_set(BASIC8_ID)})
 
 
+#: Decoder policies the demo profile declares (V13 section 7.2): EMO may be absent.
+DECODER_POLICIES: Final = dict.fromkeys(TaossType, DecoderPolicy.STRICT_REFUSE) | {
+    T.EMO: DecoderPolicy.GRACEFUL
+}
+
+
 def descriptor() -> SessionDescriptor:
     registry = basic8_registry()
     return SessionDescriptor(
         profile=1,
         sf_level=0,
+        decoder_policy=DECODER_POLICIES,
         registries={
             "esp-addendum-v1": ADDENDUM_DIGEST,
             BASIC8_ID: bytes.fromhex(registry.digest_hex()),
@@ -192,6 +212,50 @@ class EventLog:
 # --- receiver ----------------------------------------------------------------------------
 
 
+def demo_decoders() -> list[Decoder]:
+    """EMO -> anchor label (GRACEFUL) and KNO/INT/CTX -> state vector (STRICT)."""
+    labels = basic8_registry().anchor_set(BASIC8_ID).anchors
+    realizations = {}
+    for anchor in labels:
+        label = anchor.split(":")[2]
+        emo = compose_frame(
+            DemoState(emotions={label: 5}), timeline_id=_REALIZATION_TL, sequence=0, now_ns=0
+        ).block(T.EMO)
+        if emo is None or emo.latent is None:  # pragma: no cover - composer always sets EMO
+            msg = "anchor realization missing"
+            raise RuntimeError(msg)
+        realizations[label] = emo.latent
+    decoders: list[Decoder] = [
+        NearestAnchorDecoder("demo-emotion-label@1", T.EMO, realizations, DecoderPolicy.GRACEFUL),
+        LinearDecoder(
+            "demo-state-vector@1", dict.fromkeys((T.KNO, T.INT, T.CTX), DecoderPolicy.STRICT_REFUSE)
+        ),
+    ]
+    for d in decoders:
+        check_against_session(d.profile, DECODER_POLICIES)
+        audit_absence_handling(d)  # no silent ⊥ -> 0
+    return decoders
+
+
+def decode_view(frame: ExperienceFrame, decoders: list[Decoder]) -> dict[str, Any]:
+    results = []
+    outputs: dict[str, dict[str, object]] = {}
+    for d in decoders:
+        try:
+            r = run_decoder(d, frame)
+        except DecodeRefused as exc:
+            outputs[d.profile.decoder_id] = {"refused": str(exc)}
+            continue
+        results.append(r)
+        out = r.output
+        outputs[d.profile.decoder_id] = (
+            {"text": out.text}
+            if isinstance(out, TextOutput)
+            else {"vector_l2": round(float(np.linalg.norm(getattr(out, "values", ()))), 6)}
+        )
+    return {"outputs": outputs, "transparency": transparency_panel(frame, results, "text")}
+
+
 def receiver_capability(identity: SigningKey) -> Callable[[bytes], ReceiverCapability]:
     types = types_to_bitmap(RECEIVER_TYPES)
 
@@ -219,6 +283,7 @@ async def receive(directory: Path, port: int, events: TextIO, sessions: int) -> 
     static = StaticKeyPair.from_private_bytes((directory / "receiver" / "static.key").read_bytes())
     trusted = frozenset({bytes.fromhex(public["sender_master_pk"])})
     accept_state, revocations = AcceptState(), RevocationRegistry()  # outlive sessions
+    decoders = demo_decoders()
     connections: asyncio.Queue[QuicConnection] = asyncio.Queue()
     server = await serve_quic(
         "127.0.0.1",
@@ -255,7 +320,7 @@ async def receive(directory: Path, port: int, events: TextIO, sessions: int) -> 
                 revocations=revocations,
                 inspector=inspector,
             )
-            await _serve_session(n, conn, receiver, inspected, log)
+            await _serve_session(n, conn, receiver, inspected, log, decoders=decoders)
             await conn.close()
     finally:
         server.close()
@@ -269,6 +334,8 @@ async def _serve_session(
     receiver: ReceiverEndpoint,
     inspected: dict[str, Any],
     log: EventLog,
+    *,
+    decoders: list[Decoder],
 ) -> None:
     log("session_start", session=n)
     try:
@@ -294,6 +361,7 @@ async def _serve_session(
             wire_header=header_view(Header.decode(message.data[:HEADER_LEN])),
             **inspected,
             frame=frame_view(result.frame) if result.frame is not None else None,
+            decoded=decode_view(result.frame, decoders) if result.frame is not None else None,
             control=[f"0x{t.code:02x}" for t in result.control],
         )
     log("session_end", session=n, decoder_invocations=receiver.decoder_invocations)

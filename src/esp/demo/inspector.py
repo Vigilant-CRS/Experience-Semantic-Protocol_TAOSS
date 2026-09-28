@@ -108,6 +108,15 @@ def _packet_card(p: dict[str, Any]) -> str:
             f'<span class="label">consent</span>'
             f'<span class="chip">{html.escape(str(frame["consent_capability_id"]))}</span></div>',
         ]
+    decoded = p.get("decoded")
+    if decoded:
+        outs = [f"{k}: {json.dumps(v, sort_keys=True)}" for k, v in decoded["outputs"].items()]
+        panel = decoded["transparency"]
+        parts += [
+            f'<div class="row"><span class="label">decoders</span>{_chips(outs)}</div>',
+            '<div class="row"><span class="label">cannot reconstruct</span>'
+            f"{_chips(panel['cannot_reconstruct'])}</div>",
+        ]
     return '<div class="card">' + "".join(parts) + "</div>"
 
 

@@ -3812,7 +3812,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-059 — Decoder-Schicht und Decoder Companion Spec
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-014, GAP-022
+**Status:** `VERIFIED` · **Löst:** GAP-014, GAP-022
 
 ### Implementieren
 

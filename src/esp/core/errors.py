@@ -39,6 +39,8 @@ class ErrorCode(IntEnum):
     SESSION_STATE = 0x0500
 
     DECODER_POLICY_FAILED = 0x0601  # V13 section 7.2: ESP_DECODER_POLICY_FAILED
+    DECODER_REFUSED = 0x0602  # strict refusal: a required type is absent
+    DECODER_BUDGET_EXCEEDED = 0x0603  # WP-060 T16: throttled, not crashed
 
     REGISTRY_CONFLICT = 0x0700
     REGISTRY_UNKNOWN_ID = 0x0701

@@ -153,3 +153,16 @@ def test_steps_10_11_revoke_emo_then_future_emo_rejected(run: tuple[list, list])
     assert not EMO_CODES & set(p["plaintext_tlv_codes"])
     ends = {e["session"]: e["decoder_invocations"] for e in events if e["event"] == "session_end"}
     assert ends == {1: 1, 2: 2, 4: 1}  # decoder ran only for accepted frames
+
+
+def test_decoder_transparency_panel(run: tuple[list, list]) -> None:
+    """WP-059: absence is reported as intentional masking, never decoded as zero."""
+    events, _ = run
+    (s1,) = packets(events, 1)
+    panel = s1["decoded"]["transparency"]
+    assert s1["decoded"]["outputs"]["demo-emotion-label@1"] == {"text": "<EMO absent>"}
+    assert panel["decoders"][0]["absent_graceful"] == [{"intentional": True, "type": "EMO"}]
+    assert "EMO" in panel["cannot_reconstruct"]
+    emo_on = packets(events, 2)[0]
+    assert emo_on["decoded"]["outputs"]["demo-emotion-label@1"] == {"text": "fear"}
+    assert "EMO" not in emo_on["decoded"]["transparency"]["cannot_reconstruct"]
