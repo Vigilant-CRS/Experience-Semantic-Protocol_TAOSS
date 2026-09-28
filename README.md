@@ -222,9 +222,9 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate. Still needs the human legal review, the manual threat review and four ADR decisions ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ waiting for humans |
 | M13 | Machine Experience Bridge (machines never author EMO; handover, surgical and drone profiles) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit) | ✅ PASS |
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
-| M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) | ✅ implemented · gate running |
+| M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation | ✅ implemented · gate running |
 | M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ implemented · gate running |
-| M17 | Every V13 section maps to finished work; errata E-01…E-27 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials, DKG), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
+| M17 | Every V13 section maps to finished work; errata E-01…E-27 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
 
 ---
 

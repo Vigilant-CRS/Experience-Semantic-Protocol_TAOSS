@@ -123,7 +123,7 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 | Concern | Reference choice | Status in this repository |
 |---|---|---|
 | Threshold signature for the CIC | FROST(Ed25519, SHA-512), RFC 9591 | **Implemented** in pure Python (`esp.hive.frost`), byte-exact against RFC 9591 Appendix E.1; signatures verify with the `cryptography` Ed25519 verifier. Not constant time. |
-| FROST key setup | RFC 9591 Appendix C trusted dealer | Implemented. **DKG is not implemented**; RFC 9591 does not specify one. |
+| FROST key setup | Pedersen DKG with Schnorr proofs of knowledge (Komlo–Goldberg, FROST KeyGen) in `esp.hive.dkg`; RFC 9591 Appendix C trusted dealer kept for the RFC test vectors | Implemented. Complaints name the misbehaving participant; the protocol aborts (no robust recovery). Round-2 private channels are the caller's responsibility. |
 | Secure aggregation | Bonawitz-style pairwise masks (X25519 + BLAKE2b PRG, fixed point mod 2^64) with distributed Gaussian noise `N(0, σ²/h)`, honest-contributor threshold `h`, RDP accounting | **Implemented as a reference.** No dropout recovery: a missing member aborts the round. Float Gaussian, not the distributed discrete Gaussian of Kairouz et al. (same limitation as errata E-11). |
 | Group transport | MLS (RFC 9420), e.g. OpenMLS | **Not implemented.** `mls_epoch` carries the round number only. |
 | Anonymous credentials / nullifiers | Semaphore V4 (V13 reference) | **Not implemented.** `CredentialSuite` is the plug-in interface. The shipped `esp-hive-transparent-test-v0` proves Merkle membership and one-per-episode uniqueness but reveals the credential key. It sets `provides_anonymity = False`, episodes refuse it in ANONYMOUS mode unless marked as a test, and reports then say "anonymity NOT PROVIDED". |
@@ -137,7 +137,7 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 - **Open for the maintainer:**
   - the MLS binding;
   - a Semaphore V4 (or equivalent) suite and issuer-unlinkable enrollment;
-  - DKG;
+  - robust DKG (recovery after complaints) and a pinned private-channel profile for DKG round 2;
   - the distributed discrete Gaussian;
   - a constant-time or audited FROST implementation (for example the Rust `frost-ed25519`
     crate) for production use.

@@ -32,7 +32,7 @@ from esp.codec.tlv import Tlv
 from esp.consent.capability import AudienceMode, Rights, SenderCapability
 from esp.core.taoss_types import TaossType, types_to_bitmap
 from esp.crypto.primitives import SigningKey
-from esp.hive import frost
+from esp.hive import dkg, frost
 from esp.hive.audit import AuditReport, EmergencePrereg, Thresholds
 from esp.hive.episode import (
     Episode,
@@ -232,7 +232,7 @@ def build_episode(
     """Discovery and Join for ``n`` synthetic members (the last ``machines`` are machines)."""
     episode_id = uuid.uuid4()
     pre = prereg(n)
-    guardians, shares = frost.trusted_dealer_keygen(5, 3)
+    guardians, shares = dkg.run_local(5, 3, episode_id.bytes)  # no trusted dealer (GAP-017)
     ep = Episode(episode_config(episode_id, pre, rounds, **config), guardians=guardians)
     ep.open_join()
     members = []

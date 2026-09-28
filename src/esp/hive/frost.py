@@ -12,8 +12,9 @@ Limitations (documented in ADR-0021):
 
 - The arithmetic is **not constant time**. It is a reference and conformance
   implementation, not a hardened signer.
-- Key setup is the RFC 9591 Appendix C trusted-dealer scheme. RFC 9591 does
-  not specify DKG, and a registry-pinned DKG is out of scope.
+- Key setup: the RFC 9591 Appendix C trusted-dealer scheme (used for the RFC
+  test vectors) or the Pedersen DKG with proofs of knowledge in
+  :mod:`esp.hive.dkg` (no trusted dealer; RFC 9591 leaves DKG out of scope).
 - FROST is not robust: one misbehaving signer aborts the signing session, and
   :func:`verify_signature_share` identifies it (RFC 9591 section 5.4).
 """

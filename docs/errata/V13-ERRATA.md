@@ -197,7 +197,9 @@ only once V13.1 adopts them. Each entry records:
 - Contribution commitment: `BLAKE2b-256("esp/v1/hive-contribution" ‖ episode_id ‖ x ‖ r)` with
   `x = type u8 ‖ round u32 ‖ float32_be[d]`; `member_ref_root` is an RFC 9162 Merkle root.
 - EMO is released only as a DP histogram over anchor bins; EMO coupling is always 0.
-- *Still open:* MLS, anonymous credentials and DKG companion profiles.
+- Key setup without a trusted dealer: Pedersen DKG with Schnorr proofs of knowledge (FROST
+  KeyGen), domain `esp/v1/hive-frost-dkg`, challenge bound to participant id and episode.
+- *Still open:* MLS and anonymous-credential companion profiles.
 - *Tests:* `vectors/hive/tlvs.json`, `tests/unit/hive/`.
 
 **E-25 (FINDING, ADR-0028): machine and agent profiles**
@@ -257,5 +259,5 @@ only once V13.1 adopts them. Each entry records:
 
 ## Still open (not yet proposed as errata)
 
-- **GAP-017 (partial):** MLS, anonymous-credential and DKG companion profiles for the Typed Hive.
+- **GAP-017 (partial):** MLS and anonymous-credential companion profiles for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.
