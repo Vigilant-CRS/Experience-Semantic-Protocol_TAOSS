@@ -213,7 +213,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M3a | Key lifecycle (rotation, compromise, transparency log with witnesses, Shamir custody), runtime differential privacy with persistent ledger | ✅ PASS |
 | M4 | QUIC transport, impaired-network grid, migration, reconnect, SF profiles, turn tokens/SOS/PANIC, **metadata protection** | ✅ PASS |
 | M5 | BCI-free demo (two processes), decoder layer, receiver threats T13–T19, **EU AI Act Art. 5(1)(f) guard**, interactive inspector | ✅ PASS |
-| M6 | Physiology without hardware: BrainFlow, LSL, XDF/EDF/BDF/BrainVision/WFDB/Empatica readers, features, calibration, 30-min soak | 🔄 gate re-run |
+| M6 | Physiology without hardware: BrainFlow, LSL, XDF/EDF/BDF/BrainVision/WFDB/Empatica readers, features, calibration, 30-min soak | ✅ PASS |
 | M7–M10 | Multimodal estimation (L2-gated), trainable TAOSS encoder, leakage & audit suite, ExperienceBench, independent Rust implementation | 🛠 in progress |
 | M11–M17 | Performance & security candidate, release 1.0, machine & agent governance, experience capsules (XCF), Typed Hive, horizon interfaces | 📋 planned |
 
@@ -264,16 +264,17 @@ Sender and receiver run as separate programs over QUIC:
 - 30-minute soak (BrainFlow synthetic board → Lab Streaming Layer → receiver, plus an event
   stream and sliding-window EEG features):
 
-| Metric | Result |
+| Metric | Result (gate run, commit a780e25) |
 |---|---|
 | duration | 1801 s |
-| samples sent → received | 449,933 → 449,933 (**0 lost**) |
+| samples sent → received | 449,935 → 449,935 (**0 lost**) |
 | dropped samples (package counter) | **0** |
 | timestamp order violations | **0** |
-| events sent → received in order | all |
-
-The formal M6 verdict is being re-run: one bound in the test itself was off by one (178 of 179
-possible 10-s feature windows).
+| clock correction (LSL) | max 0.035 ms |
+| BrainFlow timestamp lag p99 | 4.2 ms |
+| memory growth after warm-up | +0.8 MB |
+| CPU | 2.3 % of one core |
+| events sent → received in order | 1801 → 1801 |
 
 Open datasets are downloaded by [`scripts/fetch_datasets.py`](scripts/fetch_datasets.py) into a
 git-ignored folder with license and checksum manifests. They are never committed. See

@@ -94,3 +94,4 @@ both agree.
 | M3a | PASS | `artifacts/test-reports/M3a.json` (commit d3372a1) |
 | M4 | PASS | `artifacts/test-reports/M4.json` (commit 0b9e8f3; per-condition network metrics embedded) |
 | M5 | PASS | `artifacts/test-reports/M5.json` (commit 517f7ee; two-process demo over QUIC, transparency panel, active Art. 5(1)(f) guard) |
+| M6 | PASS | `artifacts/test-reports/M6.json` (commit a780e25; 30-min soak: 449,935 samples, 0 lost, 0 dropped, clock correction 0.035 ms, +0.8 MB RSS) |
