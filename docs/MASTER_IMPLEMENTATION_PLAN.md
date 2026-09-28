@@ -2881,7 +2881,7 @@ Header modification MUST fail authentication.
 
 ## WP-017 — Nonce and Replay State
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3929,7 +3929,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-065 — Adaptives Replay-Fenster
 
-**Status:** `NOT_STARTED`
+**Status:** `IMPLEMENTED`
 
 ### Implementieren
 
