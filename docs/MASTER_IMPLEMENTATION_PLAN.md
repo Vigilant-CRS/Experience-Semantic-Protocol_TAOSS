@@ -2322,7 +2322,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-012 | Referenzparameter der DP-Profile (`L1_BALANCED_REF` σ≈24.42, `L1_PRIVATE_REF` σ≈122.13 bei C=1, δ=10⁻⁶?) über mehrere Absätze verteilt, δ und α-Gitter nicht als Tabelle. | §DP | mittel | Registry-Eintrag `esp-dp-ref-v1` mit C, σ, δ, α-Gitter, Accountant; Golden Vectors für ε. ADR-0018 | WP-055 | RESOLVED |
 | GAP-013 | `Δ_clock` (Uhrentoleranz im Accept-Prädikat) ohne Default. | §Consent Accept | mittel | Profil-Default 2 s (L1), 250 ms (I2I). ADR-0019 | WP-019 | RESOLVED |
 | GAP-014 | Fehlercodes (z. B. `ESP_DECODER_POLICY_FAILED`) werden genannt, aber es gibt kein Fehlercode-Register. | §Decoder | mittel | CS-DECODER + `src/esp/core/errors.py` Register mit stabilen numerischen Codes. ADR-0020 | WP-059 | OPEN |
-| GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | OPEN |
+| GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | PARTIAL: Band-Prüfungen parametrisiert (`audit/hardening.py`), Default-Werte noch experimentell zu bestimmen |
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | OPEN |
 | GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | OPEN |
 | GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | OPEN |
@@ -2330,7 +2330,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-020 | Repository-Rollen: V13 nennt das Movie-Engine-Repo „official implementation repository“; TAOSS-Repo ist dort nicht genannt. | Präambel, §L1, §V12→V13 | niedrig | V13-Errata: TAOSS-Repo als „reference implementation (wire/conformance)“ eintragen. | WP-085 | OPEN |
 | GAP-021 | Emotionstheorie-Pluralismus des Plans (Kategorien, Appraisal, Episode) geht über V13-Default (8 Anker + V/A/I) hinaus. | §6.4 EMO-Struktur | niedrig | bleibt `V13_COMPATIBLE_ADDENDUM`; nie im V13-Default-Profil Pflicht. | WP-004 | RESOLVED_IN_PLAN |
 | GAP-022 | Decoder-Referenz-Companion „planned“: keine Referenzarchitektur, aber Pflichten (⊥-Handling, Policy pro Typ). | §Decoder | mittel | CS-DECODER + Referenz-Renderer (Text, Vektor, Visualisierung). | WP-059 | OPEN |
-| GAP-023 | ExperienceBench-Korpora: V13 nennt Aufgaben, aber keine Datensätze/Lizenzen. | §ExperienceBench | hoch (für H1–H3) | Datensatz-Register mit Lizenzprüfung; Smoke-Korpus synthetisch; echte Korpora nur mit geklärter Lizenz. ADR-0024 | WP-034 … WP-037, WP-083 | OPEN |
+| GAP-023 | ExperienceBench-Korpora: V13 nennt Aufgaben, aber keine Datensätze/Lizenzen. | §ExperienceBench | hoch (für H1–H3) | Datensatz-Register mit Lizenzprüfung; Smoke-Korpus synthetisch; echte Korpora nur mit geklärter Lizenz. ADR-0024 | WP-034 … WP-037, WP-083 | PARTIAL: Register mit Lizenz/Einwilligung/Split-Einheit/Digest (WP-083), Smoke-Korpus; echte Benchmark-Korpora offen |
 | GAP-024 | Hybrid-PQ-Profil: V13 verlangt Deklaration classical-only vs. hybrid, aber kein Feld. | §Crypto PQ | niedrig | Session-Descriptor-Feld `pq_mode ∈ {CLASSICAL_ONLY, HYBRID_OUTER, HYBRID_NOISE}`; v1 = CLASSICAL_ONLY, nie als PQ beworben. | WP-048, WP-075 | OPEN |
 | GAP-025 | V13 §7.6 sagt, die ReceiverCapability stehe im ersten Responder-Handshake-Payload, bindet sie aber an `noise_h`. Der finale Transkript-Hash deckt genau dieses Payload ab (zirkulär). Gleiches gilt für Identity Proof und Session-Binding. | §7.6, §9.4 | hoch | ADR-0013 Amendment: Übertragung in der jeweils ersten Noise-Transportnachricht nach dem Handshake, vor jedem ESP-Anwendungspaket | WP-018, WP-051, WP-052 | RESOLVED |
 | GAP-026 | `noise_h[32]` in 0x20/0x21 vs. 64-Byte-Handshake-Hash von `Noise_IK_25519_ChaChaPoly_BLAKE2b` (HASHLEN = 64). | §9.4, §7.6 | hoch | ADR-0013 Amendment: `noise_h = BLAKE2b-256("esp/v1/noise-h" ‖ h)` | WP-018, WP-051, WP-052 | RESOLVED |
@@ -3297,7 +3297,7 @@ Leakage Matrix.
 
 ## WP-034 — ExperienceBench Skeleton
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3313,7 +3313,7 @@ Jede Benchmarkklasse muss mit synthetic fixture laufen.
 
 ## WP-035 — H1 Benchmark
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3327,7 +3327,7 @@ gemäß V13.
 
 ## WP-036 — H2 Benchmark
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3344,7 +3344,7 @@ Keine H2-Aussage ohne alle Pflichtbaselines.
 
 ## WP-037 — H3 Benchmark
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3764,7 +3764,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-057 — Covert-Channel-Budget und Hardening
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-015, GAP-016
+**Status:** `VERIFIED` · **Löst:** GAP-015, GAP-016
 
 ### Implementieren
 
@@ -3788,7 +3788,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-058 — Audit Suite (V13 §13)
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -4234,7 +4234,7 @@ Empfänger-Transparenzpanel (WP-059). AGPL-§13-Quelllink und NOTICE sichtbar.
 
 ## WP-083 — Datensatz-Register und Präregistrierung
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-023
+**Status:** `VERIFIED` · **Löst:** GAP-023
 
 - Register mit Lizenz, Einwilligungsstatus, Split-Einheit, Digest pro Datensatz,
 - Präregistrierungs-Export (OSF-kompatibel) für H1/H2/H3: Hypothesen,
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M8
-next_work_package: WP-034
+current_milestone: M9
+next_work_package: WP-039
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"

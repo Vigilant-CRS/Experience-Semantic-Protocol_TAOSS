@@ -1,74 +1,89 @@
 {
-  "_note": "Dataset register (plan WP-083). Data are downloaded into data/external/ (git-ignored) by scripts/fetch_datasets.py; they are never committed. Health data are pseudonymized research data: no re-identification, no linkage, keep only needed files.",
-  "datasets": [
-    {
-      "id": "physionet-wearable-stress-s01",
-      "title": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions (v1.0.1), subject S01 STRESS",
-      "license": "ODC-By-1.0",
-      "attribution": "Hongn et al., Wearable Device Dataset from Induced Stress and Structured Exercise Sessions, PhysioNet (2025), v1.0.1; Goldberger et al., PhysioBank, PhysioToolkit, and PhysioNet, Circulation 101(23), 2000.",
-      "landing": "https://physionet.org/content/wearable-device-dataset/1.0.1/",
-      "personal_data": "pseudonymized physiology of consenting participants",
-      "files": [
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/EDA.csv",
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/HR.csv",
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/BVP.csv",
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/TEMP.csv",
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/tags.csv",
-        "https://physionet.org/files/wearable-device-dataset/1.0.1/Stress_Level_v1.csv"
-      ]
-    },
-    {
-      "id": "physionet-noneeg-subject1",
-      "title": "Non-EEG Dataset for Assessment of Neurological Status (v1.0.0), Subject1",
-      "license": "ODC-By-1.0",
-      "attribution": "Birjandtalab et al., Non-EEG Dataset for Assessment of Neurological Status, PhysioNet; Goldberger et al., Circulation 101(23), 2000.",
-      "landing": "https://physionet.org/content/noneeg/1.0.0/",
-      "personal_data": "pseudonymized physiology; headers contain age/gender/height/weight",
-      "files": [
-        "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.hea",
-        "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.dat",
-        "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.atr",
-        "https://physionet.org/files/noneeg/1.0.0/Subject1_SpO2HR.hea",
-        "https://physionet.org/files/noneeg/1.0.0/Subject1_SpO2HR.dat"
-      ]
-    },
-    {
-      "id": "physionet-eegmmidb-s001",
-      "title": "EEG Motor Movement/Imagery Dataset (v1.0.0), S001 runs 1 and 4",
-      "license": "ODC-By-1.0",
-      "attribution": "Schalk et al., BCI2000: A General-Purpose Brain-Computer Interface (BCI) System, IEEE TBME 51(6), 2004; Goldberger et al., Circulation 101(23), 2000.",
-      "landing": "https://physionet.org/content/eegmmidb/1.0.0/",
-      "personal_data": "pseudonymized EEG",
-      "files": [
-        "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf",
-        "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R04.edf"
-      ]
-    },
-    {
-      "id": "mne-test-files",
-      "title": "MNE-Python bundled parser test files (EDF, BDF, BrainVision)",
-      "license": "BSD-3-Clause",
-      "attribution": "MNE-Python developers, https://github.com/mne-tools/mne-python (BSD-3-Clause).",
-      "landing": "https://github.com/mne-tools/mne-python",
-      "personal_data": "none (test fixtures)",
-      "files": [
-        "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/edf/tests/data/test.bdf",
-        "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.vhdr",
-        "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.vmrk",
-        "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.eeg"
-      ]
-    },
-    {
-      "id": "xdf-example-files",
-      "title": "xdf-modules example files",
-      "license": "MIT",
-      "attribution": "Copyright (c) 2019 xdf-modules, https://github.com/xdf-modules/example-files (MIT).",
-      "landing": "https://github.com/xdf-modules/example-files",
-      "personal_data": "none (synthetic)",
-      "files": [
-        "https://raw.githubusercontent.com/xdf-modules/example-files/master/minimal.xdf",
-        "https://raw.githubusercontent.com/xdf-modules/example-files/master/clock_resets.xdf"
-      ]
-    }
-  ]
+ "_note": "Dataset register (plan WP-083). Data are downloaded into data/external/ (git-ignored) by scripts/fetch_datasets.py; they are never committed. Health data are pseudonymized research data: no re-identification, no linkage, keep only needed files.",
+ "datasets": [
+  {
+   "id": "physionet-wearable-stress-s01",
+   "title": "Wearable Device Dataset from Induced Stress and Structured Exercise Sessions (v1.0.1), subject S01 STRESS",
+   "license": "ODC-By-1.0",
+   "attribution": "Hongn et al., Wearable Device Dataset from Induced Stress and Structured Exercise Sessions, PhysioNet (2025), v1.0.1; Goldberger et al., PhysioBank, PhysioToolkit, and PhysioNet, Circulation 101(23), 2000.",
+   "landing": "https://physionet.org/content/wearable-device-dataset/1.0.1/",
+   "personal_data": "pseudonymized physiology of consenting participants",
+   "files": [
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/EDA.csv",
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/HR.csv",
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/BVP.csv",
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/TEMP.csv",
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Wearable_Dataset/STRESS/S01/tags.csv",
+    "https://physionet.org/files/wearable-device-dataset/1.0.1/Stress_Level_v1.csv"
+   ],
+   "consent_status": "participant_consent_documented_by_source",
+   "split_unit": "subject",
+   "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  },
+  {
+   "id": "physionet-noneeg-subject1",
+   "title": "Non-EEG Dataset for Assessment of Neurological Status (v1.0.0), Subject1",
+   "license": "ODC-By-1.0",
+   "attribution": "Birjandtalab et al., Non-EEG Dataset for Assessment of Neurological Status, PhysioNet; Goldberger et al., Circulation 101(23), 2000.",
+   "landing": "https://physionet.org/content/noneeg/1.0.0/",
+   "personal_data": "pseudonymized physiology; headers contain age/gender/height/weight",
+   "files": [
+    "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.hea",
+    "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.dat",
+    "https://physionet.org/files/noneeg/1.0.0/Subject1_AccTempEDA.atr",
+    "https://physionet.org/files/noneeg/1.0.0/Subject1_SpO2HR.hea",
+    "https://physionet.org/files/noneeg/1.0.0/Subject1_SpO2HR.dat"
+   ],
+   "consent_status": "participant_consent_documented_by_source",
+   "split_unit": "subject",
+   "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  },
+  {
+   "id": "physionet-eegmmidb-s001",
+   "title": "EEG Motor Movement/Imagery Dataset (v1.0.0), S001 runs 1 and 4",
+   "license": "ODC-By-1.0",
+   "attribution": "Schalk et al., BCI2000: A General-Purpose Brain-Computer Interface (BCI) System, IEEE TBME 51(6), 2004; Goldberger et al., Circulation 101(23), 2000.",
+   "landing": "https://physionet.org/content/eegmmidb/1.0.0/",
+   "personal_data": "pseudonymized EEG",
+   "files": [
+    "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf",
+    "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R04.edf"
+   ],
+   "consent_status": "participant_consent_documented_by_source",
+   "split_unit": "subject",
+   "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  },
+  {
+   "id": "mne-test-files",
+   "title": "MNE-Python bundled parser test files (EDF, BDF, BrainVision)",
+   "license": "BSD-3-Clause",
+   "attribution": "MNE-Python developers, https://github.com/mne-tools/mne-python (BSD-3-Clause).",
+   "landing": "https://github.com/mne-tools/mne-python",
+   "personal_data": "none (test fixtures)",
+   "files": [
+    "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/edf/tests/data/test.bdf",
+    "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.vhdr",
+    "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.vmrk",
+    "https://raw.githubusercontent.com/mne-tools/mne-python/main/mne/io/brainvision/tests/data/test.eeg"
+   ],
+   "consent_status": "test_fixture_no_personal_data",
+   "split_unit": "recording",
+   "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  },
+  {
+   "id": "xdf-example-files",
+   "title": "xdf-modules example files",
+   "license": "MIT",
+   "attribution": "Copyright (c) 2019 xdf-modules, https://github.com/xdf-modules/example-files (MIT).",
+   "landing": "https://github.com/xdf-modules/example-files",
+   "personal_data": "none (synthetic)",
+   "files": [
+    "https://raw.githubusercontent.com/xdf-modules/example-files/master/minimal.xdf",
+    "https://raw.githubusercontent.com/xdf-modules/example-files/master/clock_resets.xdf"
+   ],
+   "consent_status": "test_fixture_no_personal_data",
+   "split_unit": "recording",
+   "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  }
+ ]
 }
