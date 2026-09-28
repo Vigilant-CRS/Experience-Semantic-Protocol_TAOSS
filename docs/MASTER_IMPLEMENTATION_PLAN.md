@@ -2922,7 +2922,7 @@ Header modification MUST fail authentication.
 
 ## WP-019 — Capability and Consent Engine
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3617,7 +3617,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-051 — ReceiverCapability (0x21), Default-Deny und Accept-Prädikat
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-008, GAP-013
+**Status:** `IMPLEMENTED` · **Löst:** GAP-008, GAP-013
 
 ### Implementieren
 
