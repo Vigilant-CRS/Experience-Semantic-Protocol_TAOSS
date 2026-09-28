@@ -3208,7 +3208,7 @@ standardisierte Features erzeugen.
 
 ## WP-030 — Multimodal State Estimation Baseline
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Inputs
 
@@ -4213,7 +4213,7 @@ Atrophy als dokumentierte, nicht technisch lösbare Risiken.
 
 ## WP-081 — Subject-Side-Affect-Pipeline (L2)
 
-**Status:** `NOT_STARTED` · **Klasse:** `EXPERIMENTAL` · **Voraussetzung:** WP-078
+**Status:** `VERIFIED` · **Klasse:** `EXPERIMENTAL` · **Voraussetzung:** WP-078
 
 Physiologie/Stimme → Features → `affect_scope=INFERRED_SUBJECT` nur unter
 Profil L2, mit L2-Consent, Regime-Guard und Provenance. Keine Claims über
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M6
-next_work_package: WP-026
+current_milestone: M7
+next_work_package: WP-031
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
