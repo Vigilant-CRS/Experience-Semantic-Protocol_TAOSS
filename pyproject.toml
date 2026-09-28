@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "esp-taoss"
+version = "0.0.1"
+description = "Experience Semantic Protocol (ESP) V13 / TAOSS reference implementation"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE", "LICENSES/*", "NOTICE"]
+requires-python = ">=3.12"
+authors = [{ name = "Vigilant e.K. and contributors" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+    "Topic :: System :: Networking",
+    "Typing :: Typed",
+]
+dependencies = [
+    "cryptography>=43",
+    "numpy>=2.0",
+]
+
+[project.urls]
+Repository = "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "hypothesis>=6.100",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "reuse>=4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/esp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+markers = [
+    "unit: fast unit tests",
+    "property: hypothesis property tests",
+    "integration: multi-component tests",
+    "conformance: V13 conformance vectors",
+    "security: security invariant tests",
+    "fuzz: fuzz smoke tests",
+    "milestone: milestone gate tests",
+    "slow: long-running tests",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["esp"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "C4", "SIM", "RUF", "PT", "PL", "ANN"]
+ignore = ["PLR2004", "PLR0913", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "S", "PLR", "N802"]
+"scripts/**" = ["T20", "S603", "S607"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+mypy_path = "src"
+packages = ["esp"]

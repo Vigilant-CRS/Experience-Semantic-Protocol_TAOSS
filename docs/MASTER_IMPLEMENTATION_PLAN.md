@@ -137,7 +137,10 @@ IMPLEMENTED
 VERIFIED
 DEFERRED
 REJECTED
+FUTURE
 ```
+
+`FUTURE` bedeutet: nur Interface/Platzhalter, keine Funktionsbehauptung (§3.4).
 
 `IMPLEMENTED` bedeutet nur, dass Code vorhanden ist.
 

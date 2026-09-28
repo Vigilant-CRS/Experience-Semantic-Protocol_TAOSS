@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require DCO sign-off on every commit
+        run: |
+          set -euo pipefail
+          fail=0
+          for sha in $(git rev-list "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"); do
+            author=$(git log -1 --format='%an <%ae>' "$sha")
+            if ! git log -1 --format='%B' "$sha" | grep -qF "Signed-off-by: $author"; then
+              echo "::error::commit $sha lacks 'Signed-off-by: $author'"
+              fail=1
+            fi
+          done
+          exit $fail
+
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    env:
+      HYPOTHESIS_PROFILE: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --frozen
+      - run: make verify

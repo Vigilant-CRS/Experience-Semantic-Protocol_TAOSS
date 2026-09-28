@@ -5,13 +5,13 @@
 version = 1
 
 [[annotations]]
-path = ["src/**", "rust/**", "scripts/**", "benchmarks/**", "examples/**", "tests/**", "Makefile", "pyproject.toml", ".github/**", ".gitignore"]
+path = ["src/**", "rust/**", "scripts/**", "benchmarks/**", "examples/**", "tests/**", "Makefile", "pyproject.toml", ".github/**", ".gitignore", ".pre-commit-config.yaml", "uv.lock"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["docs/**", "spec/**", "README.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md", "TRADEMARKS.md", "PATENTS.md", "NOTICE"]
+path = ["docs/**", "spec/**", "README.md", "CONTRIBUTING.md", "SECURITY.md", "artifacts/**", "CHANGELOG.md", "TRADEMARKS.md", "PATENTS.md", "NOTICE"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
 SPDX-License-Identifier = "CC-BY-SA-4.0"

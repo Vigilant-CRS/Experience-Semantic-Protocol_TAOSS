@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""Run a milestone gate and write artifacts/test-reports/<M>.json (plan section 55).
+
+Usage: uv run python scripts/run_milestone.py M0
+"""
+
+from __future__ import annotations
+
+import json
+import platform
+import subprocess
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+REPORTS = ROOT / "artifacts" / "test-reports"
+
+#: Gate test selections per milestone. Every milestone also runs the full suite.
+GATES: dict[str, list[str]] = {
+    "M0": ["tests/milestone/test_m0.py"],
+    "M1": ["tests/milestone/test_m1.py"],
+    "M2": ["tests/milestone/test_m2.py"],
+    "M3": ["tests/milestone/test_m3.py"],
+}
+
+
+def git(*args: str) -> str:
+    out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True)
+    return out.stdout.strip()
+
+
+def run_pytest(selection: list[str], junit: Path) -> int:
+    cmd = [sys.executable, "-m", "pytest", "-q", f"--junitxml={junit}", *selection]
+    return subprocess.run(cmd, cwd=ROOT, check=False).returncode
+
+
+def summarize(junit: Path) -> dict[str, int]:
+    root = ET.parse(junit).getroot()  # noqa: S314 - trusted local file
+    suites = [root] if root.tag == "testsuite" else list(root)
+    totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+    for suite in suites:
+        for key in totals:
+            totals[key] += int(suite.get(key, "0"))
+    failed = totals["failures"] + totals["errors"]
+    return {
+        "passed": totals["tests"] - failed - totals["skipped"],
+        "failed": failed,
+        "skipped": totals["skipped"],
+    }
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 2 or argv[1] not in GATES:
+        print(f"usage: run_milestone.py {{{','.join(GATES)}}}")
+        return 2
+    milestone = argv[1]
+    dirty = bool(git("status", "--porcelain"))
+    with tempfile.TemporaryDirectory() as tmp:
+        gate_junit = Path(tmp) / "gate.xml"
+        full_junit = Path(tmp) / "full.xml"
+        gate_rc = run_pytest(GATES[milestone], gate_junit)
+        full_rc = run_pytest(["tests"], full_junit)
+        gate = summarize(gate_junit)
+        full = summarize(full_junit)
+
+    verdict = "PASS" if gate_rc == 0 and full_rc == 0 and gate["passed"] > 0 else "FAIL"
+    if dirty:
+        verdict = "FAIL"
+    report = {
+        "milestone": milestone,
+        "git_commit": git("rev-parse", "HEAD"),
+        "working_tree_dirty": dirty,
+        "timestamp": datetime.now(UTC).isoformat(timespec="seconds"),
+        "environment": {
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+        },
+        "command_line": " ".join(argv),
+        "tests": {"gate": gate, "full_suite": full},
+        "verdict": verdict,
+    }
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    out = REPORTS / f"{milestone}.json"
+    out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(f"{milestone}: {verdict} -> {out.relative_to(ROOT)}")
+    if dirty:
+        print("working tree is dirty: commit first; a dirty tree can never PASS")
+    return 0 if verdict == "PASS" else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
