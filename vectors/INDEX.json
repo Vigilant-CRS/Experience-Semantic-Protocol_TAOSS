@@ -3,6 +3,7 @@
     "consent/capabilities.json": "9e0a31cf20d7cadc15dbe3a6701ea7f7e1f441913c02c02f7310e7ae6be55958",
     "consent/revocation.json": "894f1b4e5c657702f5fbc5a80739a7d883966c949f8f1c14ad656c38438e7a05",
     "crypto/packet_valid.json": "3f1acf8237724bde3b021d6532a4b9bd3a4b8c60c65f7e98adff4f02bdcec81b",
+    "hive/tlvs.json": "5ab89defa02370aced2602dbae8c58bff6888179d0c8e03dc8c46b1ffb6b3cf7",
     "identity/bindings.json": "28d1d7b0d1febd760e52671e94c50be4024a5c3baafcf103adc6c250c8dc7572",
     "malformed/header_invalid.json": "b0fde7d38ea5ff28987bf8ea32434ccf03075fd86e88ffe4f2d405e81c1d6097",
     "malformed/latent_invalid.json": "882c9d34b62c75d446711fa7e425b47740ddb72b9c98644222fac56792e03081",

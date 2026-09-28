@@ -24,6 +24,7 @@ DOMAINS: Final = {
     0x24: b"esp/v1/deletion-attestation",
     0x41: b"esp/v1/key-revoked",
     0x70: b"esp/v1/hive-grant",
+    0x73: b"esp/v1/collective-intent",  # FROST group signature (ADR-0021)
     0x84: b"esp/v1/static-binding",
     0x85: b"esp/v1/session-binding",
 }

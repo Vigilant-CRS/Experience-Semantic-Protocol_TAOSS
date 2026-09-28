@@ -543,6 +543,184 @@ def xcf_vectors() -> list[dict[str, Any]]:
     return out
 
 
+def hive_vectors() -> list[dict[str, Any]]:
+    """Typed-Hive TLVs 0x70-0x73 (ADR-0021), including invalid inputs a parser must reject."""
+    from esp.codec.tlv import Tlv  # noqa: PLC0415
+    from esp.crypto.signed import sign_tlv  # noqa: PLC0415
+    from esp.hive import frost  # noqa: PLC0415
+    from esp.hive.episode import contribution_commitment  # noqa: PLC0415
+    from esp.hive.membership import identified_proof, identified_ref  # noqa: PLC0415
+    from esp.hive.tlv import (  # noqa: PLC0415
+        CollectiveIntent,
+        ExitPolicy,
+        HiveContribution,
+        HiveExit,
+        HiveGrant,
+        MembershipMode,
+        Operator,
+        PrivacyMode,
+        Rule,
+    )
+
+    master = SigningKey.from_seed(b"\x70" * 32)
+    member = SigningKey.from_seed(b"\x71" * 32)
+    episode = uuid.UUID("70707070-7070-4070-8070-707070707070")
+    base = SenderCapability(
+        uuid.UUID("71717171-7171-4171-8171-717171717171"),
+        0x000F,
+        Rights(0),
+        1000,
+        8.0,
+        2**62,
+        AudienceMode.RECIPIENT_PUBKEY,
+        member.public_bytes,
+        master.public_bytes,
+        b"\x72" * 16,
+    )
+    grant = HiveGrant(
+        capability_id=base.capability_id,
+        episode_id=episode,
+        hive_types=0x000F,
+        emergence_types=0x0001,
+        privacy_mode=PrivacyMode.SECAGG_DISTRIBUTED,
+        membership_mode=MembershipMode.IDENTIFIED,
+        lambda_max=(0.5, 0.0, 0.0, 0.25),
+        epsilon_member=(2.0, 0.5, 2.0, 2.0),
+        delta_member=float(np.float32(1e-5)),
+        op_id=(
+            Operator.COVARIANCE_INTERSECTION,
+            Operator.SOCIAL_CHOICE,
+            Operator.EMO_DP_HISTOGRAM,
+            Operator.PROVENANCE_UNION,
+        ),
+        min_group=5,
+        quorum_min=3,
+        rule_id=Rule.EXPONENTIAL_MECHANISM,
+        exit_policy=ExitPolicy.NEXT_ROUND,
+        membership_root=bytes(32),
+        valid_until_ns=2**61,
+    )
+    grant_tlv = grant.sign(master)
+    ref = identified_ref(episode, member.public_bytes)
+    x = np.array([0.5, -0.25, 0.125, 1.0])
+    opening = b"\x73" * 32
+    commitment = contribution_commitment(episode, TaossType.KNO, 1, x, opening)
+    c0 = HiveContribution(episode, ref, 1, commitment, b"")
+    contribution = HiveContribution(episode, ref, 1, commitment, identified_proof(member, c0))
+    x0 = HiveExit(episode, ref, b"")
+    exit_obj = HiveExit(episode, ref, identified_proof(member, x0))
+    # FROST group of the RFC 9591 E.1 vector (3 guardians, threshold 2), fixed nonces.
+    group, shares = frost.trusted_dealer_keygen(
+        3,
+        2,
+        int.from_bytes(
+            bytes.fromhex("7b1c33d3f5291d85de664833beb1ad469f7fb6025a0ec78b3a790c6e13a98304"),
+            "little",
+        ),
+        [
+            int.from_bytes(
+                bytes.fromhex("178199860edd8c62f5212ee91eff1295d0d670ab4ed4506866bae57e7030b204"),
+                "little",
+            )
+        ],
+    )
+    intent = CollectiveIntent(
+        episode_id=episode,
+        capsule_cid=b"\x74" * 32,
+        rule_id=Rule.EXPONENTIAL_MECHANISM,
+        epsilon_used=0.5,
+        n_contributors=5,
+        member_ref_root=b"\x75" * 32,
+        group_key_id=frost.group_key_id(group.group_public),
+    )
+    msg = intent.signing_message()
+    signers = [shares[0], shares[2]]
+    rounds = [
+        frost.commit(s, (bytes([0x76 + i]) * 32, bytes([0x78 + i]) * 32))
+        for i, s in enumerate(signers)
+    ]
+    comms = [c for _, c in rounds]
+    z = {
+        s.identifier: frost.sign(s, n, msg, comms)
+        for s, (n, _) in zip(signers, rounds, strict=True)
+    }
+    cic_tlv = intent.encode(frost.aggregate(group, comms, msg, z))
+    # invalid: a grant widening the base types (SEN not in base 0x000F), validly signed
+    wide = HiveGrant(
+        **{
+            **{f: getattr(grant, f) for f in grant.__dataclass_fields__},
+            "hive_types": 0x001F,
+            "lambda_max": (*grant.lambda_max, 0.0),
+            "epsilon_member": (*grant.epsilon_member, 0.5),
+            "op_id": (*grant.op_id, Operator.SEN_COMPOSITION),
+        }
+    )
+    # invalid: EMO lambda_max != 0 (bytes patched, re-signed, so only the rule is violated)
+    body = bytearray(grant.body())
+    emo_lambda_offset = 39 + 4 * 2  # lambda_max[EMO] is the third per-type float
+    body[emo_lambda_offset : emo_lambda_offset + 4] = struct.pack(">f", 0.25)
+    emo_mixing = sign_tlv(0x70, bytes(body), master)
+    good_c = contribution.encode().encode()
+    return [
+        {
+            "name": "hive_grant",
+            "master_seed": (b"\x70" * 32).hex(),
+            "base_capability_tlv_hex": base.sign(master).encode().hex(),
+            "tlv_hex": grant_tlv.encode().hex(),
+        },
+        {
+            "name": "hive_contribution_identified",
+            "member_seed": (b"\x71" * 32).hex(),
+            "episode_id": str(episode),
+            "member_ref": ref.hex(),
+            "type": "KNO",
+            "round": 1,
+            "state": x.tolist(),
+            "opening": opening.hex(),
+            "commitment": commitment.hex(),
+            "tlv_hex": good_c.hex(),
+        },
+        {
+            "name": "hive_exit_identified",
+            "member_seed": (b"\x71" * 32).hex(),
+            "tlv_hex": exit_obj.encode().encode().hex(),
+        },
+        {
+            "name": "collective_intent_frost",
+            "group_public_key": group.group_public.hex(),
+            "signers": [1, 3],
+            "signing_message": msg.hex(),
+            "tlv_hex": cic_tlv.encode().hex(),
+        },
+        {
+            "name": "grant_widens_base",
+            "base_capability_tlv_hex": base.sign(master).encode().hex(),
+            "tlv_hex": wide.sign(master).encode().hex(),
+            "expect_error": "widens the base capability types",
+        },
+        {
+            "name": "grant_emo_mixing",
+            "tlv_hex": emo_mixing.encode().hex(),
+            "expect_error": "EMO lambda_max must be 0",
+        },
+        {
+            "name": "contribution_truncated",
+            "tlv_hex": Tlv(0x71, good_c[5:-1]).encode().hex(),
+            "expect_error": "proof length mismatch",
+        },
+        {
+            "name": "contribution_trailing_byte",
+            "tlv_hex": Tlv(0x71, good_c[5:] + b"\x00").encode().hex(),
+            "expect_error": "proof length mismatch",
+        },
+        {
+            "name": "collective_intent_short",
+            "tlv_hex": Tlv(0x73, cic_tlv.value[:-1]).encode().hex(),
+            "expect_error": "malformed COLLECTIVE_INTENT",
+        },
+    ]
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -578,6 +756,11 @@ def documents() -> dict[Path, dict[str, Any]]:
         | {
             "spec": "ESP V13 XCF v1 (148-byte header, CID, capsule_sig); GAP-018",
             "vectors": xcf_vectors(),
+        },
+        OUT / "hive" / "tlvs.json": meta
+        | {
+            "spec": "ESP V13 Typed Hive protocol objects 0x70-0x73; ADR-0021; RFC 9591",
+            "vectors": hive_vectors(),
         },
     }
 

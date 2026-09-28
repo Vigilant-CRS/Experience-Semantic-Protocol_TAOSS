@@ -208,6 +208,12 @@ class Suite:
             for v in self.load("xcf/capsules.json"):
                 self.check("xcf", v["name"], partial(_capsule, v))
 
+    def hive(self) -> None:
+        path = self.vectors / "hive" / "tlvs.json"
+        if path.exists():
+            for v in self.load("hive/tlvs.json"):
+                self.check("hive", v["name"], partial(_hive, v))
+
     def run_all(self) -> Report:
         for category in (
             self.index,
@@ -222,6 +228,7 @@ class Suite:
             self.privacy,
             self.ontology,
             self.xcf,
+            self.hive,
         ):
             category()
         return self.report
@@ -322,6 +329,61 @@ def _capsule(v: dict[str, Any]) -> None:
     tampered = bytearray(raw)
     tampered[200] ^= 1
     _rejects(Capsule(bytes(tampered)).verify_signature)
+
+
+def _hive(v: dict[str, Any]) -> None:
+    """Typed-Hive TLVs (ADR-0021): valid objects verify; invalid ones are refused."""
+    from esp.hive.tlv import (  # noqa: PLC0415
+        CollectiveIntent,
+        HiveContribution,
+        HiveExit,
+        HiveGrant,
+        verify_collective_intent,
+        verify_grant,
+    )
+
+    (tlv,) = iter_tlvs(bytes.fromhex(v["tlv_hex"]))
+    if "expect_error" in v:
+        base = v.get("base_capability_tlv_hex")
+
+        def attempt() -> None:
+            if tlv.code == 0x70 and base is not None:
+                (b,) = iter_tlvs(bytes.fromhex(base))
+                verify_grant(tlv, SenderCapability.verify(b), now_ns=0)
+            elif tlv.code == 0x70:
+                HiveGrant.parse(tlv)
+            elif tlv.code == 0x71:
+                HiveContribution.decode(tlv)
+            else:
+                CollectiveIntent.decode(tlv)
+
+        try:
+            attempt()
+        except Exception as exc:  # any rejection counts; the reason is checked below
+            _require(v["expect_error"] in str(exc), f"rejected for another reason: {exc}")
+            return
+        raise ConformanceError("accepted an invalid hive object")
+    if tlv.code == 0x70:
+        (b,) = iter_tlvs(bytes.fromhex(v["base_capability_tlv_hex"]))
+        g = verify_grant(tlv, SenderCapability.verify(b), now_ns=0)
+        _require(
+            g.sign(SigningKey.from_seed(bytes.fromhex(v["master_seed"]))) == tlv, "re-sign differs"
+        )
+    elif tlv.code == 0x71:
+        from esp.hive.membership import verify_identified  # noqa: PLC0415
+
+        c = HiveContribution.decode(tlv)
+        _require(c.encode() == tlv, "re-encoding differs")
+        verify_identified(c, SigningKey.from_seed(bytes.fromhex(v["member_seed"])).public_bytes)
+    elif tlv.code == 0x72:
+        from esp.hive.membership import verify_identified  # noqa: PLC0415
+
+        x = HiveExit.decode(tlv)
+        _require(x.encode() == tlv, "re-encoding differs")
+        verify_identified(x, SigningKey.from_seed(bytes.fromhex(v["member_seed"])).public_bytes)
+    else:
+        cic = verify_collective_intent(tlv, bytes.fromhex(v["group_public_key"]))
+        _require(cic.signing_message().hex() == v["signing_message"], "signing message differs")
 
 
 def _rejects(fn: Callable[[], object]) -> None:
