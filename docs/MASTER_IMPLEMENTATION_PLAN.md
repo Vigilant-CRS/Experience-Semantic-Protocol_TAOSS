@@ -3023,7 +3023,7 @@ Full CI/nightly:
 
 ## WP-023 — QUIC Transport Adapter
 
-**Status:** `IMPLEMENTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

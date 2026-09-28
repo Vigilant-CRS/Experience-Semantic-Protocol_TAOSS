@@ -69,6 +69,16 @@ class NetemProxy(asyncio.DatagramProtocol):
         port: int = transport.get_extra_info("sockname")[1]
         return port
 
+    async def rebind(self) -> None:
+        """NAT rebinding: forward upstream from a new source port (QUIC migration test)."""
+        old = self._upstream
+        _, upstream = await asyncio.get_running_loop().create_datagram_endpoint(
+            lambda: _Upstream(self), remote_addr=self.server
+        )
+        self._upstream = upstream
+        if old is not None and old.transport is not None:
+            old.transport.close()
+
     def close(self) -> None:
         if self._transport is not None:
             self._transport.close()

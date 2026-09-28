@@ -113,6 +113,7 @@ class MemoryConnection:
     async def close(self) -> None:
         if not self._closed:
             self._closed = True
+            self._queue.put_nowait(None)  # wake a receive() pending on this side
             if self._peer is not None and not self._peer._closed:
                 self._peer._queue.put_nowait(None)
 

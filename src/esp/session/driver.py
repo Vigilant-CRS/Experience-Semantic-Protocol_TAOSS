@@ -68,7 +68,11 @@ async def send_frame(
         msg = "frames travel on STATE or DATAGRAM"
         raise TransportError(msg)
     packet = sender.send_frame(frame, policy, now_ns=clock())
-    await conn.send(channel, packet)
+    try:
+        await conn.send(channel, packet)
+    except ConnectionClosedError:
+        sender.abort()  # no resumption: a reconnect needs a fresh handshake
+        raise
     return packet
 
 
@@ -91,6 +95,47 @@ class Delivery:
 @dataclass(slots=True)
 class Metrics:
     deliveries: list[Delivery] = field(default_factory=list)
+    frame_bytes: int = 0
+    first_arrival_ns: int | None = None
+    last_arrival_ns: int | None = None
+    newest_frame_ns: int | None = None
+    """Sender timestamp of the newest accepted frame (for reconstruction freshness)."""
+
+    def record(self, delivery: Delivery, *, size: int, arrived_ns: int, sent_ns: int) -> None:
+        self.deliveries.append(delivery)
+        if not (delivery.result.accepted and delivery.result.frame is not None):
+            return
+        self.frame_bytes += size
+        if self.first_arrival_ns is None:
+            self.first_arrival_ns = arrived_ns
+        self.last_arrival_ns = arrived_ns
+        if self.newest_frame_ns is None or sent_ns > self.newest_frame_ns:
+            self.newest_frame_ns = sent_ns
+
+    def report(self, *, frames_sent: int, now_ns: int) -> dict[str, float]:
+        """WP-023 metrics: latency percentiles, throughput, age, loss, freshness."""
+        accepted = self.accepted_frames
+        span_s = (
+            (self.last_arrival_ns - self.first_arrival_ns) / 1e9
+            if self.first_arrival_ns is not None and self.last_arrival_ns is not None
+            else 0.0
+        )
+        ages = self.latencies_ms()
+        return {
+            "p50_latency_ms": self.percentile_ms(0.50),
+            "p95_latency_ms": self.percentile_ms(0.95),
+            "p99_latency_ms": self.percentile_ms(0.99),
+            "throughput_frames_s": accepted / span_s if span_s > 0 else math.nan,
+            "throughput_kbit_s": self.frame_bytes * 8 / 1000 / span_s if span_s > 0 else math.nan,
+            "mean_frame_age_ms": sum(ages) / len(ages) if ages else math.nan,
+            "loss": 1.0 - accepted / frames_sent if frames_sent else math.nan,
+            "freshness_ms": (
+                (now_ns - self.newest_frame_ns) / 1e6
+                if self.newest_frame_ns is not None
+                else math.nan
+            ),
+            "rejected": float(self.rejected),
+        }
 
     def latencies_ms(self) -> list[float]:
         return sorted(
@@ -131,13 +176,21 @@ class ReceiverPump:
                 arrived = self._clock()
                 result = self._receiver.receive(message.data, now_ns=arrived)
                 sent_at = _header_timestamp(message.data)
-                self.metrics.deliveries.append(
-                    Delivery(message.channel, result, max(0, arrived - sent_at))
+                self.metrics.record(
+                    Delivery(message.channel, result, max(0, arrived - sent_at)),
+                    size=len(message.data),
+                    arrived_ns=arrived,
+                    sent_ns=sent_at,
                 )
                 if result.accepted and result.frame is not None:
                     self._frames.put_nowait(result)
         except ConnectionClosedError:
+            self._receiver.abort()
             return
+
+    def report(self, *, frames_sent: int) -> dict[str, float]:
+        """Metrics report measured against this pump's clock."""
+        return self.metrics.report(frames_sent=frames_sent, now_ns=self._clock())
 
     async def next_frame(self, timeout: float = 5.0) -> ReceiveResult:
         return await asyncio.wait_for(self._frames.get(), timeout)

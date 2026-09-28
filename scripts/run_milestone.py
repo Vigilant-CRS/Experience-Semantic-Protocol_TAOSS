@@ -8,6 +8,7 @@ Usage: uv run python scripts/run_milestone.py M0
 from __future__ import annotations
 
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -48,6 +49,13 @@ GATES: dict[str, list[str]] = {
         "tests/integration/test_endpoint_dp.py",
         "tests/integration/test_endpoint.py",
     ],
+    "M4": [
+        "tests/milestone/test_m4.py",
+        "tests/integration/test_transport.py",
+        "tests/integration/test_resilience.py",
+        "tests/integration/test_metadata_protection.py",
+        "tests/unit/session",
+    ],
 }
 
 
@@ -56,9 +64,9 @@ def git(*args: str) -> str:
     return out.stdout.strip()
 
 
-def run_pytest(selection: list[str], junit: Path) -> int:
+def run_pytest(selection: list[str], junit: Path, env: dict[str, str] | None = None) -> int:
     cmd = [sys.executable, "-m", "pytest", "-q", f"--junitxml={junit}", *selection]
-    return subprocess.run(cmd, cwd=ROOT, check=False).returncode
+    return subprocess.run(cmd, cwd=ROOT, check=False, env=env).returncode
 
 
 def summarize(junit: Path) -> dict[str, int]:
@@ -85,7 +93,9 @@ def main(argv: list[str]) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         gate_junit = Path(tmp) / "gate.xml"
         full_junit = Path(tmp) / "full.xml"
-        gate_rc = run_pytest(GATES[milestone], gate_junit)
+        gate_rc = run_pytest(GATES[milestone], gate_junit, os.environ | {"ESP_REPORT_DIR": tmp})
+        metrics_file = Path(tmp) / f"{milestone}-metrics.json"
+        metrics = json.loads(metrics_file.read_text()) if metrics_file.exists() else None
         full_rc = run_pytest(["tests"], full_junit)
         gate = summarize(gate_junit)
         full = summarize(full_junit)
@@ -105,6 +115,7 @@ def main(argv: list[str]) -> int:
         },
         "command_line": " ".join(argv),
         "tests": {"gate": gate, "full_suite": full},
+        **({"metrics": metrics} if metrics is not None else {}),
         "verdict": verdict,
     }
     REPORTS.mkdir(parents=True, exist_ok=True)

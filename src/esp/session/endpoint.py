@@ -371,6 +371,10 @@ class SenderEndpoint:
         self._machine.advance(SessionState.CLOSED)
         return packet
 
+    def abort(self) -> None:
+        """Transport lost: V13 mandates a fresh handshake after state loss (no resumption)."""
+        self._machine.close()
+
     def _rights_flags(self) -> int:
         flags = 0
         if not self._capability.rights & Rights.ALLOW_REPLAY:
@@ -547,6 +551,9 @@ class ReceiverEndpoint:
             peer_pk = verify_session_binding(binding, noise_h=noise.noise_h)
             cap = SenderCapability.verify(cap_tlv)
             self._check_issuer(cap)
+            if cap.capability_id.bytes in self.revocations.revoked_capabilities:
+                msg = "sender capability was revoked; a new consent grant is required"
+                raise CryptoError(msg)
             profile = _session_profile(negotiated)
             _check_profile_consentable(profile, frozenset(cap.types), policy.accept_types)
             self._auditor = DpAuditor(ceiling=cap.dp_epsilon_ceiling)
@@ -571,6 +578,10 @@ class ReceiverEndpoint:
         except EspError:
             self._machine.close()
             raise
+
+    def abort(self) -> None:
+        """Transport lost: this session ends; a reconnect is a new handshake."""
+        self._machine.close()
 
     def notify_key_compromised(self, master_pk: bytes) -> bool:
         """Terminate immediately if this session's authority roots in ``master_pk`` (V13 9.6)."""
