@@ -214,14 +214,23 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M4 | QUIC transport, impaired-network grid, migration, reconnect, SF profiles, turn tokens/SOS/PANIC, **metadata protection** | ✅ PASS |
 | M5 | BCI-free demo (two processes), decoder layer, receiver threats T13–T19, **EU AI Act Art. 5(1)(f) guard**, interactive inspector | ✅ PASS |
 | M6 | Physiology without hardware: BrainFlow, LSL, XDF/EDF/BDF/BrainVision/WFDB/Empatica readers, features, calibration, 30-min soak | ✅ PASS |
-| M7–M10 | Multimodal estimation (L2-gated), trainable TAOSS encoder, leakage & audit suite, ExperienceBench, independent Rust implementation | 🛠 in progress |
-| M11–M17 | Performance & security candidate, release 1.0, machine & agent governance, experience capsules (XCF), Typed Hive, horizon interfaces | 📋 planned |
+| M7 | Multimodal estimation: per-source claims, calibrated confidence, conflicts kept visible; subject-side inference only behind the **L2 gate** | ✅ PASS |
+| M8 | Trainable TAOSS encoder (PyTorch, CPU): typed heads, adversarial + covariance penalties, bitwise-reproducible resume, leakage harness | ✅ PASS |
+| M9 | Audit suite (KSG/MINE/HSIC/dCor, V-information ladder, red-team steganography) and ExperienceBench (9 task families, H1–H3 evaluators, preregistration guard) | ✅ PASS |
+| M10 | **Independent Rust implementation** (`rust/esp-rs`): same vectors, live interop matrix Python⇄Rust, conformance CLI | ✅ PASS |
+| M11 | Performance benchmark, security review (dependency audit, 1 M-input fuzz, threat model T1–T19), failure-mode regressions | ✅ PASS |
+| M12 | Release candidate 1.0: guides with executed examples ✅, frozen vectors; still needs maintainer ADR decisions and the human legal/threat review | 🧑‍⚖️ waiting for humans |
+| M13 | Machine Experience Bridge (machines never authorize EMO) and ESP-Agent profile for LLM agents | 🛠 in progress |
+| M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
+| M15 | Typed Hive: consented collective episodes, EMO never mixed, quorum threshold signatures | 🛠 in progress |
+| M16 | Horizon interfaces: neural adapter contract, legacy profile, post-quantum declaration | 🛠 in progress |
+| M17 | Final coverage matrix and errata for V13.1 | 📋 planned |
 
 ---
 
 ## 5. Test results
 
-The full suite has more than 600 automated tests: unit, property-based (Hypothesis), conformance
+The full suite has almost 800 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
 Security rules are **mutation-checked**: each rule is deliberately broken once, and a test must
 fail.
@@ -279,6 +288,67 @@ Sender and receiver run as separate programs over QUIC:
 Open datasets are downloaded by [`scripts/fetch_datasets.py`](scripts/fetch_datasets.py) into a
 git-ignored folder with license and checksum manifests. They are never committed. See
 [`datasets/registry.json`](datasets/registry.json).
+
+### Estimation, training and audits (M7–M9)
+
+- **Estimation (M7):** every source (self-report, text, voice, physiology, context) produces its
+  own claim with provenance. A self-report is never overwritten. Disagreement is reported, not
+  averaged away. Without profile L2, consent and a valid regulatory declaration, the estimator
+  outputs only neutral activation features.
+- **Training (M8):** the TAOSS encoder trains deterministically on CPU. Resuming from a
+  checkpoint continues **bit for bit** identically. The gate found and fixed a real bug in which
+  data order depended on JSON key order.
+- **Audits (M9):** a red-team sender that hides emotion inside the "knowledge" part is
+  **detected**. ExperienceBench runs all nine V13 task families on smoke data. Its results are
+  labelled *exploratory* and are not evidence for H1–H3.
+
+### Two independent implementations (M10)
+
+The Rust implementation was written from the specification alone and shares no serialization
+code with Python. Both implementations pass the same golden vectors and talk to each other live:
+
+| Sender → Receiver | Handshake | Consent + packets | Revocation honoured | Untrusted issuer refused |
+|---|:-:|:-:|:-:|:-:|
+| Python → Python | ✅ | ✅ | ✅ | ✅ |
+| Python → Rust | ✅ | ✅ | ✅ | ✅ |
+| Rust → Python | ✅ | ✅ | ✅ | ✅ |
+| Rust → Rust | ✅ | ✅ | ✅ | – (not tested separately) |
+
+A packet sealed by Python opens in Rust and **reseals byte-identically**. Packets sealed by Rust
+are opened and accepted by the Python receiver.
+
+### Performance (M11 gate, 300 frames per profile, one laptop core)
+
+| Profile | Types | Encoding | Bytes per frame (= V13 arithmetic) | Verify + decrypt p50 | kbit/s at 25 Hz |
+|---|---|---|---:|---:|---:|
+| SF0 | KNO | float32 | 1153 | 0.12 ms | 231 |
+| SF0 | KNO | int8 | 433 | 0.12 ms | 87 |
+| SF3 | KNO INT CTX TEM | float32 | 1768 | 0.12 ms | 354 |
+| SF3 | KNO INT CTX TEM | int8 | 616 | 0.11 ms | 123 |
+| SF7 | all six | float32 | 2306 | 0.12 ms | 461 |
+| SF7 | all six | int8 | 770 | 0.12 ms | 154 |
+
+The wire size matches the V13 rate formula **exactly** in every profile. A full send plus
+quarantined receive takes 3–5 ms (p50) in pure Python. That is far above the 10–50 Hz that
+experience frames need.
+
+### Security review (M11 gate)
+
+- `pip-audit` and `cargo-deny`: no known vulnerabilities.
+- 1,000,000 fuzzed parser inputs: no crash, no hang and no unexpected exception.
+- 121 security-marked invariant tests pass.
+- Secret scan and unsafe-pattern scan are clean.
+- Every one of the 19 threats (T1–T19) in the [threat model](docs/THREAT_MODEL.md) is mapped to
+  a mitigation and a test.
+- The manual review by a human is still **pending**. This is a hard gate for 1.0.
+
+### Experience capsules (M14)
+
+An experience can be stored as a signed, encrypted **capsule** (XCF v1) and recalled later
+under a fresh consent check. Access to a capsule can be gated by a guardian quorum. A signed
+tombstone blocks any future release. A "no replay" flag anywhere in the capsule's history blocks
+recall. Each recall also reports a **trust vector** (signature, anchor age, drift, privacy
+budget, lineage) instead of a single opaque score.
 
 ---
 
@@ -392,7 +462,8 @@ Golden vectors in [`vectors/`](vectors/) (CC BY 4.0) cover:
 - headers, latents and malformed inputs;
 - packets, sessions and capabilities;
 - revocation and identity bindings;
-- replay windows and DP accounting.
+- replay windows and DP accounting;
+- experience capsules (XCF).
 
 An independent Rust implementation (`rust/esp-rs`, M10) is checked against the same vectors
 and live against the Python peer.
