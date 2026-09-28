@@ -2568,7 +2568,7 @@ A != B
 
 ## WP-005 — Semantic Bindings
 
-**Status:** `NOT_STARTED`
+**Status:** `IMPLEMENTED`
 
 ### Implementieren
 
@@ -2595,7 +2595,7 @@ Protokollobjekt erhalten.
 
 ## WP-006 — Calibration Model
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

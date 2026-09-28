@@ -15,6 +15,8 @@ both agree.
 | WP-002 | VERIFIED | `tests/unit/observation/test_observation.py` (unit conversions incl. offsets, invalid values, dropout, missing clock, per-stream ordering, offset-uncertainty propagation, semantic neutrality) |
 | WP-003 | VERIFIED | `tests/unit/semantics/test_evidence_claim.py` (golden: fear intensity 0.9 + confidence 0.4 lossless; no inference without provenance; confidence/probability independent of intensity; self report is own source) |
 | WP-004 | VERIFIED | `tests/unit/semantics/test_affect_model.py` (critical: same mix / different absolute intensity stays distinct; mixed emotions without sum rule; V13 V/A/I + declared dimensions; affect_scope rules; readiness != commitment; self reports; episodes/traces) |
+| WP-005 | IMPLEMENTED | `tests/unit/semantics/test_bindings.py` (default deny; share fear without cause; oracle property). Offen: Protokollobjekt-Test auf Frame-Ebene (WP-011) |
+| WP-006 | VERIFIED | `tests/unit/calibration/test_calibration.py` (versioning, baseline updates, expired calibration, deterministic feature transform, same raw value/different baseline) |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones
