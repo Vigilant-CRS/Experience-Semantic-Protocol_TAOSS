@@ -40,3 +40,23 @@ session `TLV_IDENTITY_PROOF` (0x20), unchanged from V13.
 
 `sender_id` values of two sessions are unlinkable. A session binding
 replayed into another handshake fails because `noise_h` differs.
+
+## Amendment 2026-09-28 (GAP-025): where bindings travel
+
+Objects that sign the *final* Noise handshake hash (`SESSION_BINDING`,
+`ReceiverCapability` with `noise_h`, `TLV_IDENTITY_PROOF`) cannot be sent
+inside the handshake messages: the final hash covers those messages. They
+therefore travel in the **first Noise transport message of each side**,
+immediately after the handshake and before any ESP application packet:
+
+1. I → R handshake msg 1: initiator session descriptor
+2. R → I handshake msg 2: responder session descriptor
+3. R → I first transport msg: `SESSION_BINDING`, `ReceiverCapability`
+   (optionally `STATIC_KEY_BINDING`)
+4. I → R first transport msg: `SESSION_BINDING`, `TLV_SENDER_CAPABILITY`,
+   optional `TLV_IDENTITY_PROOF`
+5. ESP application packets
+
+This keeps V13's intent: the initiator learns the receiver capability
+before sending any typed latents. The V13 wording "embeds it in their first
+response payload" is recorded as an errata item (WP-085).

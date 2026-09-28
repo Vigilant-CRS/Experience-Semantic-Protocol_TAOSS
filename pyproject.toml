@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "cryptography>=43",
+    "noiseprotocol>=0.3.1",
     "numpy>=2.0",
     "pydantic>=2.9",
     "pyyaml>=6.0.2",
@@ -95,3 +96,7 @@ strict = true
 warn_unreachable = true
 mypy_path = "src"
 packages = ["esp"]
+
+[[tool.mypy.overrides]]
+module = ["noise", "noise.*"]
+ignore_missing_imports = true

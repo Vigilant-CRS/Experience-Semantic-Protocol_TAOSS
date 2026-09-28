@@ -2332,6 +2332,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-022 | Decoder-Referenz-Companion „planned“: keine Referenzarchitektur, aber Pflichten (⊥-Handling, Policy pro Typ). | §Decoder | mittel | CS-DECODER + Referenz-Renderer (Text, Vektor, Visualisierung). | WP-059 | OPEN |
 | GAP-023 | ExperienceBench-Korpora: V13 nennt Aufgaben, aber keine Datensätze/Lizenzen. | §ExperienceBench | hoch (für H1–H3) | Datensatz-Register mit Lizenzprüfung; Smoke-Korpus synthetisch; echte Korpora nur mit geklärter Lizenz. ADR-0024 | WP-034 … WP-037, WP-083 | OPEN |
 | GAP-024 | Hybrid-PQ-Profil: V13 verlangt Deklaration classical-only vs. hybrid, aber kein Feld. | §Crypto PQ | niedrig | Session-Descriptor-Feld `pq_mode ∈ {CLASSICAL_ONLY, HYBRID_OUTER, HYBRID_NOISE}`; v1 = CLASSICAL_ONLY, nie als PQ beworben. | WP-048, WP-075 | OPEN |
+| GAP-025 | V13 §7.6 sagt, die ReceiverCapability stehe im ersten Responder-Handshake-Payload, bindet sie aber an `noise_h`. Der finale Transkript-Hash deckt genau dieses Payload ab (zirkulär). Gleiches gilt für Identity Proof und Session-Binding. | §7.6, §9.4 | hoch | ADR-0013 Amendment: Übertragung in der jeweils ersten Noise-Transportnachricht nach dem Handshake, vor jedem ESP-Anwendungspaket | WP-018, WP-051, WP-052 | RESOLVED |
 
 ---
 
@@ -2854,7 +2855,7 @@ V13 Typcodes und Control TLVs.
 
 ## WP-016 — Cryptographic Envelope
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -5040,7 +5041,7 @@ psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
 open_gaps: 12        # GAP-007, 012, 014–020, 022–024
-resolved_gaps: 12    # GAP-001–006, 008–011, 013, 021 (ADRs accepted 2026-09-28)
+resolved_gaps: 13    # GAP-001–006, 008–011, 013, 021, 025
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"
 independent_implementation_status: "NOT_STARTED"

@@ -22,6 +22,9 @@ import numpy as np
 from esp.codec.header import HEADER_LEN, ConsentFlags, Header, PrivacyFlags, float32
 from esp.codec.tlv import LatentEncoding, encode_tlv, encode_typed_latent
 from esp.core.taoss_types import TaossType
+from esp.crypto.envelope import seal_packet
+from esp.crypto.keys import DirectionKeys, deterministic_nonce, timeline_tag
+from esp.crypto.primitives import SigningKey
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "vectors"
@@ -221,6 +224,44 @@ def invalid_latent_vectors() -> list[dict[str, Any]]:
     return [{"name": n, "hex": b.hex(), "expect_error": e} for n, b, e in cases]
 
 
+def crypto_packet_vectors() -> list[dict[str, Any]]:
+    """ESP packet with fixed keys; every intermediate value is exposed (ADR-0009/0010)."""
+    k_split = bytes(range(32))
+    seed = bytes(32)
+    keys = DirectionKeys.from_split_key(k_split)
+    signer = SigningKey.from_seed(seed)
+    seq = 7
+    plaintext = b"abc"
+    header = base(
+        sf_level=2,
+        types_bitmap=0x000B,
+        consent_flags=ConsentFlags.EMO_MASKED,
+        segment_seq=seq,
+        dt_ms=40,
+        phase=0.5,
+        sender_id=signer.public_bytes,
+        nonce=deterministic_nonce(keys, TIMELINE, seq),
+    )
+    packet = seal_packet(header, plaintext, keys, signer)
+    return [
+        {
+            "name": "deterministic_nonce_packet",
+            "k_split": k_split.hex(),
+            "k_aead": keys.aead.hex(),
+            "k_nonce": keys.nonce.hex(),
+            "timeline_id": str(TIMELINE),
+            "timeline_tag": timeline_tag(keys, TIMELINE).hex(),
+            "segment_seq": seq,
+            "nonce": header.nonce.hex(),
+            "ed25519_seed": seed.hex(),
+            "sender_id": signer.public_bytes.hex(),
+            "plaintext": plaintext.hex(),
+            "packet_hex": packet.hex(),
+            "packet_len": len(packet),
+        }
+    ]
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -235,6 +276,11 @@ def documents() -> dict[Path, dict[str, Any]]:
         | {"spec": "ESP V13 section 8.4", "vectors": valid_latent_vectors()},
         OUT / "malformed" / "latent_invalid.json": meta
         | {"spec": "ESP V13 section 8.4", "vectors": invalid_latent_vectors()},
+        OUT / "crypto" / "packet_valid.json": meta
+        | {
+            "spec": "ESP V13 section 9.2; ADR-0009, ADR-0010",
+            "vectors": crypto_packet_vectors(),
+        },
     }
 
 
