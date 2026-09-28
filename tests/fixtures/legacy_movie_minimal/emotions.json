@@ -1,0 +1,12 @@
+{
+  "_version": "v9.9.9",
+  "_description": "Synthetic test fixture in the legacy format (not the real ontology).",
+  "_count": 5,
+  "_normalization": "L1 (weights sum to 1.0 within emotion_sparse together with wirkung tags)",
+  "families": {
+    "joy": ["joy", "contentment"],
+    "fear": ["fear", "dread"],
+    "darkness": ["despair"]
+  },
+  "tags": ["joy", "contentment", "fear", "dread", "despair"]
+}

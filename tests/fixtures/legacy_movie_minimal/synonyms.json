@@ -1,0 +1,9 @@
+{
+  "_version": "v9.9.9",
+  "_decay_factor": 0.7,
+  "groups": {
+    "joy": ["gladness", "Happy Mood", "shared-word"],
+    "fear": ["fright", "shared-word", "dread", "bad!chars"],
+    "uplifting": ["heartening"]
+  }
+}

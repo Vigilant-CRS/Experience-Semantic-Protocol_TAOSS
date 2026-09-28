@@ -27,3 +27,9 @@ path = ["vectors/**", "schemas/**"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["tests/fixtures/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

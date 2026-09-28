@@ -20,6 +20,7 @@ both agree.
 | WP-007 | VERIFIED | `tests/unit/taoss/test_blocks.py` (V13 offsets; P_s P_t = 0, sum P_t = I, idempotent — exact; compose(split(x)) == x bit-exact via Hypothesis; no silent zero-fill for absent types) |
 | WP-008 | VERIFIED | `tests/unit/ontology/test_registry.py` (duplicate ids rejected; semantic mutation requires new major version; deterministic, order-independent digest; deprecated anchors resolvable; aliases only grow; realizations per encoder with correct dimension) |
 | WP-009 | VERIFIED | `tests/unit/ontology/test_basic8.py` (exactly eight canonical ids; stable V13 order; registry digest fixed by `vectors/ontology/esp-emo-v13-basic8-v1.registry.blake2b256`) |
+| WP-010 | VERIFIED | `tests/unit/adapters/test_legacy_movie.py` (synthetic fixture: all tags resolve, reproducible mapping, retrieval L1-normalization isolated, malformed sources rejected). Real-data test ran locally on 2026-09-28 against legacy `config/ontology_v3` v3.0.0 with `ESP_LEGACY_MOVIE_ONTOLOGY=…`: 30 anchors, 151 aliases, 5 synonyms dropped with reasons; skipped in CI because the legacy ontology is proprietary |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones

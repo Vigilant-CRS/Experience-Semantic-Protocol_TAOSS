@@ -2695,7 +2695,7 @@ innerhalb numerischer Toleranz.
 
 ## WP-010 — Legacy Movie Ontology Adapter
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Quelle
 
