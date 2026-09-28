@@ -65,3 +65,14 @@ class EspModel(BaseModel):
     def from_json(cls, data: str | bytes) -> Self:
         """Strictly parse an object from JSON."""
         return cls.model_validate_json(data)
+
+    @classmethod
+    def from_data(cls, data: Any) -> Self:  # noqa: ANN401 - any JSON-compatible value
+        """Strictly parse external, JSON-compatible data (e.g. loaded YAML).
+
+        Goes through JSON so that external data gets JSON strictness:
+        enum values as strings and lists for tuples are accepted, but no
+        lossy coercion (``"0.5"`` is still not a float). Python callers
+        constructing objects directly should pass typed values instead.
+        """
+        return cls.model_validate_json(canonical_json_bytes(data))

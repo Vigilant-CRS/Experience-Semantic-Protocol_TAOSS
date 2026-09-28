@@ -131,3 +131,15 @@ def test_error_codes_are_unique_and_formatted() -> None:
     err = EspValidationError("bad", code=ErrorCode.RANGE)
     assert isinstance(err, EspError)
     assert str(err) == "[RANGE 0x0101] bad"
+
+
+def test_from_data_uses_json_strictness() -> None:
+    p = Provenance.from_data({"source_kind": "self_report", "source_refs": ["a", "b"]})
+    assert p.source_kind is SourceKind.SELF_REPORT
+    assert p.source_refs == ("a", "b")
+    with pytest.raises(ValidationError):
+        ClockStamp.from_data(
+            {"source_ns": "1", "monotonic_ns": 1, "clock_domain": "d", "sequence": 0}
+        )
+    with pytest.raises(ValueError, match="not JSON compliant"):
+        ClockStamp.from_data({"source_ns": float("nan")})

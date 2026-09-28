@@ -2502,7 +2502,7 @@ Mindestens 10.000 generierte gültige und ungültige Objekte.
 
 ## WP-003 — Evidence Claim Model
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -2526,7 +2526,7 @@ muss verlustfrei roundtrippen.
 
 ## WP-004 — Psychological Semantic Model
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
