@@ -2395,7 +2395,7 @@ referenziert.
 
 ## WP-000 — Repository Bootstrap
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Ziel
 
@@ -4119,7 +4119,7 @@ vs. adversarial-only vs. beides, Pseudonyme an/aus.
 
 ## WP-076 — Lizenz- und Governance-Infrastruktur
 
-**Status:** `NOT_STARTED` · **Gehört zu:** M0
+**Status:** `IN_PROGRESS` · **Gehört zu:** M0
 
 ### Implementieren
 
@@ -5016,9 +5016,9 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M0
-next_work_package: WP-000
-overall_status: NOT_STARTED
+current_milestone: M1
+next_work_package: WP-001
+overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
 wire_version: "1.0"
