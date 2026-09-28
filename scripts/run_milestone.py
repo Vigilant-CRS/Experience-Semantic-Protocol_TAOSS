@@ -95,6 +95,12 @@ GATES: dict[str, list[str]] = {
         "tests/unit/session/test_pq.py",
         "tests/unit/session/test_descriptor.py",
     ],
+    "M12": [
+        "tests/milestone/test_m12.py",
+        "tests/unit/test_docs_examples.py",
+        "tests/conformance",
+        "tests/interop",
+    ],
     "M5": [
         "tests/milestone/test_m5.py",
         "tests/unit/demo",
@@ -109,6 +115,7 @@ GATES: dict[str, list[str]] = {
 GATE_ENV: dict[str, dict[str, str]] = {
     "M6": {"ESP_SOAK_SECONDS": "1800"},
     "M11": {"ESP_FUZZ_ITERATIONS": "1000000", "ESP_PERF_FRAMES": "300"},
+    "M12": {"ESP_RELEASE_GATE": "1"},
 }
 
 

@@ -3531,7 +3531,7 @@ Keine invasive Hardware erforderlich.
 
 ## WP-047 — Release Candidate
 
-**Status:** `NOT_STARTED`
+**Status:** `BLOCKED` · technisch vollständig (Vektoren eingefroren `vectors/FROZEN-1.0.0.json`, M12-Gate `tests/milestone/test_m12.py`); wartet auf menschliche Freigaben in `docs/release/RELEASE_1.0.md` (WP-084, Threat-Review, ADR-0014/0023/0026/0027)
 
 ### Kriterien
 
