@@ -41,7 +41,7 @@ CAP_ID = uuid.UUID("21212121-2121-4121-8121-212121212121")
 
 
 def descriptor(**kw: object) -> SessionDescriptor:
-    return SessionDescriptor(**({"profile": 1, "sf_level": 7, "registries": REGISTRIES} | kw))  # type: ignore[arg-type]
+    return SessionDescriptor(**({"profile": 1, "sf_level": 0, "registries": REGISTRIES} | kw))  # type: ignore[arg-type]
 
 
 def sender_capability(types: int = 0x3F, **kw: object) -> SenderCapability:
@@ -60,46 +60,58 @@ def sender_capability(types: int = 0x3F, **kw: object) -> SenderCapability:
     return SenderCapability(**(fields | kw))  # type: ignore[arg-type]
 
 
-def receiver_capability(noise_h: bytes) -> ReceiverCapability:
-    return ReceiverCapability(
-        accept_types=0x0F,
-        max_norm=(1e3, 1e3, 1e3, 1e3),
-        valence_bounds=(-1.0, 1.0),
-        rate_limit_hz=1000,
-        valid_from_ns=0,
-        valid_until_ns=NOW + 3600 * 10**9,
-        nonce=b"\x08" * 16,
-        pk_receiver=RECEIVER_ID.public_bytes,
-        noise_h=noise_h,
-    )
+def receiver_capability_for(types: int = 0x3F):  # type: ignore[no-untyped-def]
+    """Factory for a receiver capability accepting ``types`` (valence bounds iff EMO)."""
+    n = bin(types).count("1")
+
+    def factory(noise_h: bytes) -> ReceiverCapability:
+        return ReceiverCapability(
+            accept_types=types,
+            max_norm=(1e3,) * n,
+            valence_bounds=(-1.0, 1.0) if types & T.EMO.bit else None,
+            rate_limit_hz=1000,
+            valid_from_ns=0,
+            valid_until_ns=NOW + 3600 * 10**9,
+            nonce=b"\x08" * 16,
+            pk_receiver=RECEIVER_ID.public_bytes,
+            noise_h=noise_h,
+        )
+
+    return factory
+
+
+receiver_capability = receiver_capability_for(0x3F)
 
 
 def pair(
     tmp_path: Path,
     *,
-    receiver_cap: bool = True,
+    sf: int = 0,
+    receiver_types: int | None = 0x3F,
     cap: SenderCapability | None = None,
     trusted: frozenset[bytes] | None = None,
     r_desc: SessionDescriptor | None = None,
+    wire: WireOptions = WIRE,
 ):  # type: ignore[no-untyped-def]
+    """Sender/receiver pair; ``receiver_types=None`` means no receiver capability (default deny)."""
     r_static = StaticKeyPair.generate()
     sender = SenderEndpoint(
         master=MASTER,
         static=StaticKeyPair.generate(),
         responder_static=r_static.public_bytes,
         receiver_identity=RECEIVER_ID.public_bytes,
-        descriptor=descriptor(),
+        descriptor=descriptor(sf_level=sf),
         capability=cap or sender_capability(),
         state_dir=tmp_path,
-        wire=WIRE,
+        wire=wire,
     )
     receiver = ReceiverEndpoint(
         identity=RECEIVER_ID,
         static=r_static,
-        descriptor=r_desc or descriptor(),
-        capability=receiver_capability if receiver_cap else None,
+        descriptor=r_desc or descriptor(sf_level=sf),
+        capability=None if receiver_types is None else receiver_capability_for(receiver_types),
         trusted_issuers=trusted if trusted is not None else frozenset({MASTER.public_bytes}),
-        wire=WIRE,
+        wire=wire,
     )
     return sender, receiver
 
@@ -123,18 +135,45 @@ def test_establishment_reaches_active_with_matching_transcripts(tmp_path: Path) 
     assert list(tmp_path.glob("seq-*.json"))  # sequence state persisted
 
 
-def test_types_limited_to_sender_and_receiver_consent(tmp_path: Path) -> None:
-    s, r = pair(tmp_path)
+def test_receiver_consent_masks_emo_within_sf6(tmp_path: Path) -> None:
+    s, r = pair(tmp_path, sf=6, receiver_types=0x3B)  # receiver accepts everything except EMO
     establish(s, r)
     result = r.receive(s.send_frame(full_anchor_frame(), ALL, now_ns=NOW), now_ns=NOW)
-    assert result.accepted
+    assert result.accepted, result.violations
     assert result.frame is not None
-    assert result.frame.present_types == (T.KNO, T.INT, T.EMO, T.CTX)  # SEN/TEM not accepted by R
-    assert set(result.frame.masked_types) == {T.SEN, T.TEM}
+    assert result.frame.present_types == (T.KNO, T.INT, T.CTX, T.SEN, T.TEM)
+    assert result.frame.masked_types == (T.EMO,)
+
+
+def test_sf6_with_emo_consent_carries_emo(tmp_path: Path) -> None:
+    s, r = pair(tmp_path, sf=6)
+    establish(s, r)
+    result = r.receive(s.send_frame(full_anchor_frame(), ALL, now_ns=NOW), now_ns=NOW)
+    assert result.frame is not None
+    assert result.frame.present_types == tuple(TaossType)
+
+
+def test_profile_requires_consentable_types(tmp_path: Path) -> None:
+    s, r = pair(tmp_path, sf=7, receiver_types=0x3B)  # SF7 needs EMO, receiver refuses it
+    with pytest.raises(CryptoError, match="SF7 requires"):
+        establish(s, r)
+    assert r.state is SessionState.CLOSED or s.state is SessionState.CLOSED
+
+
+def test_sender_refuses_frames_violating_the_profile(tmp_path: Path) -> None:
+    from esp.codec.errors import WireError  # noqa: PLC0415
+
+    s, r = pair(tmp_path, sf=2)
+    establish(s, r)
+    with pytest.raises(WireError, match="required types missing"):
+        s.send_frame(
+            full_anchor_frame(), DisclosurePolicy(allowed_types=(T.KNO, T.CTX)), now_ns=NOW
+        )
+    assert r.decoder_invocations == 0
 
 
 def test_emo_masked_end_to_end(tmp_path: Path) -> None:
-    s, r = pair(tmp_path)
+    s, r = pair(tmp_path, sf=2)
     establish(s, r)
     packet = s.send_frame(
         full_anchor_frame(), DisclosurePolicy(allowed_types=(T.KNO, T.INT, T.CTX)), now_ns=NOW
@@ -151,7 +190,7 @@ def test_emo_masked_end_to_end(tmp_path: Path) -> None:
 
 
 def test_default_deny_receiver_gets_only_kno_ctx(tmp_path: Path) -> None:
-    s, r = pair(tmp_path, receiver_cap=False)
+    s, r = pair(tmp_path, sf=1, receiver_types=None)
     establish(s, r)
     result = r.receive(s.send_frame(full_anchor_frame(), ALL, now_ns=NOW), now_ns=NOW)
     assert result.frame is not None
@@ -159,7 +198,7 @@ def test_default_deny_receiver_gets_only_kno_ctx(tmp_path: Path) -> None:
 
 
 def test_rejected_packets_never_reach_the_decoder(tmp_path: Path) -> None:
-    s, r = pair(tmp_path, cap=sender_capability(types=0x09))  # sender consents to KNO+CTX only
+    s, r = pair(tmp_path, sf=6, cap=sender_capability(types=0x3B))  # sender: everything but EMO
     establish(s, r)
     # A misbehaving sender bypasses its own policy and pushes EMO anyway.
     s._capability = sender_capability(types=0x3F)
@@ -168,9 +207,8 @@ def test_rejected_packets_never_reach_the_decoder(tmp_path: Path) -> None:
     assert not result.accepted
     assert any(v.startswith("3:types not permitted") for v in result.violations)
     assert r.decoder_invocations == 0
-    tampered = bytearray(
-        s.send_frame(full_anchor_frame(), DisclosurePolicy(allowed_types=(T.KNO,)), now_ns=NOW)
-    )
+    s._capability = sender_capability(types=0x3B)
+    tampered = bytearray(s.send_frame(full_anchor_frame(), ALL, now_ns=NOW))
     tampered[-70] ^= 1
     assert not r.receive(bytes(tampered), now_ns=NOW).accepted
     assert r.decoder_invocations == 0
@@ -244,7 +282,7 @@ def test_untrusted_issuer_and_profile_mismatch_fail_closed(tmp_path: Path) -> No
     with pytest.raises(CryptoError, match="not trusted"):
         establish(s, r)
     assert r.state is SessionState.CLOSED
-    s2, r2 = pair(tmp_path / "b", r_desc=descriptor(sf_level=6))
+    s2, r2 = pair(tmp_path / "b", r_desc=descriptor(sf_level=1))
     (tmp_path / "b").mkdir()
     with pytest.raises(NegotiationError):
         establish(s2, r2)
@@ -290,18 +328,14 @@ def test_state_machine_never_allows_data_outside_active(events: list[SessionStat
         assert history[-1] is SessionState.CLOSED
 
 
-def test_dataclass_replace_does_not_bypass_capability_signature(tmp_path: Path) -> None:
+def test_locally_widened_capability_does_not_bypass_verification(tmp_path: Path) -> None:
     """A capability widened after signing is not what the receiver verified."""
-    s, r = pair(tmp_path, cap=sender_capability(types=0x01))
+    s, r = pair(tmp_path, sf=6, cap=sender_capability(types=0x3B))
     establish(s, r)
-    widened = dataclasses.replace(sender_capability(types=0x01), types_allowed=0x3F)
-    assert widened.types_allowed == 0x3F
-    s._capability = widened
-    res = r.receive(
-        s.send_frame(full_anchor_frame(), DisclosurePolicy(allowed_types=(T.CTX,)), now_ns=NOW),
-        now_ns=NOW,
-    )
-    assert not res.accepted  # the receiver enforces the capability it verified (KNO only)
+    s._capability = dataclasses.replace(sender_capability(types=0x3B), types_allowed=0x3F)
+    res = r.receive(s.send_frame(full_anchor_frame(), ALL, now_ns=NOW), now_ns=NOW)
+    assert not res.accepted  # the receiver enforces the capability it verified (no EMO)
+    assert any(v.startswith("3:types not permitted: EMO") for v in res.violations)
 
 
 def test_compromised_master_key_terminates_live_sessions(tmp_path: Path) -> None:

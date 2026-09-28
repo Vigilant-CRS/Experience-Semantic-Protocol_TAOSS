@@ -3,16 +3,19 @@
 """WP-055 end to end: runtime DP through sender and receiver endpoints."""
 
 import math
+import uuid
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from esp.codec.header import DpLevel
+from esp.core.provenance import Provenance, SourceKind
 from esp.core.taoss_types import TaossType
 from esp.crypto.noise_ik import StaticKeyPair
 from esp.frame.model import DisclosurePolicy, ExperienceFrame, TypeBlock
 from esp.privacy.dp import REFERENCE_PROFILES, DpConfig, PrivacyBudgetError, PrivacyLedger
+from esp.semantics.bindings import BindingPolicy, RelationClass, SemanticBinding, TypedEndpoint
 from esp.session.endpoint import ReceiverEndpoint, SenderEndpoint
 from tests.integration.test_endpoint import (
     MASTER,
@@ -52,7 +55,7 @@ def dp_pair(tmp_path: Path, *, ceiling: float = 8.0, dp: bool = True):  # type: 
         static=StaticKeyPair.generate(),
         responder_static=r_static.public_bytes,
         receiver_identity=RECEIVER_ID.public_bytes,
-        descriptor=descriptor(dp_level=1),
+        descriptor=descriptor(dp_level=1, sf_level=1),
         capability=cap,
         state_dir=tmp_path,
         wire=WIRE,
@@ -61,7 +64,7 @@ def dp_pair(tmp_path: Path, *, ceiling: float = 8.0, dp: bool = True):  # type: 
     receiver = ReceiverEndpoint(
         identity=RECEIVER_ID,
         static=r_static,
-        descriptor=descriptor(dp_level=1),
+        descriptor=descriptor(dp_level=1, sf_level=1),
         capability=receiver_capability,
         trusted_issuers=frozenset({MASTER.public_bytes}),
         wire=WIRE,
@@ -95,10 +98,22 @@ def test_retransmission_does_not_consume_budget(tmp_path: Path) -> None:
 
 def test_non_latent_content_refused_under_dp(tmp_path: Path) -> None:
     s, _, ledger = dp_pair(tmp_path)
+    base = latent_only()
+    binding = SemanticBinding(
+        binding_id=uuid.uuid4(),
+        relation=RelationClass.CONTEXTUALIZED_BY,
+        source=TypedEndpoint(type=T.KNO, ref="k"),
+        target=TypedEndpoint(type=T.CTX, ref="c"),
+        confidence=0.9,
+        provenance=Provenance(source_kind=SourceKind.SELF_REPORT),
+    )
+    frame = ExperienceFrame.model_validate(base.model_dump() | {"bindings": (binding,)})
+    policy = DisclosurePolicy(
+        allowed_types=(T.KNO, T.CTX),
+        bindings=BindingPolicy(allowed_binding_ids=(binding.binding_id,)),
+    )
     with pytest.raises(PrivacyBudgetError, match="only privatized latents"):
-        s.send_frame(
-            full_anchor_frame(), DisclosurePolicy(allowed_types=(T.KNO, T.EMO)), now_ns=NOW
-        )
+        s.send_frame(frame, policy, now_ns=NOW)
     assert ledger.k == 0
 
 

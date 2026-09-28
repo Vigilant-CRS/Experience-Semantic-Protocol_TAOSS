@@ -2334,6 +2334,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-024 | Hybrid-PQ-Profil: V13 verlangt Deklaration classical-only vs. hybrid, aber kein Feld. | §Crypto PQ | niedrig | Session-Descriptor-Feld `pq_mode ∈ {CLASSICAL_ONLY, HYBRID_OUTER, HYBRID_NOISE}`; v1 = CLASSICAL_ONLY, nie als PQ beworben. | WP-048, WP-075 | OPEN |
 | GAP-025 | V13 §7.6 sagt, die ReceiverCapability stehe im ersten Responder-Handshake-Payload, bindet sie aber an `noise_h`. Der finale Transkript-Hash deckt genau dieses Payload ab (zirkulär). Gleiches gilt für Identity Proof und Session-Binding. | §7.6, §9.4 | hoch | ADR-0013 Amendment: Übertragung in der jeweils ersten Noise-Transportnachricht nach dem Handshake, vor jedem ESP-Anwendungspaket | WP-018, WP-051, WP-052 | RESOLVED |
 | GAP-026 | `noise_h[32]` in 0x20/0x21 vs. 64-Byte-Handshake-Hash von `Noise_IK_25519_ChaChaPoly_BLAKE2b` (HASHLEN = 64). | §9.4, §7.6 | hoch | ADR-0013 Amendment: `noise_h = BLAKE2b-256("esp/v1/noise-h" ‖ h)` | WP-018, WP-051, WP-052 | RESOLVED |
+| GAP-027 | SF-Level: V13 nennt Pflicht- und Optionaltypen, sagt aber nicht, ob sie pro Paket gelten und welchen `sf_level` Custom-Typ-Sets (MEB-HANDOVER ohne KNO) tragen. | §8.6, §17 | mittel | ADR-0025: strikt pro Paket; Custom-Sets registriert, `sf_level=0` | WP-063, WP-066 | RESOLVED |
 
 ---
 
@@ -3892,7 +3893,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-063 — Profile, SF-Level, I2I-Envelopes, Raten-Semantik
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -4777,6 +4778,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED |
 | ADR-0023 | Transparenzlog-Profil (GAP-019) | PROPOSED |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
+| ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |
 
 ---
 
@@ -5042,7 +5044,7 @@ psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
 open_gaps: 11        # GAP-007, 014–020, 022–024
-resolved_gaps: 15    # GAP-001–006, 008–013, 021, 025, 026
+resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"
 independent_implementation_status: "NOT_STARTED"

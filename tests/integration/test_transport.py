@@ -4,12 +4,14 @@
 
 import asyncio
 import contextlib
+import dataclasses
 import time
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
+from esp.codec.tlv import LatentEncoding
 from esp.core.taoss_types import TaossType
 from esp.frame.model import DisclosurePolicy
 from esp.session.driver import (
@@ -28,10 +30,13 @@ from esp.transport.base import (
 from esp.transport.memory import FaultProfile, memory_link
 from esp.transport.netem import NetemProxy
 from esp.transport.quic import QuicConnection, connect_quic, self_signed_certificate, serve_quic
-from tests.integration.test_endpoint import NOW, pair
+from tests.integration.test_endpoint import NOW, WIRE, pair
 from tests.unit.frame.test_frame_wire import full_anchor_frame
 
 pytestmark = pytest.mark.integration
+
+#: INT8 latents keep a KNO frame inside one QUIC datagram.
+WIRE_INT8 = dataclasses.replace(WIRE, encoding=LatentEncoding.INT8_SYM)
 
 
 async def wait_until(predicate: Callable[[], bool], timeout: float = 15.0) -> None:
@@ -52,7 +57,6 @@ def make_clock() -> Callable[[], int]:
 
 T = TaossType
 KNO = DisclosurePolicy(allowed_types=(T.KNO,))
-CTX = DisclosurePolicy(allowed_types=(T.CTX,))  # small enough for one QUIC datagram
 
 
 # --- transport primitives ---------------------------------------------------------
@@ -103,11 +107,11 @@ def test_memory_reliable_channels_are_ordered_and_lossless_under_faults() -> Non
 async def run_session(
     tmp_path: Path, profile: FaultProfile, *, channel: Channel
 ) -> tuple[ReceiverPump, int]:
-    sender, receiver = pair(tmp_path)
+    sender, receiver = pair(tmp_path, wire=WIRE_INT8 if channel is Channel.DATAGRAM else WIRE)
     s_conn, r_conn = memory_link(profile)
     await asyncio.gather(establish_sender(sender, s_conn), establish_receiver(receiver, r_conn))
     clock = make_clock()
-    policy = KNO if channel is Channel.STATE else CTX
+    policy = KNO
     pump = ReceiverPump(receiver, r_conn, clock=clock)
     task = asyncio.create_task(pump.run())
     sent = 0
@@ -187,7 +191,7 @@ async def quic_scenario(
     if netem is not None:
         proxy = NetemProxy(("127.0.0.1", port), up=netem, down=netem)
         target_port = await proxy.start()
-    sender, receiver = pair(tmp_path)
+    sender, receiver = pair(tmp_path, wire=WIRE_INT8)
     try:
         async with connect_quic("127.0.0.1", target_port, ca_pem=cert) as client:
             server_conn: Connection = await asyncio.wait_for(accepted.get(), 10)
@@ -205,7 +209,7 @@ async def quic_scenario(
                     sender, client, full_anchor_frame(), KNO, channel=Channel.STATE, clock=clock
                 )
                 await send_frame(
-                    sender, client, full_anchor_frame(), CTX, channel=Channel.DATAGRAM, clock=clock
+                    sender, client, full_anchor_frame(), KNO, channel=Channel.DATAGRAM, clock=clock
                 )
                 await asyncio.sleep(0.005)
             await asyncio.sleep(1.0)

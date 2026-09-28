@@ -79,6 +79,7 @@ from esp.privacy.dp import (
 )
 from esp.session.control import CloseReason, SessionClose
 from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
+from esp.session.profiles import TypeSetProfile, profile_for
 from esp.session.replay import ReplayError, ReplayWindow
 from esp.session.sequence import SenderSequencer, SequenceStore, session_fingerprint
 from esp.session.state import SessionState, SessionStateError, StateMachine
@@ -154,6 +155,7 @@ class SenderEndpoint:
         self._receiver_cap_tlv: bytes | None = None
         self._keys: DirectionKeys | None = None
         self._sequencer: SenderSequencer | None = None
+        self._profile: TypeSetProfile | None = None
         self._dp = dp
         if dp is not None and dp.level != descriptor.dp_level:
             msg = "DP configuration must match the session descriptor dp_level"
@@ -186,6 +188,7 @@ class SenderEndpoint:
             self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
             self._machine.advance(SessionState.PROFILE_NEGOTIATION)
             self._negotiated = negotiate(self._descriptor, peer)
+            self._profile = _session_profile(self._negotiated)
             self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
         except EspError:
             self._machine.close()
@@ -203,6 +206,11 @@ class SenderEndpoint:
                 raise CryptoError(msg)
             verify_session_binding(binding, noise_h=noise.noise_h)
             self._receiver_policy = self._verify_receiver_capability(parsed, noise.noise_h)
+            _check_profile_consentable(
+                _need(self._profile, "type-set profile"),
+                frozenset(self._capability.types),
+                self._receiver_policy.accept_types,
+            )
             self.transcript = transcript_hash(
                 noise_h=noise.noise_h,
                 initiator=self._descriptor,
@@ -245,7 +253,8 @@ class SenderEndpoint:
     def effective_policy(self, requested: DisclosurePolicy) -> DisclosurePolicy:
         """Intersect what the sender wants to share with c_S and the receiver policy."""
         receiver = _need(self._receiver_policy, "receiver policy")
-        allowed = set(self._capability.types) & set(receiver.accept_types)
+        profile = _need(self._profile, "type-set profile")
+        allowed = set(self._capability.types) & set(receiver.accept_types) & set(profile.allowed)
         return DisclosurePolicy(
             allowed_types=tuple(t for t in requested.allowed_types if t in allowed),
             bindings=requested.bindings,
@@ -259,6 +268,9 @@ class SenderEndpoint:
             raise SessionStateError(msg)
         disclosed = frame.disclose(self.effective_policy(policy))
         trailer = b""
+        _need(self._profile, "type-set profile").check(
+            frozenset(disclosed.present_types), frozenset(disclosed.masked_types)
+        )
         if self._dp is not None:
             disclosed, trailer = self._privatize(disclosed)
         encoded = frame_to_payload(disclosed, self._wire)
@@ -387,6 +399,7 @@ class _Active:
     policy: ReceiverPolicy
     sender_cap: SenderCapability
     replay: ReplayWindow
+    profile: TypeSetProfile
 
 
 class ReceiverEndpoint:
@@ -474,6 +487,8 @@ class ReceiverEndpoint:
             peer_pk = verify_session_binding(binding, noise_h=noise.noise_h)
             cap = SenderCapability.verify(cap_tlv)
             self._check_issuer(cap)
+            profile = _session_profile(negotiated)
+            _check_profile_consentable(profile, frozenset(cap.types), policy.accept_types)
             self._auditor = DpAuditor(ceiling=cap.dp_epsilon_ceiling)
             self.transcript = transcript_hash(
                 noise_h=noise.noise_h,
@@ -489,6 +504,7 @@ class ReceiverEndpoint:
                 policy=policy,
                 sender_cap=cap,
                 replay=ReplayWindow(negotiated.initiator.w_back, negotiated.initiator.w_fwd),
+                profile=profile,
             )
             self._machine.advance(SessionState.CONSENT_ESTABLISHED)
             self._machine.advance(SessionState.ACTIVE)
@@ -548,6 +564,8 @@ class ReceiverEndpoint:
     ) -> ReceiveResult:
         try:
             facts = _quarantine_facts(header, parsed)
+            masked = frozenset({TaossType.EMO}) if header.emo_masked else frozenset()
+            act.profile.check(facts.types, masked)
             facts = self._audit_dp(header, parsed, facts, act)
         except (WireError, PrivacyBudgetError) as exc:
             return self._reject((f"8:{exc}",))
@@ -626,6 +644,25 @@ class ReceiverEndpoint:
     def _reject(self, violations: tuple[str, ...]) -> ReceiveResult:
         self.rejections.append(violations)
         return ReceiveResult(accepted=False, violations=violations)
+
+
+def _session_profile(negotiated: NegotiatedSession) -> TypeSetProfile:
+    return profile_for(negotiated.sf_level, frozenset(negotiated.registries))
+
+
+def _check_profile_consentable(
+    profile: TypeSetProfile,
+    sender_types: frozenset[TaossType],
+    receiver_types: frozenset[TaossType],
+) -> None:
+    """Fail at establishment if consent cannot cover the profile's required types."""
+    missing = profile.required - (sender_types & receiver_types)
+    if missing:
+        msg = (
+            f"{profile.name} requires {sorted(t.name for t in missing)}, which sender "
+            "and receiver consent do not both allow; choose another profile"
+        )
+        raise CryptoError(msg)
 
 
 def _quarantine_facts(header: Header, parsed: ParsedPayload) -> PacketFacts:
