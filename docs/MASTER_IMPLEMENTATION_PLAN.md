@@ -3079,7 +3079,7 @@ Zufällige Eventsequenzen dürfen niemals erzeugen:
 
 ## WP-025 — BCI-Free End-to-End Demo
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Aufbau
 
@@ -4222,7 +4222,7 @@ Validität ohne Stufe 4 der Claims Ladder.
 
 ## WP-082 — Sender-/Receiver-Inspector (Demo-Oberfläche)
 
-**Status:** `NOT_STARTED`
+**Status:** `IMPLEMENTED`
 
 Web- oder TUI-Oberfläche für M5: Zustand eingeben (Self-Report, Intent,
 Kontext), Consent-Schalter pro Typ und pro Binding, Live-Wire-Inspektor

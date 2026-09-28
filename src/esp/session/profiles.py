@@ -26,6 +26,7 @@ registry entries pinned in the session descriptor; their packets carry
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Final
@@ -89,8 +90,21 @@ CUSTOM_PROFILES: Final = MappingProxyType(
         "esp-typeset-meb-handover-v1": TypeSetProfile(
             "MEB-HANDOVER", frozenset({I, C, T, S}), maskable=frozenset({E})
         ),
+        #: BCI-free demo (WP-025): KNO+INT+CTX, EMO only under explicit consent.
+        "esp-typeset-demo-v1": TypeSetProfile(
+            "DEMO", frozenset({K, I, C}), frozenset({E}), frozenset({E})
+        ),
     }
 )
+
+
+def custom_profile_digest(name: str) -> bytes:
+    """Registry digest pinning a custom type-set profile's definition."""
+    p = CUSTOM_PROFILES[name]
+    definition = "|".join(
+        [name, *(",".join(sorted(t.name for t in s)) for s in (p.required, p.optional, p.maskable))]
+    )
+    return hashlib.blake2b(definition.encode(), digest_size=32).digest()
 
 
 def profile_for(sf_level: int, registries: frozenset[str] = frozenset()) -> TypeSetProfile:

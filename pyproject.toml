@@ -33,6 +33,10 @@ dependencies = [
     "pyyaml>=6.0.2",
 ]
 
+
+[project.scripts]
+esp-demo = "esp.demo.cli:main"
+
 [project.urls]
 Repository = "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS"
 

@@ -476,8 +476,10 @@ class ReceiverEndpoint:
         accept_state: AcceptState | None = None,
         revocations: RevocationRegistry | None = None,
         metadata: MetadataProtection | None = None,
+        inspector: Callable[[Header, ParsedPayload], None] | None = None,
     ) -> None:
         self._machine = StateMachine()
+        self._inspector = inspector
         self._identity = identity
         self._static = static
         self._descriptor = descriptor
@@ -630,6 +632,8 @@ class ReceiverEndpoint:
                 parsed = parse_payload(plaintext, extra_codes=extra)
         except (ReplayError, WireError) as exc:
             return self._reject((f"1:{exc}",))
+        if self._inspector is not None:
+            self._inspector(header, parsed)  # authenticated, real view; before any decision
         if header.types_bitmap == 0:
             act.replay.accept(header.segment_seq)
             return self._handle_control(parsed, act)
