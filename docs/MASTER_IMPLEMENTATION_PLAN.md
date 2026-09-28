@@ -2309,18 +2309,18 @@ bevor die Lücke `RESOLVED` ist.
 | ID | Lücke | V13-Stelle | Schwere | Auflösung | WPs | Status |
 |---|---|---|---|---|---|---|
 | GAP-001 | Plan v0.1.0 verwechselte L1-Content-Affect mit Subject-Affect (Self-Report-Demo, Physiologie → EMO). | §6.4 Affect-Box, §15, §23 | **kritisch** | §4.5 `affect_scope`; ADR-0008 | WP-004, WP-025, WP-030, WP-078 | RESOLVED_IN_PLAN |
-| GAP-002 | Exakte Nonce-Ableitung („HKDF-derived … timeline_id‖segment_seq“) ohne KDF, Salt, Info, Länge. 16+4 Byte Eingang vs. 12 Byte Nonce. | §Crypto, App. A | hoch | CS-NONCE-DERIVATION: `nonce = BLAKE2b-96(key=k_nonce, "esp/v1/nonce" ‖ timeline_id ‖ segment_seq_be32)`, `k_nonce` aus Noise-Split via HKDF-BLAKE2b, `info="esp/v1/nonce-key"`. Empfänger liest Nonce aus Header, prüft aber im deterministischen Profil Gleichheit. ADR-0009 | WP-016, WP-017 | OPEN |
-| GAP-003 | Semantik von `payload_len`: Ciphertext mit oder ohne Tag? | App. A | hoch | V13 §L2–L3 Wire-Rate-Rechnung (448+65+180) impliziert: **ohne** Tag und ohne Signatur. ADR-0010 fixiert `payload_len = len(ciphertext)`; Tag (16) und Signatur (64) folgen fest. | WP-014 | OPEN |
-| GAP-004 | Addendum-Objekte (Bindings, Evidence Claims, Deskriptoren, `affect_scope`, Episoden) haben keinen Wire-Code; V13 erlaubt freie Codes nur über registry-gepinntes Profil. | §Typed TLV Registry | hoch | CS-ADDENDUM-TLV: Profil `esp-addendum-v1`, per `TLV_TYPE_PROFILE (0x11)` mit `registry_digest` angemeldet; Codes aus freiem Bereich (Vorschlag `0x80`–`0x8F`). Unbekannte → ignorieren, nie uminterpretieren. ADR-0011 | WP-005, WP-011, WP-049 | OPEN |
-| GAP-005 | Control-Nachrichten (HELLO, PROFILE_NEGOTIATION, REGISTRY_DIGEST, KEY_ROTATION, SESSION_CLOSE) und „session descriptor“ (Replay-Fenster, Raten, DP-Profil, Registry-Versionen) ohne Wire-Format. | §Replay, §DP-TLV, §Hive-Lifecycle | hoch | CS-SESSION-CONTROL: Session-Descriptor als kanonisches Objekt im Noise-Payload + Control-TLVs im Addendum-Profil. ADR-0012 | WP-024, WP-048 | OPEN |
-| GAP-006 | Format der Cross-Signatur „Responder publishes X25519 static key cross-signed with Ed25519“ und Bindung `sender_id` ↔ Noise-Session unspezifiziert. | §Identity Binding | hoch | CS-SESSION-CONTROL §Identity: `sig = Ed25519(sk_R, "esp/v1/static-binding" ‖ x25519_pk ‖ valid_until_ns)`; `sender_id`-Bindung über `noise_h` im Identity Proof (0x20). ADR-0013 | WP-018, WP-052 | OPEN |
+| GAP-002 | Exakte Nonce-Ableitung („HKDF-derived … timeline_id‖segment_seq“) ohne KDF, Salt, Info, Länge. 16+4 Byte Eingang vs. 12 Byte Nonce. | §Crypto, App. A | hoch | CS-NONCE-DERIVATION: `nonce = BLAKE2b-96(key=k_nonce, "esp/v1/nonce" ‖ timeline_id ‖ segment_seq_be32)`, `k_nonce` aus Noise-Split via HKDF-BLAKE2b, `info="esp/v1/nonce-key"`. Empfänger liest Nonce aus Header, prüft aber im deterministischen Profil Gleichheit. ADR-0009 | WP-016, WP-017 | RESOLVED |
+| GAP-003 | Semantik von `payload_len`: Ciphertext mit oder ohne Tag? | App. A | hoch | V13 §L2–L3 Wire-Rate-Rechnung (448+65+180) impliziert: **ohne** Tag und ohne Signatur. ADR-0010 fixiert `payload_len = len(ciphertext)`; Tag (16) und Signatur (64) folgen fest. | WP-014 | RESOLVED |
+| GAP-004 | Addendum-Objekte (Bindings, Evidence Claims, Deskriptoren, `affect_scope`, Episoden) haben keinen Wire-Code; V13 erlaubt freie Codes nur über registry-gepinntes Profil. | §Typed TLV Registry | hoch | CS-ADDENDUM-TLV: Profil `esp-addendum-v1`, per `TLV_TYPE_PROFILE (0x11)` mit `registry_digest` angemeldet; Codes `0x80`–`0x9F` (ADR-0011). Unbekannte → ignorieren, nie uminterpretieren. ADR-0011 | WP-005, WP-011, WP-049 | RESOLVED |
+| GAP-005 | Control-Nachrichten (HELLO, PROFILE_NEGOTIATION, REGISTRY_DIGEST, KEY_ROTATION, SESSION_CLOSE) und „session descriptor“ (Replay-Fenster, Raten, DP-Profil, Registry-Versionen) ohne Wire-Format. | §Replay, §DP-TLV, §Hive-Lifecycle | hoch | CS-SESSION-CONTROL: Session-Descriptor als kanonisches Objekt im Noise-Payload + Control-TLVs im Addendum-Profil. ADR-0012 | WP-024, WP-048 | RESOLVED |
+| GAP-006 | Format der Cross-Signatur „Responder publishes X25519 static key cross-signed with Ed25519“ und Bindung `sender_id` ↔ Noise-Session unspezifiziert. | §Identity Binding | hoch | CS-SESSION-CONTROL §Identity: `sig = Ed25519(sk_R, "esp/v1/static-binding" ‖ x25519_pk ‖ valid_until_ns)`; `sender_id`-Bindung über `noise_h` im Identity Proof (0x20). ADR-0013 | WP-018, WP-052 | RESOLVED |
 | GAP-007 | `TLV_ANCHOR_COORDS (0x50)` nur mit Verweis auf „Anchor Coordinate Companion Specification“, kein Layout. | §Ontology Grounding | mittel | CS-ANCHOR-COORDS: `type_code u8 ‖ anchor_set_id[16] ‖ similarity_kind u8 ‖ m u16 ‖ float32_be[m]`. ADR-0014 | WP-050 | OPEN |
-| GAP-008 | Kanonische Serialisierung für ReceiverCapability: variable Arrays (`max_norm[n_types]`, `valence_bounds` „if EMO accepted“) — Weglassen oder Nullen? | §Receiver Capabilities, §Consent | mittel | V13 §Consent: „field is omitted from the canonical capability“ → `valence_bounds` nur bei EMO-Bit; Golden Vectors für beide Fälle. ADR-0015 | WP-051 | OPEN |
-| GAP-009 | Wrap/Erschöpfung von `segment_seq` (u32) nicht geregelt. | App. A, App. C „sequence wrap“ | mittel | Sender MUSS die Session vor `2^32−1` beenden und neu aufbauen; Empfänger lehnt Wrap ab. ADR-0016 | WP-017 | OPEN |
-| GAP-010 | Transport: V13 kennt kein QUIC; Plan wählt QUIC + Noise IK (Doppelverschlüsselung). | §Wire | niedrig | ADR-0001 bestätigt: Transport-Abstraktion; In-Memory- und TCP-Transport für M3/M4-Tests, QUIC (aioquic) als Referenzadapter. Noise-IK bleibt Ende-zu-Ende-Schicht unabhängig vom Transport-TLS. | WP-023 | OPEN |
-| GAP-011 | Bits 0–11 im Feld `capabilities` („I2I and feature flags“) nicht einzeln belegt. | App. A | mittel | Alle v1-Bits 0–14 MUST zero, bis ein Registry-Eintrag sie belegt; Erweiterungen über `TLV_CAPABILITIES_EXT (0x10)`. ADR-0017 | WP-014, WP-061 | OPEN |
+| GAP-008 | Kanonische Serialisierung für ReceiverCapability: variable Arrays (`max_norm[n_types]`, `valence_bounds` „if EMO accepted“) — Weglassen oder Nullen? | §Receiver Capabilities, §Consent | mittel | V13 §Consent: „field is omitted from the canonical capability“ → `valence_bounds` nur bei EMO-Bit; Golden Vectors für beide Fälle. ADR-0015 | WP-051 | RESOLVED |
+| GAP-009 | Wrap/Erschöpfung von `segment_seq` (u32) nicht geregelt. | App. A, App. C „sequence wrap“ | mittel | Sender MUSS die Session vor `2^32−1` beenden und neu aufbauen; Empfänger lehnt Wrap ab. ADR-0016 | WP-017 | RESOLVED |
+| GAP-010 | Transport: V13 kennt kein QUIC; Plan wählt QUIC + Noise IK (Doppelverschlüsselung). | §Wire | niedrig | ADR-0001 bestätigt: Transport-Abstraktion; In-Memory- und TCP-Transport für M3/M4-Tests, QUIC (aioquic) als Referenzadapter. Noise-IK bleibt Ende-zu-Ende-Schicht unabhängig vom Transport-TLS. | WP-023 | RESOLVED |
+| GAP-011 | Bits 0–11 im Feld `capabilities` („I2I and feature flags“) nicht einzeln belegt. | App. A | mittel | Alle v1-Bits 0–14 MUST zero, bis ein Registry-Eintrag sie belegt; Erweiterungen über `TLV_CAPABILITIES_EXT (0x10)`. ADR-0017 | WP-014, WP-061 | RESOLVED |
 | GAP-012 | Referenzparameter der DP-Profile (`L1_BALANCED_REF` σ≈24.42, `L1_PRIVATE_REF` σ≈122.13 bei C=1, δ=10⁻⁶?) über mehrere Absätze verteilt, δ und α-Gitter nicht als Tabelle. | §DP | mittel | Registry-Eintrag `esp-dp-ref-v1` mit C, σ, δ, α-Gitter, Accountant; Golden Vectors für ε. ADR-0018 | WP-055 | OPEN |
-| GAP-013 | `Δ_clock` (Uhrentoleranz im Accept-Prädikat) ohne Default. | §Consent Accept | mittel | Profil-Default 2 s (L1), 250 ms (I2I). ADR-0019 | WP-019 | OPEN |
+| GAP-013 | `Δ_clock` (Uhrentoleranz im Accept-Prädikat) ohne Default. | §Consent Accept | mittel | Profil-Default 2 s (L1), 250 ms (I2I). ADR-0019 | WP-019 | RESOLVED |
 | GAP-014 | Fehlercodes (z. B. `ESP_DECODER_POLICY_FAILED`) werden genannt, aber es gibt kein Fehlercode-Register. | §Decoder | mittel | CS-DECODER + `src/esp/core/errors.py` Register mit stabilen numerischen Codes. ADR-0020 | WP-059 | OPEN |
 | GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | OPEN |
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | OPEN |
@@ -4751,25 +4751,25 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 
 | ADR | Entscheidung | Status |
 |---|---|---|
-| ADR-0001 | QUIC als Referenztransport unter ESP | PROPOSED |
-| ADR-0002 | Keine Summennormierung menschlicher Emotionsintensitäten | PROPOSED |
-| ADR-0003 | Appraisal-Ursachen über Semantic Bindings statt EMO-Duplikation | PROPOSED |
-| ADR-0004 | Legacy Movie Ontology nur als Vocabulary/Mapping Seed | PROPOSED |
+| ADR-0001 | QUIC als Referenztransport unter ESP | ACCEPTED |
+| ADR-0002 | Keine Summennormierung menschlicher Emotionsintensitäten | ACCEPTED |
+| ADR-0003 | Appraisal-Ursachen über Semantic Bindings statt EMO-Duplikation | ACCEPTED |
+| ADR-0004 | Legacy Movie Ontology nur als Vocabulary/Mapping Seed | ACCEPTED |
 | ADR-0005 | Lizenzmatrix AGPL-3.0-or-later / CC BY-SA 4.0 / CC BY 4.0, DCO statt CLA | ACCEPTED |
 | ADR-0006 | Patent-Nichtangriffszusage für konforme Implementierungen | PROPOSED (Rechtsprüfung WP-084) |
 | ADR-0007 | Markenrichtlinie und Siegel „ESP-Conformant“ nur nach bestandener Conformance-Suite | PROPOSED |
-| ADR-0008 | `affect_scope` (CONTENT / SELF_DECLARED / INFERRED_SUBJECT / MACHINE_RELAY) | PROPOSED |
-| ADR-0009 | Deterministische Nonce-Ableitung (GAP-002) | PROPOSED |
-| ADR-0010 | `payload_len` = Ciphertext ohne Tag (GAP-003) | PROPOSED |
-| ADR-0011 | Addendum-TLV-Profil `esp-addendum-v1` (GAP-004) | PROPOSED |
-| ADR-0012 | Session Descriptor + Control-TLVs (GAP-005) | PROPOSED |
-| ADR-0013 | Static-Key-Cross-Signatur (GAP-006) | PROPOSED |
+| ADR-0008 | `affect_scope` (CONTENT / SELF_DECLARED / INFERRED_SUBJECT / MACHINE_RELAY) | ACCEPTED |
+| ADR-0009 | Deterministische Nonce-Ableitung (GAP-002) | ACCEPTED |
+| ADR-0010 | `payload_len` = Ciphertext ohne Tag (GAP-003) | ACCEPTED |
+| ADR-0011 | Addendum-TLV-Profil `esp-addendum-v1` (GAP-004) | ACCEPTED |
+| ADR-0012 | Session Descriptor + Control-TLVs (GAP-005) | ACCEPTED |
+| ADR-0013 | Static-Key-Cross-Signatur (GAP-006) | ACCEPTED |
 | ADR-0014 | Layout `TLV_ANCHOR_COORDS` (GAP-007) | PROPOSED |
-| ADR-0015 | Kanonisches Weglassen optionaler Capability-Felder (GAP-008) | PROPOSED |
-| ADR-0016 | `segment_seq`-Erschöpfung ⇒ Session-Neuaufbau (GAP-009) | PROPOSED |
-| ADR-0017 | Capability-Header-Bits 0–14 in v1 zero (GAP-011) | PROPOSED |
+| ADR-0015 | Kanonisches Weglassen optionaler Capability-Felder (GAP-008) | ACCEPTED |
+| ADR-0016 | `segment_seq`-Erschöpfung ⇒ Session-Neuaufbau (GAP-009) | ACCEPTED |
+| ADR-0017 | Reservierte Header-Bits ablehnen; Capability-Bits 0–11 senden 0, empfangen ignorieren (GAP-011) | ACCEPTED |
 | ADR-0018 | DP-Referenzprofile als Registry-Eintrag (GAP-012) | PROPOSED |
-| ADR-0019 | Default Δ_clock pro Profil (GAP-013) | PROPOSED |
+| ADR-0019 | Default Δ_clock pro Profil (GAP-013) | ACCEPTED |
 | ADR-0020 | Fehlercode-Register (GAP-014) | PROPOSED |
 | ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED |
 | ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED |
@@ -5039,8 +5039,8 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 22        # GAP-002 … GAP-020, GAP-022 … GAP-024
-resolved_gaps: 2     # GAP-001, GAP-021 (im Plan)
+open_gaps: 12        # GAP-007, 012, 014–020, 022–024
+resolved_gaps: 12    # GAP-001–006, 008–011, 013, 021 (ADRs accepted 2026-09-28)
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"
 independent_implementation_status: "NOT_STARTED"
