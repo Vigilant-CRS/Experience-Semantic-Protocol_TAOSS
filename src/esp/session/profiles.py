@@ -22,6 +22,11 @@ SF7    all six                                -
 Custom type-set profiles (e.g. ``MEB-HANDOVER`` = INT, CTX, TEM, SEN) are
 registry entries pinned in the session descriptor; their packets carry
 ``sf_level = 0`` and are validated against the custom set (GAP-027).
+
+Machine Experience Bridge profiles (V13 section 17, WP-066) additionally make
+the EMO mask *mandatory* (``must_mask``: the header must carry
+``EMO_MASKED=1``; receivers verify it before decoding) and may require
+consent flags (``MEB-SURGICAL``: ``NO_REPLAY``).
 """
 
 from __future__ import annotations
@@ -32,6 +37,7 @@ from types import MappingProxyType
 from typing import Final
 
 from esp.codec.errors import WireError
+from esp.codec.header import ConsentFlags
 from esp.core.taoss_types import TaossType
 
 K, I, E, C, S, T = (  # noqa: E741 - TAOSS abbreviations
@@ -51,6 +57,18 @@ class TypeSetProfile:
     optional: frozenset[TaossType] = frozenset()
     #: Types whose absence must be an explicit mask (e.g. EMO in SF6).
     maskable: frozenset[TaossType] = frozenset()
+    #: Types that must be *explicitly* masked in every data packet (MEB: EMO_MASKED=1).
+    must_mask: frozenset[TaossType] = frozenset()
+    #: Header consent flags every data packet must carry (MEB-SURGICAL: NO_REPLAY).
+    required_consent_flags: int = 0
+
+    def __post_init__(self) -> None:
+        if not self.must_mask <= {E}:
+            msg = "only EMO has a header mask bit (EMO_MASKED)"
+            raise ValueError(msg)
+        if self.must_mask & self.allowed:
+            msg = "a type cannot be both allowed and mandatorily masked"
+            raise ValueError(msg)
 
     def check(self, present: frozenset[TaossType], masked: frozenset[TaossType]) -> None:
         missing = self.required - present
@@ -64,6 +82,17 @@ class TypeSetProfile:
         bad_mask = masked - self.maskable - self.optional
         if bad_mask & present:  # pragma: no cover - frame invariant forbids present+masked
             msg = "type both present and masked"
+            raise WireError(msg)
+        unmasked = self.must_mask - masked
+        if unmasked:
+            msg = f"{self.name}: {sorted(t.name for t in unmasked)} must be explicitly masked"
+            raise WireError(msg)
+
+    def check_flags(self, consent_flags: int) -> None:
+        """Header consent flags the profile makes mandatory (e.g. NO_REPLAY)."""
+        missing = self.required_consent_flags & ~consent_flags
+        if missing:
+            msg = f"{self.name}: required consent flags missing (0x{missing:04x})"
             raise WireError(msg)
 
     @property
@@ -84,11 +113,35 @@ SF_LEVELS: Final = MappingProxyType(
     }
 )
 
+_EMO: Final = frozenset({E})
+_NO_REPLAY: Final = int(ConsentFlags.NO_REPLAY)
+
 #: Registered custom type-set profiles (V13 section 17 domain profiles).
 CUSTOM_PROFILES: Final = MappingProxyType(
     {
+        # --- Machine Experience Bridge (V13 section 17, WP-066): EMO always masked ---
         "esp-typeset-meb-handover-v1": TypeSetProfile(
-            "MEB-HANDOVER", frozenset({I, C, T, S}), maskable=frozenset({E})
+            "MEB-HANDOVER", frozenset({I, C, T, S}), maskable=frozenset({E}), must_mask=_EMO
+        ),
+        "esp-typeset-meb-robotic-v1": TypeSetProfile(
+            "MEB-ROBOTIC", frozenset({I, S, T, K}), maskable=_EMO, must_mask=_EMO
+        ),
+        "esp-typeset-meb-surgical-v1": TypeSetProfile(
+            "MEB-SURGICAL",
+            frozenset({I, S, T, K}),
+            maskable=_EMO,
+            must_mask=_EMO,
+            required_consent_flags=_NO_REPLAY,
+        ),
+        "esp-typeset-meb-swarm-v1": TypeSetProfile(
+            "MEB-SWARM", frozenset({I, C, T}), frozenset({K, S}), maskable=_EMO, must_mask=_EMO
+        ),
+        "esp-typeset-meb-assistive-v1": TypeSetProfile(
+            "MEB-ASSISTIVE", frozenset({C, S, I}), maskable=_EMO, must_mask=_EMO
+        ),
+        #: ESP-Agent typed profile (WP-067): T_mach subset KNO (+INT, CTX), EMO always masked.
+        "esp-typeset-agent-v1": TypeSetProfile(
+            "AGENT", frozenset({K}), frozenset({I, C}), maskable=_EMO, must_mask=_EMO
         ),
         #: BCI-free demo (WP-025): KNO+INT+CTX, EMO only under explicit consent.
         "esp-typeset-demo-v1": TypeSetProfile(
@@ -101,9 +154,16 @@ CUSTOM_PROFILES: Final = MappingProxyType(
 def custom_profile_digest(name: str) -> bytes:
     """Registry digest pinning a custom type-set profile's definition."""
     p = CUSTOM_PROFILES[name]
-    definition = "|".join(
-        [name, *(",".join(sorted(t.name for t in s)) for s in (p.required, p.optional, p.maskable))]
-    )
+    parts = [
+        name,
+        *(",".join(sorted(t.name for t in s)) for s in (p.required, p.optional, p.maskable)),
+    ]
+    if p.must_mask or p.required_consent_flags:  # older definitions keep their digests
+        parts += [
+            ",".join(sorted(t.name for t in p.must_mask)),
+            f"flags={p.required_consent_flags}",
+        ]
+    definition = "|".join(parts)
     return hashlib.blake2b(definition.encode(), digest_size=32).digest()
 
 

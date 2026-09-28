@@ -195,6 +195,11 @@ class SenderEndpoint:
     def timeline_id(self) -> uuid.UUID:
         return self._timeline
 
+    @property
+    def receiver_capability_tlv(self) -> bytes | None:
+        """The verified receiver capability (0x22 TLV), ``None`` under default deny."""
+        return self._receiver_cap_tlv
+
     # --- establishment ------------------------------------------------------------
 
     def start(self) -> bytes:
@@ -298,6 +303,7 @@ class SenderEndpoint:
             disclosed, trailer = self._privatize(disclosed)
         encoded = frame_to_payload(disclosed, self._wire)
         flags = consent_flags_for(encoded, self._rights_flags())
+        _need(self._profile, "type-set profile").check_flags(flags)  # e.g. MEB-SURGICAL NO_REPLAY
         masked = frozenset(disclosed.masked_types)
         return self._seal(encoded.types_bitmap, flags, encoded.payload + trailer, now_ns, masked)
 
@@ -540,6 +546,11 @@ class ReceiverEndpoint:
     def state(self) -> SessionState:
         return self._machine.state
 
+    @property
+    def capability_tlv(self) -> bytes | None:
+        """This receiver's signed capability (0x22 TLV), ``None`` under default deny."""
+        return self._cap_tlv
+
     # --- establishment ------------------------------------------------------------
 
     def on_handshake1(self, message: bytes) -> tuple[bytes, bytes]:
@@ -676,7 +687,8 @@ class ReceiverEndpoint:
         try:
             facts = _quarantine_facts(header, parsed)
             masked = frozenset({TaossType.EMO}) if header.emo_masked else frozenset()
-            act.profile.check(facts.types, masked)
+            act.profile.check(facts.types, masked)  # MEB: EMO bit / missing EMO_MASKED refused
+            act.profile.check_flags(header.consent_flags)
             facts = self._audit_dp(header, parsed, facts, act)
         except (WireError, PrivacyBudgetError) as exc:
             return self._reject((f"8:{exc}",))
