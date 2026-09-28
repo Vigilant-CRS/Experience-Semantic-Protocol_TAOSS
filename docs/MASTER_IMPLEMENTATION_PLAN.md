@@ -2946,7 +2946,7 @@ Frame vor Consent wird verworfen.
 
 ## WP-020 — Revocation Engine
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3663,7 +3663,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-053 — Master-Key-Lebenszyklus, Rotation, Transparenzlog
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-019
+**Status:** `IMPLEMENTED` · **Löst:** GAP-019
 
 ### Implementieren
 

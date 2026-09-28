@@ -18,7 +18,9 @@
 10. ``‖Z_t‖₂ <= max_norm[t]`` for every present type;
 11. EMO present ⇒ valence within ``valence_bounds`` (fail closed if a bound is
     set and no valence is declared);
-12. session packet rate <= ``rate_limit_hz``.
+12. session packet rate <= ``rate_limit_hz``;
+13. (addendum) the capability and the timeline position are not revoked (V13 §9.7
+    revocation semantics: "reject all future sessions and packets").
 
 :func:`evaluate` is pure and reports *every* violated condition.
 :class:`AcceptState` holds the counters that :func:`commit` advances only
@@ -29,12 +31,14 @@ parsed facts from the quarantine buffer.
 from __future__ import annotations
 
 import collections
+import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Final
 
 from esp.codec.header import ConsentFlags
 from esp.consent.capability import AudienceMode, ReceiverPolicy, Rights, SenderCapability
+from esp.consent.revocation import RevocationRegistry
 from esp.core.taoss_types import TaossType, bitmap_to_types
 from esp.crypto.primitives import blake2b
 
@@ -52,6 +56,8 @@ class PacketFacts:
     valence: float | None
     creates_dp_release: bool = False
     epsilon_increment: float = 0.0
+    timeline_id: uuid.UUID | None = None
+    segment_seq: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,6 +129,7 @@ def evaluate(  # noqa: PLR0912 - one branch per V13 condition, kept flat on purp
     now_ns: int,
     clock_tolerance_ns: int,
     audience_proof: Sequence[tuple[bytes, bool]] | None = None,
+    revocations: RevocationRegistry | None = None,
 ) -> Decision:
     v: list[str] = []
     if not p.authenticated:
@@ -171,7 +178,15 @@ def evaluate(  # noqa: PLR0912 - one branch per V13 condition, kept flat on purp
             v.append("11:valence outside receiver bounds")
     if state.packets_in_last_second(now_ns) + 1 > policy.rate_limit_hz:
         v.append("12:rate limit exceeded")
+    if revocations is not None and _revoked(p, c_s, revocations):
+        v.append("13:capability or timeline revoked")
     return Decision(not v, tuple(v))
+
+
+def _revoked(p: PacketFacts, c_s: SenderCapability, revocations: RevocationRegistry) -> bool:
+    timeline = p.timeline_id or uuid.UUID(int=0)
+    seq = p.segment_seq if p.segment_seq is not None else 0
+    return revocations.is_revoked(c_s.capability_id, timeline, seq)
 
 
 def commit(
