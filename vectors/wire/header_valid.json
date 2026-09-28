@@ -1,0 +1,123 @@
+{
+  "header_len": 100,
+  "license": "CC-BY-4.0",
+  "spec": "ESP V13 Appendix A; ADR-0010, ADR-0017",
+  "suite_version": "1.0.0",
+  "vectors": [
+    {
+      "description": "SF0, KNO only, empty payload",
+      "fields": {
+        "capabilities": 0,
+        "consent_flags": 0,
+        "dt_ms": 0,
+        "nonce": "000102030405060708090a0b",
+        "payload_len": 0,
+        "phase_f32_hex": "00000000",
+        "privacy_flags": 0,
+        "profile": 1,
+        "segment_seq": 0,
+        "sender_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "sf_level": 0,
+        "timeline_id": "5f0c6a8e-3b7d-4c4e-9a53-2f6a1d9e8b10",
+        "timestamp_ns": 1727000000000000000,
+        "types_bitmap": 1,
+        "version_major": 1,
+        "version_minor": 0
+      },
+      "hex": "4553500100010000000100000000000017f78959971980005f0c6a8e3b7d4c4e9a532f6a1d9e8b10000000000000000000000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f00000000000102030405060708090a0b",
+      "name": "minimal"
+    },
+    {
+      "description": "SF7, all six TAOSS types, NO_REPLAY|NO_STORE, quantized, timing obfuscation",
+      "fields": {
+        "capabilities": 0,
+        "consent_flags": 6,
+        "dt_ms": 20,
+        "nonce": "000102030405060708090a0b",
+        "payload_len": 513,
+        "phase_f32_hex": "3e800000",
+        "privacy_flags": 48,
+        "profile": 1,
+        "segment_seq": 123,
+        "sender_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "sf_level": 7,
+        "timeline_id": "5f0c6a8e-3b7d-4c4e-9a53-2f6a1d9e8b10",
+        "timestamp_ns": 1727000000000000000,
+        "types_bitmap": 63,
+        "version_major": 1,
+        "version_minor": 0
+      },
+      "hex": "4553500100010700003f00060030000017f78959971980005f0c6a8e3b7d4c4e9a532f6a1d9e8b100000007b000000143e800000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f00000201000102030405060708090a0b",
+      "name": "all_types"
+    },
+    {
+      "description": "SF6 (all except EMO), EMO intentionally withheld by sender consent",
+      "fields": {
+        "capabilities": 0,
+        "consent_flags": 1,
+        "dt_ms": 0,
+        "nonce": "000102030405060708090a0b",
+        "payload_len": 0,
+        "phase_f32_hex": "00000000",
+        "privacy_flags": 0,
+        "profile": 1,
+        "segment_seq": 0,
+        "sender_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "sf_level": 6,
+        "timeline_id": "5f0c6a8e-3b7d-4c4e-9a53-2f6a1d9e8b10",
+        "timestamp_ns": 1727000000000000000,
+        "types_bitmap": 59,
+        "version_major": 1,
+        "version_minor": 0
+      },
+      "hex": "4553500100010600003b00010000000017f78959971980005f0c6a8e3b7d4c4e9a532f6a1d9e8b10000000000000000000000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f00000000000102030405060708090a0b",
+      "name": "emo_masked"
+    },
+    {
+      "description": "DP_LEVEL = L1_PRIVATE_REF",
+      "fields": {
+        "capabilities": 0,
+        "consent_flags": 0,
+        "dt_ms": 0,
+        "nonce": "000102030405060708090a0b",
+        "payload_len": 600,
+        "phase_f32_hex": "00000000",
+        "privacy_flags": 2,
+        "profile": 1,
+        "segment_seq": 0,
+        "sender_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "sf_level": 0,
+        "timeline_id": "5f0c6a8e-3b7d-4c4e-9a53-2f6a1d9e8b10",
+        "timestamp_ns": 1727000000000000000,
+        "types_bitmap": 9,
+        "version_major": 1,
+        "version_minor": 0
+      },
+      "hex": "4553500100010000000900000002000017f78959971980005f0c6a8e3b7d4c4e9a532f6a1d9e8b10000000000000000000000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f00000258000102030405060708090a0b",
+      "name": "dp_private_ref"
+    },
+    {
+      "description": "maximum field values; capabilities bits 0-11 + CAPS_EXT_PRESENT",
+      "fields": {
+        "capabilities": 36863,
+        "consent_flags": 0,
+        "dt_ms": 4294967295,
+        "nonce": "000102030405060708090a0b",
+        "payload_len": 4294967295,
+        "phase_f32_hex": "3f7fffff",
+        "privacy_flags": 0,
+        "profile": 255,
+        "segment_seq": 4294967295,
+        "sender_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "sf_level": 7,
+        "timeline_id": "5f0c6a8e-3b7d-4c4e-9a53-2f6a1d9e8b10",
+        "timestamp_ns": 18446744073709551615,
+        "types_bitmap": 63,
+        "version_major": 1,
+        "version_minor": 255
+      },
+      "hex": "45535001ffff0700003f000000008fffffffffffffffffff5f0c6a8e3b7d4c4e9a532f6a1d9e8b10ffffffffffffffff3f7fffff000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1fffffffff000102030405060708090a0b",
+      "name": "max_lengths"
+    }
+  ]
+}

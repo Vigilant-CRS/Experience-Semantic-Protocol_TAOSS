@@ -24,6 +24,7 @@ both agree.
 | WP-011 | VERIFIED | `tests/unit/frame/test_frame.py` (canonical serialization + determinism; JSON Schema validation against `schemas/experience_frame.schema.json`; missing type ⊥ ≠ 0; masked type omission incl. descriptors/anchors/evidence refs; inferred subject affect rejected on L1) · `scripts/generate_schemas.py --check` in `make verify` |
 | WP-012 | VERIFIED | `tests/unit/simulation/test_simulator.py` (byte-identical same-seed runs; per-stream seed isolation; exact keyframe interpolation; dropout and clock-drift fixtures; DSL validation) · example `examples/synthetic_sender_receiver/fear_at_work.yaml` |
 | WP-013 | VERIFIED | `tests/unit/simulation/test_estimators.py` (Oracle reproduces ground truth exactly; RuleBased yields derived SENSORY features only, traceable to observations, no claim on missing modality; fusion keeps inputs incl. self report, reports conflicts, fused affect refused on L1) |
+| WP-014 | VERIFIED | `tests/conformance/test_header_vectors.py` (golden vectors `vectors/wire/header_valid.json`: minimal, all_types, emo_masked, dp_private_ref, max_lengths; `vectors/malformed/header_invalid.json`: 17 invalid incl. invalid reserved bit) · `tests/unit/test_header_codec.py` (roundtrip property, arbitrary 100-byte blobs rejected or canonical, bit flips) · offsets verified field-by-field against V13 App. A |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones

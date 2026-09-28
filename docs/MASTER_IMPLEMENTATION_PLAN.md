@@ -2807,7 +2807,7 @@ Oracle muss bekannte Ground Truth exakt reproduzieren.
 
 ## WP-014 — V13 Wire Header Codec
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
