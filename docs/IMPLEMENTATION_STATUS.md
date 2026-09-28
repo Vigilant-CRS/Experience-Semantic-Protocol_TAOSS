@@ -29,3 +29,4 @@ both agree.
 | Milestone | Verdict | Report |
 |---|---|---|
 | M0 | PASS | `artifacts/test-reports/M0.json` (commit c08c1fc) |
+| M1 | PASS | `artifacts/test-reports/M1.json` (commit 6a98da0) |
