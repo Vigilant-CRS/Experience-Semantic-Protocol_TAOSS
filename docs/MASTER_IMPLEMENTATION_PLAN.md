@@ -2319,7 +2319,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-009 | Wrap/Erschöpfung von `segment_seq` (u32) nicht geregelt. | App. A, App. C „sequence wrap“ | mittel | Sender MUSS die Session vor `2^32−1` beenden und neu aufbauen; Empfänger lehnt Wrap ab. ADR-0016 | WP-017 | RESOLVED |
 | GAP-010 | Transport: V13 kennt kein QUIC; Plan wählt QUIC + Noise IK (Doppelverschlüsselung). | §Wire | niedrig | ADR-0001 bestätigt: Transport-Abstraktion; In-Memory- und TCP-Transport für M3/M4-Tests, QUIC (aioquic) als Referenzadapter. Noise-IK bleibt Ende-zu-Ende-Schicht unabhängig vom Transport-TLS. | WP-023 | RESOLVED |
 | GAP-011 | Bits 0–11 im Feld `capabilities` („I2I and feature flags“) nicht einzeln belegt. | App. A | mittel | Alle v1-Bits 0–14 MUST zero, bis ein Registry-Eintrag sie belegt; Erweiterungen über `TLV_CAPABILITIES_EXT (0x10)`. ADR-0017 | WP-014, WP-061 | RESOLVED |
-| GAP-012 | Referenzparameter der DP-Profile (`L1_BALANCED_REF` σ≈24.42, `L1_PRIVATE_REF` σ≈122.13 bei C=1, δ=10⁻⁶?) über mehrere Absätze verteilt, δ und α-Gitter nicht als Tabelle. | §DP | mittel | Registry-Eintrag `esp-dp-ref-v1` mit C, σ, δ, α-Gitter, Accountant; Golden Vectors für ε. ADR-0018 | WP-055 | OPEN |
+| GAP-012 | Referenzparameter der DP-Profile (`L1_BALANCED_REF` σ≈24.42, `L1_PRIVATE_REF` σ≈122.13 bei C=1, δ=10⁻⁶?) über mehrere Absätze verteilt, δ und α-Gitter nicht als Tabelle. | §DP | mittel | Registry-Eintrag `esp-dp-ref-v1` mit C, σ, δ, α-Gitter, Accountant; Golden Vectors für ε. ADR-0018 | WP-055 | RESOLVED |
 | GAP-013 | `Δ_clock` (Uhrentoleranz im Accept-Prädikat) ohne Default. | §Consent Accept | mittel | Profil-Default 2 s (L1), 250 ms (I2I). ADR-0019 | WP-019 | RESOLVED |
 | GAP-014 | Fehlercodes (z. B. `ESP_DECODER_POLICY_FAILED`) werden genannt, aber es gibt kein Fehlercode-Register. | §Decoder | mittel | CS-DECODER + `src/esp/core/errors.py` Register mit stabilen numerischen Codes. ADR-0020 | WP-059 | OPEN |
 | GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | OPEN |
@@ -3663,7 +3663,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-053 — Master-Key-Lebenszyklus, Rotation, Transparenzlog
 
-**Status:** `IMPLEMENTED` · **Löst:** GAP-019
+**Status:** `VERIFIED` · **Löst:** GAP-019
 
 ### Implementieren
 
@@ -3711,7 +3711,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-055 — Laufzeit-DP: Clip, Noise, `TLV_DP_PARAMS (0x30)`, Ledger
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-012
+**Status:** `VERIFIED` · **Löst:** GAP-012
 
 ### Implementieren
 
@@ -4076,7 +4076,7 @@ Posthume EMO-Synthese nur mit ausdrücklicher Vorab-Zustimmung.
 
 ## WP-072 — Master-Key-Custody-Adapter
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -4770,7 +4770,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0015 | Kanonisches Weglassen optionaler Capability-Felder (GAP-008) | ACCEPTED |
 | ADR-0016 | `segment_seq`-Erschöpfung ⇒ Session-Neuaufbau (GAP-009) | ACCEPTED |
 | ADR-0017 | Reservierte Header-Bits ablehnen; Capability-Bits 0–11 senden 0, empfangen ignorieren (GAP-011) | ACCEPTED |
-| ADR-0018 | DP-Referenzprofile als Registry-Eintrag (GAP-012) | PROPOSED |
+| ADR-0018 | DP-Referenzprofile und Accountant (GAP-012) | ACCEPTED |
 | ADR-0019 | Default Δ_clock pro Profil (GAP-013) | ACCEPTED |
 | ADR-0020 | Fehlercode-Register (GAP-014) | PROPOSED |
 | ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED |
@@ -5030,8 +5030,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M3a
-next_work_package: WP-055
+current_milestone: M4
+next_work_package: WP-023
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
@@ -5041,8 +5041,8 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 12        # GAP-007, 012, 014–020, 022–024
-resolved_gaps: 14    # GAP-001–006, 008–011, 013, 021, 025, 026
+open_gaps: 11        # GAP-007, 014–020, 022–024
+resolved_gaps: 15    # GAP-001–006, 008–013, 021, 025, 026
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"
 independent_implementation_status: "NOT_STARTED"

@@ -1,0 +1,32 @@
+{
+  "header_len": 100,
+  "license": "CC-BY-4.0",
+  "spec": "ESP V13 section 12; ADR-0018",
+  "suite_version": "1.0.0",
+  "vectors": [
+    {
+      "delta_per_release": 1e-08,
+      "delta_total": 1e-06,
+      "eps_per_release": 0.5,
+      "joint_5_types": {
+        "alpha": 3.87095218430171,
+        "eps": 11.300498662838553
+      },
+      "k": 100,
+      "name": "l1_balanced_reference",
+      "per_type": {
+        "alpha": 7.419644244250128,
+        "eps": 4.639367529068953
+      },
+      "sigma": 24.42544528659673,
+      "tlv_body_len": 82,
+      "tlv_hex": "300000005211111111222243338444555555555555000000003b053f8000003f8000003f8000003f8000003f80000041c3675041c3675041c3675041c3675041c36750000000644134ced8358637bd0000000000000000"
+    },
+    {
+      "delta_per_release": 1e-08,
+      "eps_per_release": 0.1,
+      "name": "l1_private_reference",
+      "sigma": 122.12722643298365
+    }
+  ]
+}

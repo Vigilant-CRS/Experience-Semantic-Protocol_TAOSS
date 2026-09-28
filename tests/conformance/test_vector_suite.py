@@ -146,3 +146,22 @@ def test_replay_window_vectors(vector: dict[str, Any]) -> None:
         except ReplayError:
             got.append(0)
     assert got == vector["accept"]
+
+
+def test_dp_accounting_vectors_match_v13_text() -> None:
+    import math  # noqa: PLC0415
+
+    from esp.codec.tlv import iter_tlvs as _iter  # noqa: PLC0415
+    from esp.privacy.dp import DpParams  # noqa: PLC0415
+
+    ref = load("privacy/dp_accounting.json")[0]
+    assert math.isclose(ref["sigma"], 24.42, abs_tol=0.01)  # V13: "approx 24.42"
+    assert math.isclose(ref["per_type"]["eps"], 4.6, abs_tol=0.05)  # V13: "approx 4.6"
+    assert math.isclose(ref["per_type"]["alpha"], 7.4, abs_tol=0.05)  # V13: "alpha approx 7.4"
+    assert math.isclose(ref["joint_5_types"]["eps"], 11.3, abs_tol=0.05)  # V13: "approx 11.3"
+    assert math.isclose(ref["joint_5_types"]["alpha"], 3.87, abs_tol=0.01)  # V13: "approx 3.87"
+    params = DpParams.decode(_iter(bytes.fromhex(ref["tlv_hex"]))[0])
+    assert len(bytes.fromhex(ref["tlv_hex"])) - 5 == ref["tlv_body_len"] == 82
+    assert params.composition_k == 100
+    priv = load("privacy/dp_accounting.json")[1]
+    assert math.isclose(priv["sigma"], 122.13, abs_tol=0.01)  # V13: "approx 122.13"

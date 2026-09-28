@@ -19,7 +19,7 @@ from typing import Any
 
 import numpy as np
 
-from esp.codec.header import HEADER_LEN, ConsentFlags, Header, PrivacyFlags, float32
+from esp.codec.header import HEADER_LEN, ConsentFlags, DpLevel, Header, PrivacyFlags, float32
 from esp.codec.tlv import LatentEncoding, encode_tlv, encode_typed_latent
 from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
 from esp.consent.revocation import (
@@ -35,6 +35,13 @@ from esp.crypto.envelope import seal_packet
 from esp.crypto.identity import IdentityProof, session_binding
 from esp.crypto.keys import DirectionKeys, deterministic_nonce, timeline_tag
 from esp.crypto.primitives import SigningKey, blake2b
+from esp.privacy.dp import (
+    REFERENCE_PROFILES,
+    Adjacency,
+    DpParams,
+    epsilon_rdp,
+    rdp_coefficient,
+)
 from esp.session.descriptor import SessionDescriptor
 from esp.session.replay import ReplayError, ReplayWindow
 
@@ -434,6 +441,47 @@ def replay_vectors() -> list[dict[str, Any]]:
     return out
 
 
+def dp_vectors() -> list[dict[str, Any]]:
+    """V13 section 12 reference accounting (L1-BALANCED, C = 1, delta_tot = 1e-6)."""
+    sigma = REFERENCE_PROFILES[DpLevel.L1_BALANCED_REF][1]
+    five = [TaossType.KNO, TaossType.INT, TaossType.CTX, TaossType.SEN, TaossType.TEM]
+    c_type = rdp_coefficient({TaossType.EMO: 1.0}, {TaossType.EMO: sigma})
+    c_joint = rdp_coefficient(dict.fromkeys(five, 1.0), dict.fromkeys(five, sigma))
+    eps_type, alpha_type = epsilon_rdp(100 * c_type, 1e-6)
+    eps_joint, alpha_joint = epsilon_rdp(100 * c_joint, 1e-6)
+    sigma32 = float(np.float32(sigma))
+    params = DpParams(
+        capability_id=CAP_ID,
+        adjacency=Adjacency.FRAME,
+        segment_window=0,
+        clip_norms=dict.fromkeys(five, 1.0),
+        sigmas=dict.fromkeys(five, sigma32),
+        composition_k=100,
+        epsilon_spent=float(np.float32(eps_joint)),
+        delta_target=1e-6,
+    )
+    return [
+        {
+            "name": "l1_balanced_reference",
+            "eps_per_release": 0.5,
+            "delta_per_release": 1e-8,
+            "sigma": sigma,
+            "k": 100,
+            "delta_total": 1e-6,
+            "per_type": {"eps": eps_type, "alpha": alpha_type},
+            "joint_5_types": {"eps": eps_joint, "alpha": alpha_joint},
+            "tlv_hex": params.encode().encode().hex(),
+            "tlv_body_len": 82,
+        },
+        {
+            "name": "l1_private_reference",
+            "eps_per_release": 0.1,
+            "delta_per_release": 1e-8,
+            "sigma": REFERENCE_PROFILES[DpLevel.L1_PRIVATE_REF][1],
+        },
+    ]
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -463,6 +511,8 @@ def documents() -> dict[Path, dict[str, Any]]:
         | {"spec": "ESP V13 section 9.4; ADR-0013", "vectors": identity_vectors()},
         OUT / "replay" / "windows.json": meta
         | {"spec": "ESP V13 section 9.5; ADR-0016", "vectors": replay_vectors()},
+        OUT / "privacy" / "dp_accounting.json": meta
+        | {"spec": "ESP V13 section 12; ADR-0018", "vectors": dp_vectors()},
     }
 
 

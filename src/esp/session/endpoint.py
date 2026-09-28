@@ -21,6 +21,7 @@ never stripped by ``python -O``.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import math
 import uuid
@@ -38,7 +39,7 @@ from esp.codec.frame_wire import (
     frame_to_payload,
     payload_to_frame,
 )
-from esp.codec.header import ConsentFlags, Header, PrivacyFlags
+from esp.codec.header import ConsentFlags, DpLevel, Header, PrivacyFlags
 from esp.codec.tlv import (
     ADDENDUM_V1_CODES,
     TYPED_LATENT_CODES,
@@ -59,8 +60,18 @@ from esp.crypto.identity import session_binding, verify_session_binding
 from esp.crypto.keys import DirectionKeys, TimelineTagRegistry, deterministic_nonce
 from esp.crypto.noise_ik import NoiseIK, Role, StaticKeyPair
 from esp.crypto.primitives import CryptoError, SigningKey
-from esp.frame.model import DisclosurePolicy, ExperienceFrame
+from esp.frame.model import DisclosurePolicy, ExperienceFrame, TypeBlock
 from esp.keys.lineage import KeyLineage
+from esp.privacy.dp import (
+    DP_PARAMS_CODE,
+    DpAuditor,
+    DpConfig,
+    DpParams,
+    PrivacyBudgetError,
+    clip_and_noise,
+    rdp_coefficient,
+    secure_rng,
+)
 from esp.session.control import CloseReason, SessionClose
 from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
 from esp.session.replay import ReplayError, ReplayWindow
@@ -114,6 +125,7 @@ class SenderEndpoint:
         capability: SenderCapability,
         state_dir: Path,
         wire: WireOptions,
+        dp: DpConfig | None = None,
     ) -> None:
         if capability.issuer_pk != master.public_bytes:
             msg = "capability must be issued by this master key"
@@ -135,6 +147,10 @@ class SenderEndpoint:
         self._receiver_cap_tlv: bytes | None = None
         self._keys: DirectionKeys | None = None
         self._sequencer: SenderSequencer | None = None
+        self._dp = dp
+        if dp is not None and dp.level != descriptor.dp_level:
+            msg = "DP configuration must match the session descriptor dp_level"
+            raise PrivacyBudgetError(msg)
         self.transcript: bytes | None = None
 
     @property
@@ -232,9 +248,50 @@ class SenderEndpoint:
     def send_frame(self, frame: ExperienceFrame, policy: DisclosurePolicy, *, now_ns: int) -> bytes:
         self._machine.require_data()
         disclosed = frame.disclose(self.effective_policy(policy))
+        trailer = b""
+        if self._dp is not None:
+            disclosed, trailer = self._privatize(disclosed)
         encoded = frame_to_payload(disclosed, self._wire)
         flags = consent_flags_for(encoded, self._rights_flags())
-        return self._seal(encoded.types_bitmap, flags, encoded.payload, now_ns)
+        return self._seal(encoded.types_bitmap, flags, encoded.payload + trailer, now_ns)
+
+    def _privatize(self, frame: ExperienceFrame) -> tuple[ExperienceFrame, bytes]:
+        """Clip + noise every latent, charge the ledger first, return the 0x30 TLV bytes."""
+        dp = _need(self._dp, "dp")
+        for block in frame.types:
+            if block.anchors or block.affect or block.episodes or block.intention or frame.bindings:
+                msg = (
+                    "with runtime DP only privatized latents may be sent; anchors, descriptors "
+                    "and bindings derived from un-noised data would bypass the guarantee"
+                )
+                raise PrivacyBudgetError(msg)
+        rng = secure_rng()
+        blocks = []
+        for block in frame.types:
+            if block.latent is None:
+                continue
+            noised = clip_and_noise(np.asarray(block.latent), dp.clip_norm, dp.sigma, rng)
+            blocks.append(TypeBlock(type=block.type, latent=tuple(float(x) for x in noised)))
+        types = [b.type for b in blocks]
+        clips = dict.fromkeys(types, dp.clip_norm)
+        sigmas = dict.fromkeys(types, dp.sigma)
+        k, eps = dp.ledger.charge(rdp_coefficient(clips, sigmas))  # persisted before release
+        params = DpParams(
+            capability_id=self._capability.capability_id,
+            adjacency=dp.adjacency,
+            segment_window=0,
+            clip_norms=clips,
+            sigmas=sigmas,
+            composition_k=k,
+            epsilon_spent=eps,
+            delta_target=dp.ledger.delta_target,
+        )
+        private = ExperienceFrame.model_validate(frame.model_dump() | {"types": tuple(blocks)})
+        return private, params.encode().encode()
+
+    def retransmit(self, segment_seq: int) -> bytes:
+        """Identical bytes of an earlier packet: no re-encryption, no new DP release."""
+        return _need(self._sequencer, "sequencer").retransmit(segment_seq)
 
     def send_control(self, tlvs: bytes, *, now_ns: int) -> bytes:
         self._machine.require_data()
@@ -337,6 +394,7 @@ class ReceiverEndpoint:
         self.transcript: bytes | None = None
         self.decoder_invocations = 0
         self.rejections: list[tuple[str, ...]] = []
+        self._auditor: DpAuditor | None = None
 
     @property
     def state(self) -> SessionState:
@@ -385,6 +443,7 @@ class ReceiverEndpoint:
             peer_pk = verify_session_binding(binding, noise_h=noise.noise_h)
             cap = SenderCapability.verify(cap_tlv)
             self._check_issuer(cap)
+            self._auditor = DpAuditor(ceiling=cap.dp_epsilon_ceiling)
             self.transcript = transcript_hash(
                 noise_h=noise.noise_h,
                 initiator=negotiated.initiator,
@@ -405,6 +464,13 @@ class ReceiverEndpoint:
         except EspError:
             self._machine.close()
             raise
+
+    def notify_key_compromised(self, master_pk: bytes) -> bool:
+        """Terminate immediately if this session's authority roots in ``master_pk`` (V13 9.6)."""
+        if self._active is not None and self._active.sender_cap.issuer_pk == master_pk:
+            self._machine.close()
+            return True
+        return False
 
     def _check_issuer(self, cap: SenderCapability) -> None:
         trusted = cap.issuer_pk in self._trusted
@@ -451,8 +517,9 @@ class ReceiverEndpoint:
     ) -> ReceiveResult:
         try:
             facts = _quarantine_facts(header, parsed)
-        except WireError as exc:
-            return self._reject((f"1:{exc}",))
+            facts = self._audit_dp(header, parsed, facts, act)
+        except (WireError, PrivacyBudgetError) as exc:
+            return self._reject((f"8:{exc}",))
         decision = evaluate(
             facts,
             act.sender_cap,
@@ -479,6 +546,32 @@ class ReceiverEndpoint:
             now_ns=now_ns,
         )
         return ReceiveResult(accepted=True, frame=frame)
+
+    def _audit_dp(
+        self, header: Header, parsed: ParsedPayload, facts: PacketFacts, act: _Active
+    ) -> PacketFacts:
+        """Receiver-auditable DP accounting (V13 section 12.4) inside the quarantine."""
+        level = header.dp_level
+        if level != act.negotiated.dp_level:
+            msg = "packet DP_LEVEL differs from the negotiated profile"
+            raise WireError(msg)
+        tlv = parsed.get(DP_PARAMS_CODE)
+        params = None if tlv is None else DpParams.decode(tlv)
+        latent_types = frozenset(
+            TaossType(t.code - 0x60) for t in parsed.known if t.code in TYPED_LATENT_CODES
+        )
+        auditor = _need(self._auditor, "dp auditor")
+        if level is DpLevel.NONE:
+            auditor.audit(level, params, latent_types)
+            return facts
+        if params is None or params.capability_id != act.sender_cap.capability_id:
+            msg = "TLV_DP_PARAMS missing or bound to another capability"
+            raise WireError(msg)
+        eps = auditor.audit(level, params, latent_types)
+        spent = self.accept_state.epsilon_spent.get(act.sender_cap.capability_id.bytes, 0.0)
+        return dataclasses.replace(
+            facts, creates_dp_release=True, epsilon_increment=max(0.0, eps - spent)
+        )
 
     def _handle_control(self, parsed: ParsedPayload, act: _Active) -> ReceiveResult:
         for tlv in parsed.known:

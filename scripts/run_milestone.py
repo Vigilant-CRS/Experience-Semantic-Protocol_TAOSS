@@ -40,6 +40,14 @@ GATES: dict[str, list[str]] = {
         "tests/integration",
         "tests/fuzz",
     ],
+    "M3a": [
+        "tests/milestone/test_m3a.py",
+        "tests/unit/test_keys_revocation.py",
+        "tests/unit/privacy",
+        "tests/unit/test_custody.py",
+        "tests/integration/test_endpoint_dp.py",
+        "tests/integration/test_endpoint.py",
+    ],
 }
 
 

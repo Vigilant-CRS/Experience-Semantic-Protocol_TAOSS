@@ -302,3 +302,17 @@ def test_dataclass_replace_does_not_bypass_capability_signature(tmp_path: Path) 
         now_ns=NOW,
     )
     assert not res.accepted  # the receiver enforces the capability it verified (KNO only)
+
+
+def test_compromised_master_key_terminates_live_sessions(tmp_path: Path) -> None:
+    s, r = pair(tmp_path)
+    establish(s, r)
+    assert not r.notify_key_compromised(b"\x00" * 32)  # unrelated key: no effect
+    assert r.state is SessionState.ACTIVE
+    assert r.notify_key_compromised(MASTER.public_bytes)
+    assert r.state is SessionState.CLOSED
+    late = r.receive(
+        s.send_frame(full_anchor_frame(), DisclosurePolicy(allowed_types=(T.KNO,)), now_ns=NOW),
+        now_ns=NOW,
+    )
+    assert not late.accepted
