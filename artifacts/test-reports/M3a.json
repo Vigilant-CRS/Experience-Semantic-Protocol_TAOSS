@@ -1,0 +1,25 @@
+{
+  "milestone": "M3a",
+  "git_commit": "d3372a167beb195a0a6226191a7e7d9f4d1b55a8",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-28T15:18:10+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M3a",
+  "tests": {
+    "gate": {
+      "passed": 72,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_suite": {
+      "passed": 490,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "verdict": "PASS"
+}
