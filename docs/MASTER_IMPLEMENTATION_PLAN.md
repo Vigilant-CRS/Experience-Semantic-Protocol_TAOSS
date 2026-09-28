@@ -2616,7 +2616,7 @@ Protokollobjekt erhalten.
 
 ## WP-007 — TAOSS Block Model
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
