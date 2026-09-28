@@ -29,6 +29,9 @@ passed on to the application.
 | 0x83 | `REGISTRY_DIGEST` | `name_len u8` · name · `digest[32]` |
 | 0x84 | `STATIC_KEY_BINDING` | ADR-0013 |
 | 0x85 | `SESSION_BINDING` | ADR-0013 |
+| 0x86 | `SOS` | `0x01` (ADR-0026) |
+| 0x87 | `DUMMY_TYPES` | `dummy_bitmap u16` · `masked_bitmap u16` (ADR-0027) |
+| 0x88 | `FILLER` | zero bytes (ADR-0027) |
 | 0x90 | `SEMANTIC_BINDING` | `encoding u8 = 1` · ESP canonical JSON v1 |
 | 0x91 | `EVIDENCE_CLAIM` | `encoding u8 = 1` · ESP canonical JSON v1 |
 | 0x92 | `AFFECT_DESCRIPTOR` (carries `affect_scope`) | `encoding u8 = 1` · ESP canonical JSON v1 |

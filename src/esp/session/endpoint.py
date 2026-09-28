@@ -77,6 +77,8 @@ from esp.privacy.dp import (
     rdp_coefficient,
     secure_rng,
 )
+from esp.privacy.metadata import REGISTRY_NAME as METADATA_REGISTRY
+from esp.privacy.metadata import MetadataProtection
 from esp.session.control import CloseReason, SessionClose
 from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
 from esp.session.floor import is_sos, sos_tlv
@@ -133,6 +135,7 @@ class SenderEndpoint:
         state_dir: Path,
         wire: WireOptions,
         dp: DpConfig | None = None,
+        metadata: MetadataProtection | None = None,
     ) -> None:
         if capability.issuer_pk != master.public_bytes:
             msg = "capability must be issued by this master key"
@@ -158,6 +161,10 @@ class SenderEndpoint:
         self._sequencer: SenderSequencer | None = None
         self._profile: TypeSetProfile | None = None
         self._dp = dp
+        _check_metadata_pin(metadata, descriptor)
+        self._metadata = metadata
+        self._rng = secure_rng()
+        self.decoys_sent = 0
         if dp is not None and dp.level != descriptor.dp_level:
             msg = "DP configuration must match the session descriptor dp_level"
             raise PrivacyBudgetError(msg)
@@ -190,6 +197,7 @@ class SenderEndpoint:
             self._machine.advance(SessionState.PROFILE_NEGOTIATION)
             self._negotiated = negotiate(self._descriptor, peer)
             self._profile = _session_profile(self._negotiated)
+            _metadata_active(self._metadata, self._negotiated, self._profile)
             self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
         except EspError:
             self._machine.close()
@@ -276,7 +284,8 @@ class SenderEndpoint:
             disclosed, trailer = self._privatize(disclosed)
         encoded = frame_to_payload(disclosed, self._wire)
         flags = consent_flags_for(encoded, self._rights_flags())
-        return self._seal(encoded.types_bitmap, flags, encoded.payload + trailer, now_ns)
+        masked = frozenset(disclosed.masked_types)
+        return self._seal(encoded.types_bitmap, flags, encoded.payload + trailer, now_ns, masked)
 
     def _privatize(self, frame: ExperienceFrame) -> tuple[ExperienceFrame, bytes]:
         """Clip + noise every latent, charge the ledger first, return the 0x30 TLV bytes."""
@@ -370,20 +379,49 @@ class SenderEndpoint:
             flags |= ConsentFlags.NO_STORE
         return int(flags)
 
-    def _seal(self, types_bitmap: int, consent_flags: int, payload: bytes, now_ns: int) -> bytes:
+    def decoy(self, *, now_ns: int) -> bytes:
+        """A decoy packet: indistinguishable from data on the wire, discarded by the receiver."""
+        self._machine.require_data()
+        if self._metadata is None:
+            msg = "decoy traffic requires esp-metadata-protection-v1"
+            raise SessionStateError(msg)
+        self.decoys_sent += 1
+        return self._seal(0, self._rights_flags(), b"", now_ns)
+
+    def _seal(
+        self,
+        types_bitmap: int,
+        consent_flags: int,
+        payload: bytes,
+        now_ns: int,
+        masked: frozenset[TaossType] = frozenset(),
+    ) -> bytes:
         sequencer = _need(self._sequencer, "sequencer")
         keys = _need(self._keys, "traffic keys")
         negotiated = _need(self._negotiated, "negotiated profile")
         quantized = self._wire.encoding is LatentEncoding.INT8_SYM
+        privacy = negotiated.dp_level | (int(PrivacyFlags.QUANTIZED) if quantized else 0)
+        timestamp = now_ns
+        if self._metadata is not None:
+            payload = self._metadata.protect(
+                types_bitmap=types_bitmap,
+                masked=masked,
+                payload=payload,
+                encoding=self._wire.encoding,
+                rng=self._rng,
+            )
+            types_bitmap = self._metadata.bitmap
+            consent_flags &= ~int(ConsentFlags.EMO_MASKED)
+            timestamp, privacy = self._metadata.header_fields(now_ns, privacy)
         seq = sequencer.reserve(payload)
         header = Header(
             profile=negotiated.profile,
             sf_level=negotiated.sf_level,
             types_bitmap=types_bitmap,
             consent_flags=consent_flags,
-            privacy_flags=negotiated.dp_level | (int(PrivacyFlags.QUANTIZED) if quantized else 0),
+            privacy_flags=int(privacy),
             capabilities=0,
-            timestamp_ns=now_ns,
+            timestamp_ns=timestamp,
             timeline_id=self._timeline,
             segment_seq=seq,
             dt_ms=0,
@@ -433,6 +471,7 @@ class ReceiverEndpoint:
         lineage: KeyLineage | None = None,
         accept_state: AcceptState | None = None,
         revocations: RevocationRegistry | None = None,
+        metadata: MetadataProtection | None = None,
     ) -> None:
         self._machine = StateMachine()
         self._identity = identity
@@ -456,6 +495,9 @@ class ReceiverEndpoint:
         self.rejections: list[tuple[str, ...]] = []
         self.sos_signals = 0
         self._auditor: DpAuditor | None = None
+        _check_metadata_pin(metadata, descriptor)
+        self._metadata = metadata
+        self.decoys_discarded = 0
 
     @property
     def state(self) -> SessionState:
@@ -473,6 +515,7 @@ class ReceiverEndpoint:
             self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
             self._machine.advance(SessionState.PROFILE_NEGOTIATION)
             self._negotiated = negotiate(peer, self._descriptor)
+            _metadata_active(self._metadata, self._negotiated, _session_profile(self._negotiated))
             self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
             payload = session_binding(self._session_key, noise.noise_h).encode()
             if self._capability_factory is None:
@@ -568,13 +611,18 @@ class ReceiverEndpoint:
         try:
             act.replay.check(header.segment_seq)
             extra = ADDENDUM_V1_CODES if self._wire.addendum else frozenset()
-            parsed = parse_payload(opened.plaintext, extra_codes=extra)
+            plaintext = opened.plaintext
+            parsed = parse_payload(plaintext, extra_codes=extra)
+            if self._metadata is not None:
+                real = self._metadata.unwrap(header, plaintext, parsed)
+                header, plaintext = real.header, real.payload
+                parsed = parse_payload(plaintext, extra_codes=extra)
         except (ReplayError, WireError) as exc:
             return self._reject((f"1:{exc}",))
         if header.types_bitmap == 0:
             act.replay.accept(header.segment_seq)
             return self._handle_control(parsed, act)
-        return self._accept_data(header, opened.plaintext, parsed, now_ns, act)
+        return self._accept_data(header, plaintext, parsed, now_ns, act)
 
     def _accept_data(
         self, header: Header, plaintext: bytes, parsed: ParsedPayload, now_ns: int, act: _Active
@@ -640,6 +688,9 @@ class ReceiverEndpoint:
         )
 
     def _handle_control(self, parsed: ParsedPayload, act: _Active) -> ReceiveResult:
+        if self._metadata is not None and not parsed.known:
+            self.decoys_discarded += 1  # decoy: authenticated, carries nothing
+            return ReceiveResult(accepted=True)
         for tlv in parsed.known:
             if tlv.code == REVOCATION_CODE:
                 intent = self.revocations.apply(
@@ -667,6 +718,31 @@ class ReceiverEndpoint:
 
 def _session_profile(negotiated: NegotiatedSession) -> TypeSetProfile:
     return profile_for(negotiated.sf_level, frozenset(negotiated.registries))
+
+
+def _check_metadata_pin(config: MetadataProtection | None, descriptor: SessionDescriptor) -> None:
+    """The descriptor pins metadata protection iff it is configured, with its digest."""
+    pinned = descriptor.registries.get(METADATA_REGISTRY)
+    if config is None and pinned is not None:
+        msg = f"{METADATA_REGISTRY} is pinned but not configured"
+        raise WireError(msg)
+    if config is not None and pinned != config.digest():
+        msg = f"{METADATA_REGISTRY} must be pinned with the configuration digest"
+        raise WireError(msg)
+
+
+def _metadata_active(
+    config: MetadataProtection | None, negotiated: NegotiatedSession, profile: TypeSetProfile
+) -> None:
+    """Refuse sessions where configured protection would silently be off."""
+    if config is None:
+        return
+    if METADATA_REGISTRY not in negotiated.registries:
+        msg = "peer does not pin esp-metadata-protection-v1; refusing unprotected session"
+        raise WireError(msg)
+    if not profile.allowed <= config.constant_types:
+        msg = f"constant type set must cover every type {profile.name} allows"
+        raise WireError(msg)
 
 
 def _check_profile_consentable(

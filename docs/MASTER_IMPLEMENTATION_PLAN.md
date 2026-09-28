@@ -2336,6 +2336,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-026 | `noise_h[32]` in 0x20/0x21 vs. 64-Byte-Handshake-Hash von `Noise_IK_25519_ChaChaPoly_BLAKE2b` (HASHLEN = 64). | §9.4, §7.6 | hoch | ADR-0013 Amendment: `noise_h = BLAKE2b-256("esp/v1/noise-h" ‖ h)` | WP-018, WP-051, WP-052 | RESOLVED |
 | GAP-027 | SF-Level: V13 nennt Pflicht- und Optionaltypen, sagt aber nicht, ob sie pro Paket gelten und welchen `sf_level` Custom-Typ-Sets (MEB-HANDOVER ohne KNO) tragen. | §8.6, §17 | mittel | ADR-0025: strikt pro Paket; Custom-Sets registriert, `sf_level=0` | WP-063, WP-066 | RESOLVED |
 | GAP-028 | SOS: "1-bit INT shortcut without EMO/KNO" ohne Kodierung. | §16 | niedrig | ADR-0026 (PROPOSED): Addendum-TLV 0x86 = 0x01 auf CONTROL | WP-064 | RESOLVED_IN_IMPLEMENTATION |
+| GAP-029 | Constant-Bitmap/Dummy-Inhalte ohne Kodierung: Empfänger kann Dummies nicht von echten Inhalten unterscheiden; `EMO_MASKED` im Klartext leakt selbst. | §8.3 | mittel | ADR-0027 (PROPOSED): Registry-Profil `esp-metadata-protection-v1`, TLV 0x87 (dummy/mask bitmaps im AEAD), 0x88 Filler | WP-062 | RESOLVED_IN_IMPLEMENTATION |
 
 ---
 
@@ -3875,7 +3876,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-062 — Metadaten-Leak-Mitigations
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED` (ADR-0027 PROPOSED)
 
 ### Implementieren
 
@@ -4781,6 +4782,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
 | ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |
 | ADR-0026 | SOS-Kodierung (GAP-028) | PROPOSED |
+| ADR-0027 | Metadatenschutz-Profil (GAP-029) | PROPOSED |
 
 ---
 

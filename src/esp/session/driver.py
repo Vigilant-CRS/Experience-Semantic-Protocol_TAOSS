@@ -147,3 +147,54 @@ def _header_timestamp(packet: bytes) -> int:
     if len(packet) < 24:
         return 0
     return int.from_bytes(packet[16:24], "big")
+
+
+class PacedSender:
+    """Constant-rate sending (WP-062): one packet per tick, a decoy when idle.
+
+    With ``esp-metadata-protection-v1`` every packet has the same bitmap and
+    size, so an observer sees a constant-rate stream whether or not the user
+    is sharing anything. Frames queued between ticks wait for the next tick
+    (the latency cost of the mitigation).
+    """
+
+    def __init__(
+        self,
+        sender: SenderEndpoint,
+        conn: Connection,
+        policy: DisclosurePolicy,
+        *,
+        interval_s: float,
+        channel: Channel = Channel.STATE,
+        clock: Clock = wall_clock_ns,
+    ) -> None:
+        if interval_s <= 0:
+            msg = "interval must be positive"
+            raise ValueError(msg)
+        self._sender = sender
+        self._conn = conn
+        self._policy = policy
+        self._interval = interval_s
+        self._channel = channel
+        self._clock = clock
+        self._pending: asyncio.Queue[ExperienceFrame] = asyncio.Queue()
+        self.frames_sent = 0
+        self.decoys_sent = 0
+
+    def submit(self, frame: ExperienceFrame) -> None:
+        self._pending.put_nowait(frame)
+
+    async def run(self, ticks: int) -> None:
+        loop = asyncio.get_running_loop()
+        start = loop.time()
+        for tick in range(ticks):
+            if self._pending.empty():
+                packet = self._sender.decoy(now_ns=self._clock())
+                self.decoys_sent += 1
+            else:
+                frame = self._pending.get_nowait()
+                packet = self._sender.send_frame(frame, self._policy, now_ns=self._clock())
+                self.frames_sent += 1
+            await self._conn.send(self._channel, packet)
+            # absolute schedule: no drift from send time
+            await asyncio.sleep(max(0.0, start + (tick + 1) * self._interval - loop.time()))
