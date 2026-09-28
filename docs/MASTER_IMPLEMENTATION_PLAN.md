@@ -3692,7 +3692,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-054 — Vendor Provenance Chain (0x40)
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
