@@ -40,6 +40,15 @@ esp-demo = "esp.demo.cli:main"
 [project.urls]
 Repository = "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS"
 
+[project.optional-dependencies]
+physio = [
+    "brainflow>=5.23.0",
+    "pyedflib>=0.1.42",
+    "pylsl>=1.18.5",
+    "pyxdf>=1.17.5",
+    "wfdb>=4.3.1",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8",
@@ -50,6 +59,11 @@ dev = [
     "reuse>=4",
     "jsonschema>=4.23",
     "types-pyyaml>=6.0.12.20260906",
+    "brainflow>=5.23.0",
+    "pylsl>=1.18.5",
+    "pyxdf>=1.17.5",
+    "wfdb>=4.3.1",
+    "pyedflib>=0.1.42",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -70,6 +84,7 @@ markers = [
     "fuzz: fuzz smoke tests",
     "milestone: milestone gate tests",
     "slow: long-running tests",
+    "dataset: needs open datasets in data/external (scripts/fetch_datasets.py)",
 ]
 xfail_strict = true
 filterwarnings = ["error"]
@@ -103,5 +118,5 @@ mypy_path = "src"
 packages = ["esp"]
 
 [[tool.mypy.overrides]]
-module = ["noise", "noise.*"]
+module = ["noise", "noise.*", "wfdb", "wfdb.*", "pyxdf", "pyxdf.*", "brainflow", "brainflow.*", "pylsl", "pylsl.*", "pyedflib", "pyedflib.*"]
 ignore_missing_imports = true
