@@ -1,0 +1,25 @@
+{
+  "milestone": "M5",
+  "git_commit": "517f7eec689a87d7b158e92f61d53465cab2eb47",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-28T17:55:54+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M5",
+  "tests": {
+    "gate": {
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_suite": {
+      "passed": 605,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "verdict": "PASS"
+}

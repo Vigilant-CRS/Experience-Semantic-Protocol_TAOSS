@@ -67,3 +67,4 @@ both agree.
 | M3 | PASS | `artifacts/test-reports/M3.json` (commit 9314bb6) |
 | M3a | PASS | `artifacts/test-reports/M3a.json` (commit d3372a1) |
 | M4 | PASS | `artifacts/test-reports/M4.json` (commit 0b9e8f3; per-condition network metrics embedded) |
+| M5 | PASS | `artifacts/test-reports/M5.json` (commit 517f7ee; two-process demo over QUIC, transparency panel, active Art. 5(1)(f) guard) |
