@@ -25,6 +25,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "aioquic>=1.2",
     "cryptography>=43",
     "noiseprotocol>=0.3.1",
     "numpy>=2.0",

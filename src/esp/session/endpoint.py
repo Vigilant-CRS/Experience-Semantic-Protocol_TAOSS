@@ -52,7 +52,12 @@ from esp.codec.tlv import (
 )
 from esp.consent.accept import AcceptState, PacketFacts, commit, evaluate
 from esp.consent.capability import ReceiverCapability, ReceiverPolicy, Rights, SenderCapability
-from esp.consent.revocation import Effects, RevocationRegistry
+from esp.consent.revocation import (
+    ConsentRevocationReason,
+    Effects,
+    RevocationIntent,
+    RevocationRegistry,
+)
 from esp.core.errors import EspError
 from esp.core.taoss_types import TaossType
 from esp.crypto.envelope import open_packet, seal_packet
@@ -137,6 +142,8 @@ class SenderEndpoint:
         self._descriptor = descriptor
         self._capability = capability
         self._capability_tlv = capability.sign(master)
+        self._master = master
+        self._revoked = False
         self._state_dir = state_dir
         self._wire = wire
         self._session_key = SigningKey.generate()
@@ -247,6 +254,9 @@ class SenderEndpoint:
 
     def send_frame(self, frame: ExperienceFrame, policy: DisclosurePolicy, *, now_ns: int) -> bytes:
         self._machine.require_data()
+        if self._revoked:
+            msg = "consent was withdrawn: no further frames under this capability"
+            raise SessionStateError(msg)
         disclosed = frame.disclose(self.effective_policy(policy))
         trailer = b""
         if self._dp is not None:
@@ -296,6 +306,27 @@ class SenderEndpoint:
     def send_control(self, tlvs: bytes, *, now_ns: int) -> bytes:
         self._machine.require_data()
         return self._seal(0, self._rights_flags(), tlvs, now_ns)
+
+    def revoke(
+        self,
+        *,
+        now_ns: int,
+        effects: Effects = Effects.REVOKE_FUTURE_USE,
+        reason: ConsentRevocationReason = ConsentRevocationReason.CONSENT_WITHDRAWN,
+    ) -> bytes:
+        """Withdraw consent for this capability (capability scope) and stop sending."""
+        intent = RevocationIntent(
+            capability_id=self._capability.capability_id,
+            timeline_id=uuid.UUID(int=0),
+            revoke_from_seq=0,
+            reason=reason,
+            effects=effects,
+            capability_issuer_pk=self._capability.issuer_pk,
+            signer_pk=self._master.public_bytes,
+        )
+        packet = self.send_control(intent.sign(self._master).encode(), now_ns=now_ns)
+        self._revoked = True
+        return packet
 
     def close(self, *, now_ns: int, reason: CloseReason = CloseReason.NORMAL) -> bytes:
         packet = self.send_control(SessionClose(reason).encode().encode(), now_ns=now_ns)

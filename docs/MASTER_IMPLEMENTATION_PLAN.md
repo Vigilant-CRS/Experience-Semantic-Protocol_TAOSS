@@ -3020,7 +3020,7 @@ Full CI/nightly:
 
 ## WP-023 — QUIC Transport Adapter
 
-**Status:** `NOT_STARTED`
+**Status:** `IMPLEMENTED`
 
 ### Implementieren
 
@@ -3057,7 +3057,7 @@ reconstruction freshness
 
 ## WP-024 — Session Protocol over QUIC
 
-**Status:** `IN_PROGRESS`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
