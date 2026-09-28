@@ -2322,7 +2322,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-012 | Referenzparameter der DP-Profile (`L1_BALANCED_REF` σ≈24.42, `L1_PRIVATE_REF` σ≈122.13 bei C=1, δ=10⁻⁶?) über mehrere Absätze verteilt, δ und α-Gitter nicht als Tabelle. | §DP | mittel | Registry-Eintrag `esp-dp-ref-v1` mit C, σ, δ, α-Gitter, Accountant; Golden Vectors für ε. ADR-0018 | WP-055 | RESOLVED |
 | GAP-013 | `Δ_clock` (Uhrentoleranz im Accept-Prädikat) ohne Default. | §Consent Accept | mittel | Profil-Default 2 s (L1), 250 ms (I2I). ADR-0019 | WP-019 | RESOLVED |
 | GAP-014 | Fehlercodes (z. B. `ESP_DECODER_POLICY_FAILED`) werden genannt, aber es gibt kein Fehlercode-Register. | §Decoder | mittel | CS-DECODER + `src/esp/core/errors.py` Register mit stabilen numerischen Codes. ADR-0020 | WP-059 | RESOLVED_IN_IMPLEMENTATION (`esp.core.errors` + `esp-error-codes-v1` registry) |
-| GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | PARTIAL: Band-Prüfungen parametrisiert (`audit/hardening.py`), Default-Werte noch experimentell zu bestimmen |
+| GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | RESOLVED_IN_IMPLEMENTATION (Profil `esp-covert-hardening-v1` mit experimentell abgeleiteten Defaults, `scripts/calibrate_hardening.py`; Werte EXPERIMENTAL, pro Produktions-Encoder neu abzuleiten) |
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | OPEN |
 | GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | RESOLVED_IN_IMPLEMENTATION (Referenzprofil ADR-0021: FROST RFC 9591 byte-exakt, Bonawitz-Masked-Sums; MLS, anonyme Credentials und DKG weiter offen) |
 | GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | RESOLVED_IN_IMPLEMENTATION (ADR-0022 PROPOSED) |
@@ -5050,7 +5050,7 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 4        # GAP-015 (partial), 016, 017 (partial: MLS/Credentials/DKG), 023 (partial)
+open_gaps: 3        # GAP-016, 017 (partial: MLS/Credentials/DKG), 023 (partial)
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "SMOKE_IMPLEMENTED (preregistered runs need real corpora, GAP-023)"

@@ -207,6 +207,22 @@ only once V13.1 adopts them. Each entry records:
 - Agent state travels as a signed opaque-latent descriptor (0x98) and agent events (0x99). It
   is never labelled TAOSS without a passed leakage audit.
 
+**E-27 (GAP-015, FINDING): hardening constraint values**
+
+- *Proposed:* a pinned profile `esp-covert-hardening-v1` carries the per-coordinate TEM band,
+  the per-type gating-sparsity bands and the randomized-quantization strength `σ_t` (in units
+  of the INT8 step).
+- *Forbidden TEM codebook patterns* on the transmitted INT8 codes:
+  - an all-zero frame;
+  - a repeating phase with period 2–4 held for at least 8 frames;
+  - a constant non-zero code delta held for at least 8 frames.
+  
+  A constant TEM (a paused stream) stays allowed.
+- Values are derived per encoder by a documented calibration on honest streams. The reference
+  values (σ = 0.5 step) come from the synthetic reference encoder and are marked EXPERIMENTAL.
+- *Tests:* `tests/unit/audit/test_hardening_profile.py`,
+  `artifacts/research/hardening_calibration.json`.
+
 ## Repository roles
 
 **E-21 (GAP-020): repositories**
@@ -221,8 +237,6 @@ only once V13.1 adopts them. Each entry records:
 
 ## Still open (not yet proposed as errata)
 
-- **GAP-015:** default values for the TEM pattern and gating-sparsity bands. The checks exist;
-  the values need experiments.
 - **GAP-016:** replay watermark TLV code.
 - **GAP-017 (partial):** MLS, anonymous-credential and DKG companion profiles for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.
