@@ -207,6 +207,26 @@ only once V13.1 adopts them. Each entry records:
 - Agent state travels as a signed opaque-latent descriptor (0x98) and agent events (0x99). It
   is never labelled TAOSS without a passed leakage audit.
 
+**E-26 (GAP-016, PROPOSED, ADR-0030): replay-pattern watermark**
+
+- *V13:* "Replay segments include vendor-side watermark TLVs" names no TLV code, body or
+  verification rule.
+- *Proposed:* addendum TLV `0x89 REPLAY_WATERMARK` as the last TLV of every replay segment (a
+  packet carrying `RECALL_FRAME` 0x51).
+- Layout: `vendor_id[16] ‖ epoch u32 ‖ index u32 ‖ scheduled_offset_ns u64 ‖ tag[16]`, with
+  `tag = BLAKE2b-128(vendor key, "esp/v1/replay-watermark" ‖ timeline_id ‖ epoch ‖ index ‖
+  offset ‖ BLAKE2b-256(payload before the watermark))`.
+- Replay timing follows a vendor-keyed schedule (period plus keyed jitter):
+  - epochs count from 0 without gaps and start on a declared grid;
+  - indices are contiguous;
+  - the header timestamp equals the schedule;
+  - arrival stays within a declared tolerance.
+- Replay requires `ALLOW_REPLAY`. Receivers without a watermark policy refuse replay segments,
+  and a watermark on a live segment is refused. Error code `REPLAY_WATERMARK_INVALID`
+  (0x0401).
+- *Tests:* `vectors/replay/watermark.json`, `tests/unit/xcf/test_watermark.py`,
+  `tests/integration/test_replay_watermark.py`.
+
 **E-27 (GAP-015, FINDING): hardening constraint values**
 
 - *Proposed:* a pinned profile `esp-covert-hardening-v1` carries the per-coordinate TEM band,
@@ -237,6 +257,5 @@ only once V13.1 adopts them. Each entry records:
 
 ## Still open (not yet proposed as errata)
 
-- **GAP-016:** replay watermark TLV code.
 - **GAP-017 (partial):** MLS, anonymous-credential and DKG companion profiles for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.

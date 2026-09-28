@@ -41,7 +41,8 @@ def tlv(hex_: str):  # type: ignore[no-untyped-def]
 def test_index_lists_every_file_with_its_digest() -> None:
     index = json.loads((VECTORS / "INDEX.json").read_text())
     assert index["suite_version"] == "1.0.0"
-    on_disk = {str(p.relative_to(VECTORS)) for p in VECTORS.rglob("*.json")} - {"INDEX.json"}
+    manifests = {"INDEX.json", *(p.name for p in VECTORS.glob("FROZEN-*.json"))}
+    on_disk = {str(p.relative_to(VECTORS)) for p in VECTORS.rglob("*.json")} - manifests
     assert set(index["files"]) == on_disk
     for rel, digest in index["files"].items():
         assert hashlib.blake2b((VECTORS / rel).read_bytes(), digest_size=32).hexdigest() == digest
