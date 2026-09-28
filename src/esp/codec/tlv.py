@@ -269,7 +269,8 @@ def _decode_values(encoding: LatentEncoding, data: bytes, scale: float) -> NDArr
         msg = "scale must be exactly 1.0 for float encodings"
         raise WireError(msg)
     dtype = ">f4" if encoding is LatentEncoding.F32_BE else ">f2"
-    values = np.frombuffer(data, dtype=dtype).astype(np.float64)
+    with np.errstate(invalid="ignore", over="ignore"):  # NaN/Inf are rejected just below
+        values = np.frombuffer(data, dtype=dtype).astype(np.float64)
     if not np.all(np.isfinite(values)):
         msg = "typed latent contains NaN or infinity"
         raise WireError(msg)

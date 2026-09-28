@@ -2966,7 +2966,7 @@ Frame vor Consent wird verworfen.
 
 ## WP-021 — V13 Conformance Vector Suite
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Vektoren
 
@@ -2991,7 +2991,7 @@ Vektoren sind:
 
 ## WP-022 — Fuzzing and Parser Hardening
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Ziele
 
@@ -3550,7 +3550,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-048 — Companion Spec: Session Control & Session Descriptor
 
-**Status:** `IMPLEMENTED` · **Klasse:** `V13_COMPATIBLE_ADDENDUM` · **Löst:** GAP-005, GAP-024
+**Status:** `VERIFIED` · **Klasse:** `V13_COMPATIBLE_ADDENDUM` · **Löst:** GAP-005, GAP-024
 
 ### Implementieren
 
@@ -3930,7 +3930,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-065 — Adaptives Replay-Fenster
 
-**Status:** `IMPLEMENTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

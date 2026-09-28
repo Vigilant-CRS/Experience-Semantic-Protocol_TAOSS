@@ -1,0 +1,16 @@
+{
+  "files": {
+    "consent/capabilities.json": "9e0a31cf20d7cadc15dbe3a6701ea7f7e1f441913c02c02f7310e7ae6be55958",
+    "consent/revocation.json": "894f1b4e5c657702f5fbc5a80739a7d883966c949f8f1c14ad656c38438e7a05",
+    "crypto/packet_valid.json": "3f1acf8237724bde3b021d6532a4b9bd3a4b8c60c65f7e98adff4f02bdcec81b",
+    "identity/bindings.json": "28d1d7b0d1febd760e52671e94c50be4024a5c3baafcf103adc6c250c8dc7572",
+    "malformed/header_invalid.json": "b0fde7d38ea5ff28987bf8ea32434ccf03075fd86e88ffe4f2d405e81c1d6097",
+    "malformed/latent_invalid.json": "882c9d34b62c75d446711fa7e425b47740ddb72b9c98644222fac56792e03081",
+    "replay/windows.json": "7890a8d24730b57ef79f6f047bf389c353f2ee8a5ae7686e04efbea5fba6e28a",
+    "session/descriptor.json": "ec5baede6e1c332e0ef0453a53c4b910f22f71623f61378a22610543c2d6817f",
+    "wire/header_valid.json": "7f1d52d5c8430307c302bae43f84663cbd6932f171197deaa6bc2e429f2f8d59",
+    "wire/latent_valid.json": "4f84e842d3f33dc7233d1b7ef6c344be77daa915a307949242206b35e88f71aa"
+  },
+  "license": "CC-BY-4.0",
+  "suite_version": "1.0.0"
+}

@@ -217,3 +217,20 @@ def test_formula_rejects_bad_inputs() -> None:
     for args in itertools.product((-1.0, float("nan")), (0.0,), (50.0,)):
         with pytest.raises(ValueError, match="finite and non-negative"):
             replay_windows(*args)
+
+
+def test_link_estimator_feeds_the_window_formula() -> None:
+    from esp.session.replay import LinkEstimator  # noqa: PLC0415
+
+    est = LinkEstimator(capacity=200)
+    assert est.windows(50.0) == (1024, 128)  # no samples yet: floors
+    for i in range(200):
+        est.add_rtt(0.05 if i % 50 else 12.0)  # 2 % of samples: 12 s cellular stalls
+    w_back, w_fwd = est.windows(50.0)
+    assert w_back == 1200  # ceil(2 * 12 s * 50 Hz)
+    assert w_fwd == 598  # ceil(11.95 s * 50 Hz)
+    for _ in range(200):
+        est.add_rtt(0.05)  # old samples age out of the bounded buffer
+    assert est.windows(50.0) == (1024, 128)
+    with pytest.raises(ValueError, match="finite"):
+        est.add_rtt(float("nan"))

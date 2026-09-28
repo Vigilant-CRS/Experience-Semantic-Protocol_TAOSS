@@ -14,6 +14,7 @@ accepted if ``s <= W_fwd``). Sequences never wrap.
 
 from __future__ import annotations
 
+import collections
 import math
 from dataclasses import dataclass, field
 from typing import Final
@@ -38,6 +39,44 @@ def replay_windows(rtt_p99_s: float, jitter_p99_s: float, packet_rate_hz: float)
     w_back = min(W_CAP, max(W_BACK_FLOOR, math.ceil(2.0 * rtt_p99_s * packet_rate_hz)))
     w_fwd = min(W_CAP, max(W_FWD_FLOOR, math.ceil(jitter_p99_s * packet_rate_hz)))
     return w_back, w_fwd
+
+
+@dataclass(slots=True)
+class LinkEstimator:
+    """Runtime RTT/jitter estimation for the adaptive replay window (WP-065).
+
+    Keeps the last ``capacity`` samples (seconds) and reports p99 values; the
+    transport (e.g. QUIC RTT samples, WP-023) feeds it. Jitter is the absolute
+    difference of consecutive RTT samples (RFC 3550-style instantaneous jitter).
+    """
+
+    capacity: int = 1024
+    _rtt: collections.deque[float] = field(default_factory=collections.deque)
+    _jitter: collections.deque[float] = field(default_factory=collections.deque)
+
+    def add_rtt(self, rtt_s: float) -> None:
+        if not math.isfinite(rtt_s) or rtt_s < 0.0:
+            msg = "RTT sample must be finite and non-negative"
+            raise ValueError(msg)
+        if self._rtt:
+            self._push(self._jitter, abs(rtt_s - self._rtt[-1]))
+        self._push(self._rtt, rtt_s)
+
+    def _push(self, buf: collections.deque[float], value: float) -> None:
+        buf.append(value)
+        while len(buf) > self.capacity:
+            buf.popleft()
+
+    @staticmethod
+    def _p99(buf: collections.deque[float]) -> float:
+        if not buf:
+            return 0.0
+        ordered = sorted(buf)
+        return ordered[min(len(ordered) - 1, math.ceil(0.99 * len(ordered)) - 1)]
+
+    def windows(self, packet_rate_hz: float) -> tuple[int, int]:
+        """``(W_back, W_fwd)`` from the current p99 RTT and jitter."""
+        return replay_windows(self._p99(self._rtt), self._p99(self._jitter), packet_rate_hz)
 
 
 @dataclass(slots=True)

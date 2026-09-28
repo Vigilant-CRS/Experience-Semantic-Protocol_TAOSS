@@ -24,7 +24,22 @@ GATES: dict[str, list[str]] = {
     "M0": ["tests/milestone/test_m0.py"],
     "M1": ["tests/milestone/test_m1.py"],
     "M2": ["tests/milestone/test_m2.py"],
-    "M3": ["tests/milestone/test_m3.py"],
+    "M3": [
+        "tests/milestone/test_m3.py",
+        "tests/conformance",
+        "tests/unit/test_header_codec.py",
+        "tests/unit/test_tlv_codec.py",
+        "tests/unit/test_crypto.py",
+        "tests/unit/test_identity.py",
+        "tests/unit/session",
+        "tests/unit/test_consent.py",
+        "tests/unit/test_keys_revocation.py",
+        "tests/unit/test_provenance.py",
+        "tests/unit/test_structure_tlvs.py",
+        "tests/unit/frame/test_frame_wire.py",
+        "tests/integration",
+        "tests/fuzz",
+    ],
 }
 
 

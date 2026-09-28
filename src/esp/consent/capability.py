@@ -40,6 +40,14 @@ class AudienceMode(IntEnum):
     AUDIENCE_SET_ROOT = 1
 
 
+def _types(bitmap: int) -> tuple[TaossType, ...]:
+    """``bitmap_to_types`` with wire-level errors (reserved bits are malformed input)."""
+    try:
+        return bitmap_to_types(bitmap)
+    except ValueError as exc:
+        raise WireError(str(exc)) from None
+
+
 def _f32_exact(name: str, value: float) -> None:
     if not math.isfinite(value) or struct.unpack(">f", struct.pack(">f", value))[0] != value:
         msg = f"{name} must be a finite binary32 value"
@@ -64,7 +72,7 @@ class SenderCapability:
         if self.version != 1:
             msg = "unsupported capability version"
             raise WireError(msg)
-        bitmap_to_types(self.types_allowed)  # rejects reserved bits
+        _types(self.types_allowed)  # rejects reserved bits
         if int(self.rights) & ~RIGHTS_ASSIGNED_MASK:
             msg = "rights_flags bits 2-7 must be zero in v1"
             raise WireError(msg)
@@ -86,7 +94,7 @@ class SenderCapability:
 
     @property
     def types(self) -> tuple[TaossType, ...]:
-        return bitmap_to_types(self.types_allowed)
+        return _types(self.types_allowed)
 
     def body(self) -> bytes:
         return _SENDER_BODY.pack(
@@ -152,7 +160,7 @@ class ReceiverCapability:
     version: int = 1
 
     def __post_init__(self) -> None:
-        types = bitmap_to_types(self.accept_types)
+        types = _types(self.accept_types)
         if self.version != 1:
             msg = "unsupported receiver capability version"
             raise WireError(msg)
@@ -191,7 +199,7 @@ class ReceiverCapability:
 
     @property
     def types(self) -> tuple[TaossType, ...]:
-        return bitmap_to_types(self.accept_types)
+        return _types(self.accept_types)
 
     def norm_cap(self, t: TaossType) -> float:
         return self.max_norm[self.types.index(t)]
@@ -215,7 +223,7 @@ class ReceiverCapability:
             msg = "malformed receiver capability"
             raise WireError(msg)
         version, accept, n_types = struct.unpack_from(">BHB", v, 0)
-        types = bitmap_to_types(accept)
+        types = _types(accept)
         if n_types != len(types):
             msg = "n_types must equal popcount(accept_types)"
             raise WireError(msg)

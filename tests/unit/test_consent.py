@@ -120,7 +120,7 @@ def test_sender_capability_roundtrip_signature_and_layout() -> None:
 def test_sender_capability_field_rules() -> None:
     with pytest.raises(WireError, match="bits 2-7"):
         sender_cap(rights=Rights(0x04))
-    with pytest.raises(ValueError, match="reserved"):
+    with pytest.raises(WireError, match="reserved"):
         sender_cap(types_allowed=0x40)
     with pytest.raises(WireError, match="binary32"):
         sender_cap(dp_epsilon_ceiling=0.1)

@@ -21,10 +21,22 @@ import numpy as np
 
 from esp.codec.header import HEADER_LEN, ConsentFlags, Header, PrivacyFlags, float32
 from esp.codec.tlv import LatentEncoding, encode_tlv, encode_typed_latent
+from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
+from esp.consent.revocation import (
+    ConsentRevocationReason,
+    DeletionAttestation,
+    DeletionScope,
+    Effects,
+    RevocationIntent,
+    request_digest,
+)
 from esp.core.taoss_types import TaossType
 from esp.crypto.envelope import seal_packet
+from esp.crypto.identity import IdentityProof, session_binding
 from esp.crypto.keys import DirectionKeys, deterministic_nonce, timeline_tag
-from esp.crypto.primitives import SigningKey
+from esp.crypto.primitives import SigningKey, blake2b
+from esp.session.descriptor import SessionDescriptor
+from esp.session.replay import ReplayError, ReplayWindow
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "vectors"
@@ -262,6 +274,166 @@ def crypto_packet_vectors() -> list[dict[str, Any]]:
     ]
 
 
+ISSUER = SigningKey.from_seed(b"\x31" * 32)
+RECEIVER = SigningKey.from_seed(b"\x32" * 32)
+SESSION = SigningKey.from_seed(b"\x33" * 32)
+NOISE_H = blake2b(b"conformance-noise-h")
+CAP_ID = uuid.UUID("11111111-2222-4333-8444-555555555555")
+
+
+def session_vectors() -> list[dict[str, Any]]:
+    desc = SessionDescriptor(
+        profile=1,
+        sf_level=6,
+        rate_sensor_mhz=250_000,
+        rate_latent_mhz=50_000,
+        rate_packet_mhz=50_000,
+        registries={"esp-addendum-v1": b"\xa1" * 32, "esp-emo-v13-basic8-v1": b"\xdd" * 32},
+    )
+    return [
+        {
+            "name": "descriptor_sf6_two_registries",
+            "hex": desc.encode().hex(),
+            "digest": desc.digest().hex(),
+        }
+    ]
+
+
+def capability_vectors() -> list[dict[str, Any]]:
+    sender = SenderCapability(
+        CAP_ID,
+        0x000B,
+        Rights.ALLOW_STORE,
+        1000,
+        8.0,
+        2**62,
+        AudienceMode.RECIPIENT_PUBKEY,
+        RECEIVER.public_bytes,
+        ISSUER.public_bytes,
+        b"\x00" * 16,
+    )
+    receiver = ReceiverCapability(
+        0x000F,
+        (10.0, 10.0, 10.0, 10.0),
+        (-0.5, 1.0),
+        50,
+        0,
+        2**62,
+        b"\x01" * 16,
+        RECEIVER.public_bytes,
+        NOISE_H,
+    )
+    receiver_no_emo = ReceiverCapability(
+        0x0009,
+        (10.0, 10.0),
+        None,
+        50,
+        0,
+        2**62,
+        b"\x01" * 16,
+        RECEIVER.public_bytes,
+        NOISE_H,
+    )
+    return [
+        {
+            "name": "sender_capability",
+            "issuer_seed": (b"\x31" * 32).hex(),
+            "tlv_hex": sender.sign(ISSUER).encode().hex(),
+        },
+        {
+            "name": "receiver_capability_with_emo",
+            "receiver_seed": (b"\x32" * 32).hex(),
+            "noise_h": NOISE_H.hex(),
+            "tlv_hex": receiver.sign(RECEIVER).encode().hex(),
+        },
+        {
+            "name": "receiver_capability_without_emo",
+            "receiver_seed": (b"\x32" * 32).hex(),
+            "noise_h": NOISE_H.hex(),
+            "tlv_hex": receiver_no_emo.sign(RECEIVER).encode().hex(),
+        },
+    ]
+
+
+def revocation_vectors() -> list[dict[str, Any]]:
+    intent = RevocationIntent(
+        CAP_ID,
+        uuid.UUID(int=0),
+        0,
+        ConsentRevocationReason.CONSENT_WITHDRAWN,
+        Effects.REVOKE_FUTURE_USE | Effects.REQUEST_DELETE_STORED,
+        ISSUER.public_bytes,
+        ISSUER.public_bytes,
+    ).sign(ISSUER)
+    attestation = DeletionAttestation(
+        CAP_ID,
+        uuid.UUID(int=0),
+        DeletionScope.STORED_CAPSULES,
+        request_digest(intent),
+        bytes(32),
+        123,
+        RECEIVER.public_bytes,
+    ).sign(RECEIVER)
+    return [
+        {"name": "consent_withdrawn", "tlv_hex": intent.encode().hex()},
+        {
+            "name": "deletion_attestation",
+            "request_tlv_hex": intent.encode().hex(),
+            "tlv_hex": attestation.encode().hex(),
+        },
+    ]
+
+
+def identity_vectors() -> list[dict[str, Any]]:
+    proof = IdentityProof(ISSUER.public_bytes, NOISE_H, 1_727_000_000).encode(
+        ISSUER, SESSION.public_bytes
+    )
+    return [
+        {
+            "name": "identity_proof",
+            "pk_session": SESSION.public_bytes.hex(),
+            "noise_h": NOISE_H.hex(),
+            "tlv_hex": proof.encode().hex(),
+        },
+        {
+            "name": "session_binding",
+            "session_seed": (b"\x33" * 32).hex(),
+            "noise_h": NOISE_H.hex(),
+            "tlv_hex": session_binding(SESSION, NOISE_H).encode().hex(),
+        },
+    ]
+
+
+def replay_vectors() -> list[dict[str, Any]]:
+    """Sequences with the expected accept (1) / reject (0) outcome, W_back=1024, W_fwd=128."""
+    sequences = [
+        [0, 1, 2, 2, 1],
+        [127, 128, 255, 383, 511, 639, 767, 895, 1023, 1151, 127, 1151 - 1023, 1151 - 1024],
+        [0, 200],
+        [5, 3, 4, 3, 133, 134],
+    ]
+    out = []
+    for i, seq in enumerate(sequences):
+        w = ReplayWindow(w_back=1024, w_fwd=128)
+        expected = []
+        for s in seq:
+            try:
+                w.accept(s)
+                expected.append(1)
+            except ReplayError:
+                expected.append(0)
+        out.append(
+            {
+                "name": f"window_{i}",
+                "w_back": 1024,
+                "w_fwd": 128,
+                "sequence": seq,
+                "accept": expected,
+            }
+        )
+    return out
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -281,6 +453,16 @@ def documents() -> dict[Path, dict[str, Any]]:
             "spec": "ESP V13 section 9.2; ADR-0009, ADR-0010",
             "vectors": crypto_packet_vectors(),
         },
+        OUT / "session" / "descriptor.json": meta
+        | {"spec": "ADR-0012", "vectors": session_vectors()},
+        OUT / "consent" / "capabilities.json": meta
+        | {"spec": "ESP V13 section 9.7; ADR-0015", "vectors": capability_vectors()},
+        OUT / "consent" / "revocation.json": meta
+        | {"spec": "ESP V13 section 9.7", "vectors": revocation_vectors()},
+        OUT / "identity" / "bindings.json": meta
+        | {"spec": "ESP V13 section 9.4; ADR-0013", "vectors": identity_vectors()},
+        OUT / "replay" / "windows.json": meta
+        | {"spec": "ESP V13 section 9.5; ADR-0016", "vectors": replay_vectors()},
     }
 
 
@@ -288,10 +470,20 @@ def render(doc: dict[str, Any]) -> str:
     return json.dumps(doc, indent=2, sort_keys=True) + "\n"
 
 
+def with_index(docs: dict[Path, dict[str, Any]]) -> dict[Path, dict[str, Any]]:
+    """Add vectors/INDEX.json: suite version, file list and BLAKE2b-256 of each file."""
+    files = {
+        str(path.relative_to(OUT)): blake2b(render(doc).encode()).hex()
+        for path, doc in sorted(docs.items())
+    }
+    index = {"suite_version": SUITE_VERSION, "license": "CC-BY-4.0", "files": files}
+    return docs | {OUT / "INDEX.json": index}
+
+
 def main(argv: list[str]) -> int:
     check = "--check" in argv
     stale = []
-    for path, doc in documents().items():
+    for path, doc in with_index(documents()).items():
         text = render(doc)
         if check:
             if not path.exists() or path.read_text(encoding="utf-8") != text:

@@ -1,0 +1,13 @@
+{
+  "header_len": 100,
+  "license": "CC-BY-4.0",
+  "spec": "ADR-0012",
+  "suite_version": "1.0.0",
+  "vectors": [
+    {
+      "digest": "c202ee8789ed09fb19667fe2739a839d4c6251a31eb07b21186b0939dc7d829b",
+      "hex": "010106000000040000800003d0900000c3500000c3500000000000100000000007d0020f6573702d616464656e64756d2d7631a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1156573702d656d6f2d7631332d6261736963382d7631dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd000000000000",
+      "name": "descriptor_sf6_two_registries"
+    }
+  ]
+}
