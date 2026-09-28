@@ -3853,7 +3853,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-061 — Bundle Mode (0x01), Capabilities-Ext (0x10), Type Profile (0x11)
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-011
+**Status:** `VERIFIED` · **Löst:** GAP-011
 
 ### Implementieren
 
