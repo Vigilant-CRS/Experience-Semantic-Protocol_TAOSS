@@ -190,17 +190,11 @@ def require_permitted(decl: RegulatoryDeclaration | None) -> Assessment:
 
 
 def frame_scopes(frame: ExperienceFrame) -> frozenset[AffectScope]:
-    """Affect scopes a frame asserts. Episodes inherit the scope of their block's descriptors."""
+    """Affect scopes a frame asserts: descriptors and episodes (GAP-030 resolved)."""
     scopes: set[AffectScope] = set()
     for block in frame.types:
-        block_scopes = {d.affect_scope for d in block.affect}
-        if block.episodes and not block_scopes:
-            msg = (
-                "emotion episodes without an affect descriptor carry no affect_scope "
-                "(GAP-030); refused under a regulatory declaration"
-            )
-            raise MisdeclarationError(msg)
-        scopes |= block_scopes
+        scopes |= {d.affect_scope for d in block.affect}
+        scopes |= {e.affect_scope for e in block.episodes}
     return frozenset(scopes)
 
 

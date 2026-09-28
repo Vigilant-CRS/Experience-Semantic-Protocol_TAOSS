@@ -128,23 +128,33 @@ def test_runtime_check_refuses_undeclared_scopes() -> None:
         check_frame(decl(affect_scopes=(S.CONTENT,)), frame)
 
 
-def test_episode_without_descriptor_has_no_scope_and_is_refused() -> None:
+def test_episode_scope_is_enforced_like_descriptor_scope() -> None:
+    """GAP-030 resolved: episodes carry their own affect_scope, checked like descriptors."""
     frame = full_frame()
     emo = frame.block(TaossType.EMO)
     assert emo is not None
-    bare = TypeBlock(
-        type=TaossType.EMO,
-        latent=emo.latent,
-        episodes=(
-            EmotionEpisode(
-                id=uuid.UUID("c0ffee00-0000-4000-8000-000000000001"), onset_ns=1, peak_ns=2
+
+    def with_episode(scope: S) -> ExperienceFrame:
+        bare = TypeBlock(
+            type=TaossType.EMO,
+            latent=emo.latent,
+            episodes=(
+                EmotionEpisode(
+                    id=uuid.UUID("c0ffee00-0000-4000-8000-000000000001"),
+                    affect_scope=scope,
+                    onset_ns=1,
+                    peak_ns=2,
+                ),
             ),
-        ),
-    )
-    blocks = tuple(bare if b.type is TaossType.EMO else b for b in frame.types)
-    frame = ExperienceFrame.model_validate(frame.model_dump() | {"types": blocks, "bindings": ()})
-    with pytest.raises(MisdeclarationError, match="GAP-030"):
-        check_frame(decl(), frame)
+        )
+        blocks = tuple(bare if b.type is TaossType.EMO else b for b in frame.types)
+        return ExperienceFrame.model_validate(
+            frame.model_dump() | {"types": blocks, "bindings": ()}
+        )
+
+    check_frame(decl(), with_episode(S.SELF_DECLARED))  # declared: fine
+    with pytest.raises(MisdeclarationError, match="inferred_subject"):
+        check_frame(decl(), with_episode(S.INFERRED_SUBJECT))
 
 
 # --- endpoint integration ---------------------------------------------------------------

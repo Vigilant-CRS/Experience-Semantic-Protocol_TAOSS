@@ -11,6 +11,7 @@ from pydantic import Field, field_validator, model_validator
 
 from esp.core.ids import UUID4
 from esp.core.model import EspModel
+from esp.core.provenance import AffectScope
 from esp.core.scalars import FiniteFloat, UInt64, UnitInterval
 from esp.semantics.affect import Label
 
@@ -19,6 +20,8 @@ class EmotionEpisode(EspModel):
     """An emotion as a process with onset, peak and end (reference-clock ns)."""
 
     id: UUID4
+    affect_scope: AffectScope
+    """What the episode is about (plan section 4.5): content, self-declared, inferred, relayed."""
     label: Label | None = None
     onset_ns: UInt64
     peak_ns: UInt64

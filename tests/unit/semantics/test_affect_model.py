@@ -232,13 +232,22 @@ def test_self_report_item_validation() -> None:
 
 def test_episode_ordering_and_rise_time() -> None:
     ep = EmotionEpisode(
-        id=uuid.uuid4(), label="fear", onset_ns=0, peak_ns=250_000_000, end_ns=10**9
+        id=uuid.uuid4(),
+        affect_scope=AffectScope.SELF_DECLARED,
+        label="fear",
+        onset_ns=0,
+        peak_ns=250_000_000,
+        end_ns=10**9,
     )
     assert ep.rise_time_ms == 250.0
     with pytest.raises(ValidationError, match="peak must not precede onset"):
-        EmotionEpisode(id=uuid.uuid4(), onset_ns=10, peak_ns=5)
+        EmotionEpisode(id=uuid.uuid4(), affect_scope=AffectScope.CONTENT, onset_ns=10, peak_ns=5)
+    with pytest.raises(ValidationError, match="affect_scope"):
+        EmotionEpisode(id=uuid.uuid4(), onset_ns=0, peak_ns=10)  # type: ignore[call-arg]
     with pytest.raises(ValidationError, match="end must not precede peak"):
-        EmotionEpisode(id=uuid.uuid4(), onset_ns=0, peak_ns=10, end_ns=5)
+        EmotionEpisode(
+            id=uuid.uuid4(), affect_scope=AffectScope.CONTENT, onset_ns=0, peak_ns=10, end_ns=5
+        )
 
 
 def test_trace_requires_strictly_increasing_time() -> None:

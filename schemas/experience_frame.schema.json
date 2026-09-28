@@ -424,6 +424,9 @@
       "additionalProperties": false,
       "description": "An emotion as a process with onset, peak and end (reference-clock ns).",
       "properties": {
+        "affect_scope": {
+          "$ref": "#/$defs/AffectScope"
+        },
         "decay_half_life_ms": {
           "anyOf": [
             {
@@ -528,6 +531,7 @@
       },
       "required": [
         "id",
+        "affect_scope",
         "onset_ns",
         "peak_ns"
       ],
