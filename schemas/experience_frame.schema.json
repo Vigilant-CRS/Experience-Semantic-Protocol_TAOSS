@@ -819,6 +819,16 @@
           "default": null,
           "title": "Latent"
         },
+        "similarity_kind": {
+          "default": "cosine",
+          "enum": [
+            "cosine",
+            "projection",
+            "rbf"
+          ],
+          "title": "Similarity Kind",
+          "type": "string"
+        },
         "type": {
           "enum": [
             "KNO",

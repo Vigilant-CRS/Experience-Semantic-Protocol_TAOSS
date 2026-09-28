@@ -122,7 +122,7 @@ def _anchor_tlv(block: TypeBlock, sets: Mapping[str, AnchorSet]) -> bytes:
     body = (
         bytes([block.type.tlv_code])
         + anchor_set.uuid.bytes
-        + bytes([0])  # similarity_kind 0 = cosine
+        + bytes([_KIND_CODE[block.similarity_kind]])  # 0 cosine, 1 projection, 2 rbf
         + struct.pack(f">H{len(values)}f", len(values), *values)
     )
     return encode_tlv(ANCHOR_COORDS_CODE, body)
@@ -173,16 +173,20 @@ def frame_to_payload(frame: ExperienceFrame, opts: WireOptions) -> EncodedFrame:
     )
 
 
+_KIND_CODE: Final = {"cosine": 0, "projection": 1, "rbf": 2}
+_CODE_KIND: Final = {v: k for k, v in _KIND_CODE.items()}
+
+
 def _decode_anchor_tlv(
     tlv: Tlv, sets: Mapping[str, AnchorSet]
-) -> tuple[TaossType, str, tuple[AnchorCoordinate, ...]]:
+) -> tuple[TaossType, str, tuple[AnchorCoordinate, ...], str]:
     v = tlv.value
     if len(v) < 20:
         msg = "anchor coordinates truncated"
         raise WireError(msg)
     code, set_uuid, kind = v[0], uuid.UUID(bytes=v[1:17]), v[17]
     (m,) = struct.unpack_from(">H", v, 18)
-    if kind != 0 or code not in TYPED_LATENT_CODES or len(v) != 20 + 4 * m:
+    if kind not in _CODE_KIND or code not in TYPED_LATENT_CODES or len(v) != 20 + 4 * m:
         msg = "malformed anchor coordinates"
         raise WireError(msg)
     t = TaossType(code - 0x60)
@@ -195,7 +199,7 @@ def _decode_anchor_tlv(
         AnchorCoordinate(anchor_id=a, similarity=float(x))
         for a, x in zip(match[0].anchors, values, strict=True)
     )
-    return t, match[0].id, coords
+    return t, match[0].id, coords, _CODE_KIND[kind]
 
 
 def payload_to_frame(header: Header, payload: bytes, opts: WireOptions) -> ExperienceFrame:
@@ -225,12 +229,12 @@ def _rebuild(header: Header, parsed: ParsedPayload, opts: WireOptions) -> Experi
             latent = decode_typed_latent(tlv, quantized=header.quantized)
             slot(latent.type)["latent"] = tuple(float(x) for x in latent.values)
         elif tlv.code == ANCHOR_COORDS_CODE:
-            t, set_id, coords = _decode_anchor_tlv(tlv, opts.anchor_sets)
+            t, set_id, coords, kind = _decode_anchor_tlv(tlv, opts.anchor_sets)
             s = slot(t)
             if "anchors" in s:
                 msg = f"duplicate anchor coordinates for {t.name}"
                 raise WireError(msg)
-            s["anchor_set_id"], s["anchors"] = set_id, coords
+            s["anchor_set_id"], s["anchors"], s["similarity_kind"] = set_id, coords, kind
         elif tlv.code == AFFECT_DESCRIPTOR_CODE:
             s = slot(TaossType.EMO)
             s["affect"] = (*s.get("affect", ()), AffectiveDescriptor.from_json(_json_body(tlv)))  # type: ignore[misc]

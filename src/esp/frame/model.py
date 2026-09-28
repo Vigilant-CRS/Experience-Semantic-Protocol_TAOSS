@@ -18,7 +18,7 @@ default-deny rule of :mod:`esp.semantics.bindings`.
 
 from __future__ import annotations
 
-from typing import Annotated, Final
+from typing import Annotated, Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -56,6 +56,8 @@ class TypeBlock(EspModel):
     """Typed latent ``E_t``; ``None`` in interpretation-only mode (V13 section 5.4)."""
     anchor_set_id: RegistryName | None = None
     anchors: tuple[AnchorCoordinate, ...] = ()
+    similarity_kind: Literal["cosine", "projection", "rbf"] = "cosine"
+    """How ``anchors`` were computed (V13 anchor coordinates; wire byte in 0x50)."""
     affect: tuple[AffectiveDescriptor, ...] = ()
     """EMO only: interpretable descriptors, one per source (never merged)."""
     episodes: tuple[EmotionEpisode, ...] = ()

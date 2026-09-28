@@ -55,3 +55,14 @@ Run `reuse lint` before opening a pull request.
 
 `make verify` must pass locally before a pull request (plan §52).
 Do not claim `VERIFIED` for a work package unless its acceptance tests pass.
+
+## SPDX headers for new files
+
+Every new file needs an SPDX header; CI (`reuse lint` in `make verify`) fails otherwise.
+Generate headers with:
+
+```bash
+uv run reuse annotate --copyright "Vigilant e.K. and contributors" --license AGPL-3.0-or-later path/to/new_file.py
+```
+
+Use `CC-BY-SA-4.0` for documentation and `CC-BY-4.0` for test vectors and schemas.

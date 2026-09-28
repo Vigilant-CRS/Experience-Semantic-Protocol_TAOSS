@@ -3601,7 +3601,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-050 — `TLV_ANCHOR_COORDS (0x50)` + Anchor-Projektion π_t
 
-**Status:** `IMPLEMENTED` · **Löst:** GAP-007
+**Status:** `VERIFIED` · **Löst:** GAP-007
 
 ### Implementieren
 
@@ -4137,7 +4137,7 @@ vs. adversarial-only vs. beides, Pseudonyme an/aus.
 
 ## WP-076 — Lizenz- und Governance-Infrastruktur
 
-**Status:** `IN_PROGRESS` · **Gehört zu:** M0
+**Status:** `VERIFIED` · **Gehört zu:** M0
 
 ### Implementieren
 

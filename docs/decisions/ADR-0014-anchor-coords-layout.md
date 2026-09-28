@@ -16,7 +16,7 @@ Companion Specification" that does not exist yet.
 t u8 = 0x50 · length u32
 type_code u8          0x60..0x65, the TAOSS type the coordinates describe
 anchor_set_id[16]     deterministic registry UUID of the anchor set (uuid5, esp.ontology)
-similarity_kind u8    0 = cosine (v1); 1 = projection, 2 = RBF reserved
+similarity_kind u8    0 = cosine, 1 = normalized least-squares projection, 2 = RBF (WP-050, `esp.ontology.projection`)
 m u16                 number of anchors, must equal the pinned anchor set size
 float32[m]            coordinates in the anchor-set order, big-endian binary32
 ```
