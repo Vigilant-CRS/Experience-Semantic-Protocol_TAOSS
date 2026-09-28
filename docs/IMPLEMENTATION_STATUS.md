@@ -101,3 +101,4 @@ both agree.
 | M7 | PASS | `artifacts/test-reports/M7.json` (commit 62e2f33; multimodal baseline, L2 gate, synthetic + replayed PhysioNet chain) |
 | M8 | PASS | `artifacts/test-reports/M8.json` (commit 62e2f33; trainable TAOSS, bitwise-reproducible checkpoints, leakage harness) |
 | M9 | PASS | `artifacts/test-reports/M9.json` (commit 49ad9a4; ExperienceBench smoke, audit suite, red-team sender detected) |
+| M10 | PASS | `artifacts/test-reports/M10.json` (commit ce1fae2; Python<->Rust interop matrix, conformance runner with Rust peer) |
