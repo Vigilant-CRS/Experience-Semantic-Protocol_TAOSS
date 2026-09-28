@@ -56,6 +56,13 @@ GATES: dict[str, list[str]] = {
         "tests/integration/test_metadata_protection.py",
         "tests/unit/session",
     ],
+    "M6": [
+        "tests/milestone/test_m6.py",
+        "tests/integration/test_physio_streams.py",
+        "tests/unit/adapters/test_physio_files.py",
+        "tests/unit/features",
+        "tests/unit/calibration",
+    ],
     "M5": [
         "tests/milestone/test_m5.py",
         "tests/unit/demo",
@@ -64,6 +71,10 @@ GATES: dict[str, list[str]] = {
         "tests/integration/test_receiver_threats.py",
     ],
 }
+
+
+#: Extra environment per gate (e.g. the M6 30-minute soak).
+GATE_ENV: dict[str, dict[str, str]] = {"M6": {"ESP_SOAK_SECONDS": "1800"}}
 
 
 def git(*args: str) -> str:
@@ -100,7 +111,11 @@ def main(argv: list[str]) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         gate_junit = Path(tmp) / "gate.xml"
         full_junit = Path(tmp) / "full.xml"
-        gate_rc = run_pytest(GATES[milestone], gate_junit, os.environ | {"ESP_REPORT_DIR": tmp})
+        gate_rc = run_pytest(
+            GATES[milestone],
+            gate_junit,
+            os.environ | {"ESP_REPORT_DIR": tmp} | GATE_ENV.get(milestone, {}),
+        )
         metrics_file = Path(tmp) / f"{milestone}-metrics.json"
         metrics = json.loads(metrics_file.read_text()) if metrics_file.exists() else None
         full_rc = run_pytest(["tests"], full_junit)

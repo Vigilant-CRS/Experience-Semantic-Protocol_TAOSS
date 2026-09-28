@@ -3110,7 +3110,7 @@ Packet capture + decoded application payload.
 
 ## WP-026 — BrainFlow Adapter
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Phase A
 
@@ -3136,7 +3136,7 @@ Streaming Board.
 
 ## WP-027 — Lab Streaming Layer Adapter
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3167,7 +3167,7 @@ Prüfen:
 
 ## WP-028 — Physiological Feature Layer
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3190,7 +3190,7 @@ Signal fixtures mit bekannten Eigenschaften.
 
 ## WP-029 — Personalized Calibration Pipeline
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
