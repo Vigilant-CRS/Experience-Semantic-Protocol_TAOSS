@@ -3384,7 +3384,7 @@ Echte Human Study erst nach Ethikfreigabe.
 
 ## WP-039 — Python Conformance CLI
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Kommando
 
@@ -3406,7 +3406,7 @@ esp-conformance run
 
 ## WP-040 — Independent Rust Codec
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Ziel
 
@@ -3425,7 +3425,7 @@ Byte-exakte Cross-Implementation-Vektoren.
 
 ## WP-041 — Independent Rust Session Client
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Ziel
 
@@ -3435,7 +3435,7 @@ Beweis, dass ESP ein Protokoll und nicht nur eine Python-Library ist.
 
 ## WP-042 — Interoperability Matrix
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Matrix
 
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M9
-next_work_package: WP-039
+current_milestone: M10
+next_work_package: WP-043
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"

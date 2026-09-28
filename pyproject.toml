@@ -36,6 +36,7 @@ dependencies = [
 
 [project.scripts]
 esp-demo = "esp.demo.cli:main"
+esp-conformance = "esp.conformance.runner:main"
 
 [project.urls]
 Repository = "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS"

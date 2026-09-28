@@ -1,0 +1,315 @@
+// SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//! `esp-rs` — interop peer for the Python reference (WP-041/042).
+//!
+//! Framing on TCP (test transport): `len u32 BE · channel u8 · data`, channel
+//! 0 = CONTROL, 1 = STATE. Keys are passed as hex; output is JSON lines.
+//!
+//! ```text
+//! esp-rs send    --addr H:P --responder-static HEX --receiver-id HEX --master-seed HEX --static-seed HEX --frames N
+//! esp-rs receive --addr H:P --static-seed HEX --identity-seed HEX --trusted HEX --frames N
+//! ```
+
+use std::collections::HashMap;
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use ed25519_dalek::SigningKey;
+use esp_rs::crypto::{open, seal, DirectionKeys};
+use esp_rs::header::Header;
+use esp_rs::session::*;
+use esp_rs::tlv::{self, decode_latent, encode_latent, split, Encoding, Tlv};
+use rand_core::OsRng;
+
+type Res<T> = Result<T, Box<dyn std::error::Error>>;
+
+fn args() -> HashMap<String, String> {
+    let a: Vec<String> = std::env::args().collect();
+    let mut m = HashMap::new();
+    m.insert("cmd".into(), a.get(1).cloned().unwrap_or_default());
+    let mut i = 2;
+    while i + 1 < a.len() {
+        m.insert(a[i].trim_start_matches("--").to_string(), a[i + 1].clone());
+        i += 2;
+    }
+    m
+}
+
+fn key32(m: &HashMap<String, String>, k: &str) -> Res<[u8; 32]> {
+    let v = hex::decode(m.get(k).ok_or(format!("missing --{k}"))?)?;
+    Ok(v.try_into()
+        .map_err(|_| format!("--{k} must be 32 bytes"))?)
+}
+
+fn send_frame(s: &mut TcpStream, channel: u8, data: &[u8]) -> Res<()> {
+    s.write_all(&((data.len() + 1) as u32).to_be_bytes())?;
+    s.write_all(&[channel])?;
+    s.write_all(data)?;
+    Ok(())
+}
+
+fn recv_frame(s: &mut TcpStream) -> Res<(u8, Vec<u8>)> {
+    let mut len = [0u8; 4];
+    s.read_exact(&mut len)?;
+    let n = u32::from_be_bytes(len) as usize;
+    if n == 0 || n > (1 << 20) + 4096 {
+        return Err("bad frame length".into());
+    }
+    let mut buf = vec![0u8; n];
+    s.read_exact(&mut buf)?;
+    Ok((buf[0], buf[1..].to_vec()))
+}
+
+fn now_ns() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos() as u64
+}
+
+fn tlv_with(tlvs: &[Tlv], code: u8) -> Res<Tlv> {
+    Ok(tlvs
+        .iter()
+        .find(|t| t.code == code)
+        .cloned()
+        .ok_or(format!("TLV 0x{code:02x} missing"))?)
+}
+
+fn uuid4(seed: &[u8]) -> [u8; 16] {
+    let mut id: [u8; 16] = esp_rs::crypto::blake2b256(seed)[..16].try_into().unwrap();
+    id[6] = (id[6] & 0x0f) | 0x40;
+    id[8] = (id[8] & 0x3f) | 0x80;
+    id
+}
+
+fn sender(m: &HashMap<String, String>) -> Res<()> {
+    let master = SigningKey::from_bytes(&key32(m, "master-seed")?);
+    let receiver_id = key32(m, "receiver-id")?;
+    let frames: u32 = m.get("frames").map_or(Ok(3), |v| v.parse())?;
+    let mut stream = TcpStream::connect(m.get("addr").ok_or("missing --addr")?)?;
+    let mut hs = snow::Builder::new(PROTOCOL.parse()?)
+        .local_private_key(&key32(m, "static-seed")?)
+        .remote_public_key(&key32(m, "responder-static")?)
+        .prologue(PROLOGUE)
+        .build_initiator()?;
+    let mut buf = vec![0u8; 65535];
+    let n = hs.write_message(&Descriptor::default().tlv(), &mut buf)?;
+    send_frame(&mut stream, 0, &buf[..n])?;
+    let (_, hs2) = recv_frame(&mut stream)?;
+    let mut payload = vec![0u8; 65535];
+    let n = hs.read_message(&hs2, &mut payload)?;
+    let peer_desc = tlv_with(&split(&payload[..n])?, 0x80)?;
+    let nh = noise_h(hs.get_handshake_hash());
+    let (k_i2r, _) = hs.dangerously_get_raw_split();
+    let mut transport = hs.into_transport_mode()?;
+    let (_, t1) = recv_frame(&mut stream)?;
+    let n = transport.read_message(&t1, &mut payload)?;
+    let t1_tlvs = split(&payload[..n])?;
+    let receiver_session = verify_session_binding(&tlv_with(&t1_tlvs, 0x85)?, &nh)?;
+    let receiver_cap = t1_tlvs.iter().any(|t| t.code == 0x21);
+    let session = SigningKey::generate(&mut OsRng); // fresh per session
+    let cap = SenderCapability {
+        capability_id: uuid4(&nh),
+        types_allowed: 0x3F,
+        max_segments: 1000,
+        valid_until_ns: now_ns() + 3_600_000_000_000,
+        audience: receiver_id,
+        nonce: nh[..16].try_into().unwrap(),
+    };
+    let mut t2 = tlv::encode(&session_binding(&session, &nh));
+    t2.extend(tlv::encode(&cap.sign(&master)));
+    let n = transport.write_message(&t2, &mut buf)?;
+    send_frame(&mut stream, 0, &buf[..n])?;
+    let keys = DirectionKeys::from_split_key(&k_i2r);
+    let timeline = uuid4(&[nh.as_slice(), b"timeline"].concat());
+    let revoke_after: Option<u32> = m.get("revoke-after").map(|v| v.parse()).transpose()?;
+    let ignore_revocation = m.get("ignore-revocation").is_some_and(|v| v == "yes");
+    let mut seq = 0u32;
+    let mut sent = 0u32;
+    let header_for = |seq: u32, types: u16| Header {
+        version_minor: 0,
+        profile: 1,
+        sf_level: 0,
+        types_bitmap: types,
+        consent_flags: 0b110,
+        privacy_flags: 0,
+        capabilities: 0,
+        timestamp_ns: now_ns(),
+        timeline_id: timeline,
+        segment_seq: seq,
+        dt_ms: 0,
+        phase: 0.0,
+        sender_id: session.verifying_key().to_bytes(),
+        payload_len: 0,
+        nonce: keys.nonce_for(&timeline, seq),
+    };
+    let mut revoked = false;
+    while sent < frames {
+        if revoke_after == Some(sent) && !revoked {
+            let body = tlv::encode(&revocation_intent(cap.capability_id, &master));
+            send_frame(
+                &mut stream,
+                0,
+                &seal(&header_for(seq, 0), &body, &keys, &session)?,
+            )?;
+            seq += 1;
+            revoked = true;
+            if !ignore_revocation {
+                break; // an honest sender stops after withdrawing consent
+            }
+        }
+        let values: Vec<f64> = (0..240)
+            .map(|i| ((i as f64 + seq as f64) * 0.37).sin())
+            .collect();
+        let body = tlv::encode(&encode_latent(0, &values, Encoding::F32Be)?);
+        send_frame(
+            &mut stream,
+            1,
+            &seal(&header_for(seq, 1), &body, &keys, &session)?,
+        )?;
+        seq += 1;
+        sent += 1;
+    }
+    println!(
+        "{}",
+        serde_json::json!({"event": "sent", "frames": sent, "revoked": revoked, "noise_h": hex::encode(nh),
+            "receiver_session": hex::encode(receiver_session), "receiver_capability": receiver_cap,
+            "peer_descriptor_len": peer_desc.value.len()})
+    );
+    Ok(())
+}
+
+fn receiver(m: &HashMap<String, String>) -> Res<()> {
+    let identity = SigningKey::from_bytes(&key32(m, "identity-seed")?);
+    let trusted = key32(m, "trusted")?;
+    let frames: u32 = m.get("frames").map_or(Ok(3), |v| v.parse())?;
+    let listener = TcpListener::bind(m.get("addr").ok_or("missing --addr")?)?;
+    println!(
+        "{}",
+        serde_json::json!({"event": "listening", "port": listener.local_addr()?.port()})
+    );
+    std::io::stdout().flush()?;
+    let (mut stream, _) = listener.accept()?;
+    let mut hs = snow::Builder::new(PROTOCOL.parse()?)
+        .local_private_key(&key32(m, "static-seed")?)
+        .prologue(PROLOGUE)
+        .build_responder()?;
+    let mut payload = vec![0u8; 65535];
+    let mut buf = vec![0u8; 65535];
+    let (_, hs1) = recv_frame(&mut stream)?;
+    let n = hs.read_message(&hs1, &mut payload)?;
+    tlv_with(&split(&payload[..n])?, 0x80)?;
+    let n = hs.write_message(&Descriptor::default().tlv(), &mut buf)?;
+    send_frame(&mut stream, 0, &buf[..n])?;
+    let nh = noise_h(hs.get_handshake_hash());
+    let (k_i2r, _) = hs.dangerously_get_raw_split();
+    let mut transport = hs.into_transport_mode()?;
+    let session = SigningKey::generate(&mut OsRng);
+    let now = now_ns();
+    let mut t1 = tlv::encode(&session_binding(&session, &nh));
+    t1.extend(tlv::encode(&receiver_capability(
+        &identity,
+        0x01,
+        1000.0,
+        (0, now + 3_600_000_000_000),
+        nh[..16].try_into().unwrap(),
+        &nh,
+    )));
+    let n = transport.write_message(&t1, &mut buf)?;
+    send_frame(&mut stream, 0, &buf[..n])?;
+    let (_, t2) = recv_frame(&mut stream)?;
+    let n = transport.read_message(&t2, &mut payload)?;
+    let tlvs = split(&payload[..n])?;
+    let peer = verify_session_binding(&tlv_with(&tlvs, 0x85)?, &nh)?;
+    let cap = verify_sender_capability(&tlv_with(&tlvs, 0x22)?)?;
+    if cap.issuer != trusted
+        || cap.audience != identity.verifying_key().to_bytes()
+        || cap.valid_until_ns < now
+    {
+        return Err("sender capability not acceptable".into());
+    }
+    println!(
+        "{}",
+        serde_json::json!({"event": "active", "noise_h": hex::encode(nh), "capability": hex::encode(cap.capability_id)})
+    );
+    let keys = DirectionKeys::from_split_key(&k_i2r);
+    let _ = frames;
+    let mut accepted = 0u32;
+    let mut revoked = false;
+    let mut replay = std::collections::HashSet::new();
+    loop {
+        let (channel, packet) = match recv_frame(&mut stream) {
+            Ok(f) => f,
+            Err(_) => break, // peer closed
+        };
+        let (h, pt) = open(&packet, &keys, &peer, 1 << 20)?;
+        if !replay.insert(h.segment_seq) {
+            println!(
+                "{}",
+                serde_json::json!({"event": "rejected", "seq": h.segment_seq, "reason": "replay"})
+            );
+            continue;
+        }
+        if h.types_bitmap == 0 {
+            for t in split(&pt)? {
+                if t.code == 0x23 {
+                    verify_revocation(&t, &cap)?;
+                    revoked = true;
+                    println!(
+                        "{}",
+                        serde_json::json!({"event": "revoked", "seq": h.segment_seq})
+                    );
+                }
+            }
+            continue;
+        }
+        if revoked {
+            println!(
+                "{}",
+                serde_json::json!({"event": "rejected", "seq": h.segment_seq, "reason": "revoked"})
+            );
+            continue;
+        }
+        let mut types = 0u16;
+        let mut norms = Vec::new();
+        for t in split(&pt)? {
+            if (0x60..=0x65).contains(&t.code) {
+                let lat = decode_latent(&t)?;
+                types |= 1 << lat.type_index;
+                norms.push(lat.values.iter().map(|x| x * x).sum::<f64>().sqrt());
+            }
+        }
+        // minimal consent enforcement: declared types == latents present, within the capability
+        if types != h.types_bitmap || types & !cap.types_allowed != 0 || types & !0x01 != 0 {
+            println!(
+                "{}",
+                serde_json::json!({"event": "rejected", "seq": h.segment_seq})
+            );
+            continue;
+        }
+        accepted += 1;
+        println!(
+            "{}",
+            serde_json::json!({"event": "frame", "channel": channel, "seq": h.segment_seq, "types": types, "norms": norms})
+        );
+    }
+    println!(
+        "{}",
+        serde_json::json!({"event": "closed", "accepted": accepted, "revoked": revoked})
+    );
+    Ok(())
+}
+
+fn main() {
+    let m = args();
+    let result = match m["cmd"].as_str() {
+        "send" => sender(&m),
+        "receive" => receiver(&m),
+        _ => Err("usage: esp-rs send|receive --addr H:P ...".into()),
+    };
+    if let Err(e) = result {
+        eprintln!("esp-rs: {e}");
+        std::process::exit(1);
+    }
+}
