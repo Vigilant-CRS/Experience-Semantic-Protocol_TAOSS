@@ -34,6 +34,7 @@ passed on to the application.
 | 0x92 | `AFFECT_DESCRIPTOR` (carries `affect_scope`) | `encoding u8 = 1` · ESP canonical JSON v1 |
 | 0x93 | `EMOTION_EPISODE` | `encoding u8 = 1` · ESP canonical JSON v1 |
 | 0x94 | `INTENTION_STATE` | `encoding u8 = 1` · ESP canonical JSON v1 |
+| 0x95 | `FRAME_METADATA` (frame id, clock stamp, provenance, consent ref, masked types) | `encoding u8 = 1` · ESP canonical JSON v1 |
 
 JSON-bodied objects are not signed individually; the packet signature and
 AEAD cover them. Each masked object is **absent from the payload**. A packet
@@ -45,3 +46,11 @@ coordinates are present (it describes EMO).
 
 No V13 code is touched. V13-only receivers remain conformant: they ignore
 0x80–0x9F.
+
+## Type-presence invariant (added with WP-049)
+
+Bit `t` of `types_bitmap` is set **iff** at least one wire object of type `t`
+is present: a typed latent, anchor coordinates, or an addendum object of that
+type (0x92/0x93 → EMO, 0x94 → INT; 0x90 requires both endpoint types).
+Receivers reject any object whose type bit is clear. Without this rule an EMO
+descriptor could travel next to `EMO_MASKED = 1`.

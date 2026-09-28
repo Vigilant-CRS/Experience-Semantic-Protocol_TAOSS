@@ -3576,7 +3576,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-049 — Addendum-TLV-Profil `esp-addendum-v1`
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-004
+**Status:** `VERIFIED` · **Löst:** GAP-004
 
 ### Implementieren
 
@@ -3597,7 +3597,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-050 — `TLV_ANCHOR_COORDS (0x50)` + Anchor-Projektion π_t
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-007
+**Status:** `IMPLEMENTED` · **Löst:** GAP-007
 
 ### Implementieren
 
