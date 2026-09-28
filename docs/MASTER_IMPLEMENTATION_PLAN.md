@@ -3237,7 +3237,7 @@ Nicht "emotion detector".
 
 ## WP-031 — TAOSS Reference Encoder Skeleton
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3260,7 +3260,7 @@ Noch keine H1/H2/H3-Behauptung.
 
 ## WP-032 — Training Harness
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3279,7 +3279,7 @@ Tiny synthetic overfit test.
 
 ## WP-033 — Cross-Type Leakage Harness
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M7
-next_work_package: WP-031
+current_milestone: M8
+next_work_package: WP-034
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
