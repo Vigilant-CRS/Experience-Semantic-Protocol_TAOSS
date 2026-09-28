@@ -96,3 +96,6 @@ both agree.
 | M4 | PASS | `artifacts/test-reports/M4.json` (commit 0b9e8f3; per-condition network metrics embedded) |
 | M5 | PASS | `artifacts/test-reports/M5.json` (commit 517f7ee; two-process demo over QUIC, transparency panel, active Art. 5(1)(f) guard) |
 | M6 | PASS | `artifacts/test-reports/M6.json` (commit a780e25; 30-min soak: 449,935 samples, 0 lost, 0 dropped, clock correction 0.035 ms, +0.8 MB RSS) |
+| M7 | PASS | `artifacts/test-reports/M7.json` (commit 62e2f33; multimodal baseline, L2 gate, synthetic + replayed PhysioNet chain) |
+| M8 | PASS | `artifacts/test-reports/M8.json` (commit 62e2f33; trainable TAOSS, bitwise-reproducible checkpoints, leakage harness) |
+| M9 | PASS | `artifacts/test-reports/M9.json` (commit 49ad9a4; ExperienceBench smoke, audit suite, red-team sender detected) |
