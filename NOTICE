@@ -1,0 +1,55 @@
+Experience Semantic Protocol (ESP) / Typed Approximately Orthogonal
+Semantic Subspaces (TAOSS) — Reference Implementation
+
+Copyright (C) 2026 Vigilant e.K. and contributors
+https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS
+
+Normative source: "The Experience Semantic Protocol", Version V13,
+25 September 2026, Vigilant e.K.
+
+----------------------------------------------------------------------
+Additional terms under Section 7(b) and 7(e) of the
+GNU Affero General Public License, version 3
+----------------------------------------------------------------------
+
+1. Attribution (Section 7(b)).
+   The following notice is a "reasonable author attribution" within the
+   meaning of AGPL-3.0 Section 7(b) and MUST be preserved:
+
+     a) in every copy or modified version of the source code,
+     b) in every binary or object-code distribution, and
+     c) in the "Appropriate Legal Notices" displayed by any interactive
+        user interface of a work that contains or is based on this
+        program, including network services under Section 13:
+
+        "Based on the Experience Semantic Protocol (ESP/TAOSS)
+         reference implementation by Vigilant e.K. and contributors,
+         licensed under AGPL-3.0-or-later.
+         Source: https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS"
+
+   Modified versions MUST additionally carry a prominent statement that
+   they were modified, and by whom, as required by Section 5(a).
+
+2. Trademarks (Section 7(e)).
+   This license does not grant any rights to use the names
+   "Experience Semantic Protocol", "TAOSS", or the mark "ESP-Conformant",
+   except as described in TRADEMARKS.md. Truthful, non-misleading
+   statements of origin ("based on the ESP reference implementation")
+   are always permitted.
+
+----------------------------------------------------------------------
+License map
+----------------------------------------------------------------------
+
+  Source code (src/, rust/, scripts/, tests/, benchmarks/, examples/)
+      AGPL-3.0-or-later
+  Specification and documentation (docs/, spec/)
+      CC-BY-SA-4.0
+  Ontology and anchor sets (ontology/)
+      CC-BY-SA-4.0
+  Test vectors and JSON schemas (vectors/, schemas/)
+      CC-BY-4.0
+
+The authoritative mapping is REUSE.toml; full license texts are in
+LICENSES/. See docs/LICENSING.md for an explanation, including what
+commercial use is permitted.
