@@ -3057,7 +3057,7 @@ reconstruction freshness
 
 ## WP-024 — Session Protocol over QUIC
 
-**Status:** `NOT_STARTED`
+**Status:** `IN_PROGRESS`
 
 ### Implementieren
 
@@ -3617,7 +3617,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-051 — ReceiverCapability (0x21), Default-Deny und Accept-Prädikat
 
-**Status:** `IMPLEMENTED` · **Löst:** GAP-008, GAP-013
+**Status:** `VERIFIED` · **Löst:** GAP-008, GAP-013
 
 ### Implementieren
 

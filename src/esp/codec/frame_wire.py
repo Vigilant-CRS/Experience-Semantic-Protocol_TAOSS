@@ -107,7 +107,9 @@ def _json_body(tlv: Tlv) -> bytes:
 
 
 def _anchor_tlv(block: TypeBlock, sets: Mapping[str, AnchorSet]) -> bytes:
-    assert block.anchor_set_id is not None
+    if block.anchor_set_id is None:  # TypeBlock guarantees it; checked explicitly anyway
+        msg = "anchor coordinates without anchor_set_id"
+        raise WireError(msg)
     anchor_set = sets.get(block.anchor_set_id)
     if anchor_set is None:
         msg = f"anchor set {block.anchor_set_id!r} is not pinned for this session"

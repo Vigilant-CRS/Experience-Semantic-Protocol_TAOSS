@@ -1,0 +1,549 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""Transport-agnostic ESP endpoints: establishment, sending and quarantined receiving.
+
+Establishment (ADR-0012, ADR-0013 incl. GAP-025)::
+
+    I -> R  hs1: Noise msg 1  [SESSION_DESCRIPTOR]
+    R -> I  hs2: Noise msg 2  [SESSION_DESCRIPTOR]
+    R -> I  t1:  transport    [SESSION_BINDING, ReceiverCapability?]
+    I -> R  t2:  transport    [SESSION_BINDING, SENDER_CAPABILITY]
+    I -> R  ESP packets
+
+Receiving is quarantined (V13 section 9.7): size bounds, header, expected
+sender, signature + AEAD, replay window, *minimal* parse (types, latent
+norms, declared valence), Accept predicate — and only then the frame
+decoder. :attr:`ReceiverEndpoint.decoder_invocations` makes this checkable.
+
+Runtime invariants use :func:`_need` instead of ``assert`` so that they are
+never stripped by ``python -O``.
+"""
+
+from __future__ import annotations
+
+import json
+import math
+import uuid
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+
+from esp.codec.errors import WireError
+from esp.codec.frame_wire import (
+    AFFECT_DESCRIPTOR_CODE,
+    WireOptions,
+    consent_flags_for,
+    frame_to_payload,
+    payload_to_frame,
+)
+from esp.codec.header import ConsentFlags, Header, PrivacyFlags
+from esp.codec.tlv import (
+    ADDENDUM_V1_CODES,
+    TYPED_LATENT_CODES,
+    LatentEncoding,
+    ParsedPayload,
+    Tlv,
+    decode_typed_latent,
+    encode_tlv,
+    parse_payload,
+)
+from esp.consent.accept import AcceptState, PacketFacts, commit, evaluate
+from esp.consent.capability import ReceiverCapability, ReceiverPolicy, Rights, SenderCapability
+from esp.consent.revocation import Effects, RevocationRegistry
+from esp.core.errors import EspError
+from esp.core.taoss_types import TaossType
+from esp.crypto.envelope import open_packet, seal_packet
+from esp.crypto.identity import session_binding, verify_session_binding
+from esp.crypto.keys import DirectionKeys, TimelineTagRegistry, deterministic_nonce
+from esp.crypto.noise_ik import NoiseIK, Role, StaticKeyPair
+from esp.crypto.primitives import CryptoError, SigningKey
+from esp.frame.model import DisclosurePolicy, ExperienceFrame
+from esp.keys.lineage import KeyLineage
+from esp.session.control import CloseReason, SessionClose
+from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
+from esp.session.replay import ReplayError, ReplayWindow
+from esp.session.sequence import SenderSequencer, SequenceStore, session_fingerprint
+from esp.session.state import SessionState, SessionStateError, StateMachine
+
+DESCRIPTOR_CODE = 0x80
+SESSION_BINDING_CODE = 0x85
+SENDER_CAPABILITY_CODE = 0x22
+RECEIVER_CAPABILITY_CODE = 0x21
+REVOCATION_CODE = 0x23
+SESSION_CLOSE_CODE = 0x81
+MAX_DESCRIPTOR_JSON = 64 * 1024
+
+
+def _need[T](value: T | None, what: str) -> T:
+    """Explicit runtime invariant (never stripped like ``assert`` under ``python -O``)."""
+    if value is None:
+        msg = f"session invariant violated: {what} not established"
+        raise SessionStateError(msg)
+    return value
+
+
+def _tlvs(payload: bytes) -> ParsedPayload:
+    return parse_payload(payload, extra_codes=ADDENDUM_V1_CODES)
+
+
+def _descriptor_msg(desc: SessionDescriptor) -> bytes:
+    return encode_tlv(DESCRIPTOR_CODE, desc.encode())
+
+
+def _read_descriptor(payload: bytes) -> SessionDescriptor:
+    tlv = _tlvs(payload).get(DESCRIPTOR_CODE)
+    if tlv is None:
+        msg = "handshake payload lacks a session descriptor"
+        raise WireError(msg)
+    return SessionDescriptor.decode(tlv.value)
+
+
+class SenderEndpoint:
+    """Initiator: owns a master (issuer) key and sends experience frames."""
+
+    def __init__(
+        self,
+        *,
+        master: SigningKey,
+        static: StaticKeyPair,
+        responder_static: bytes,
+        receiver_identity: bytes,
+        descriptor: SessionDescriptor,
+        capability: SenderCapability,
+        state_dir: Path,
+        wire: WireOptions,
+    ) -> None:
+        if capability.issuer_pk != master.public_bytes:
+            msg = "capability must be issued by this master key"
+            raise CryptoError(msg)
+        self._machine = StateMachine()
+        self._static = static
+        self._responder_static = responder_static
+        self._receiver_identity = receiver_identity
+        self._descriptor = descriptor
+        self._capability = capability
+        self._capability_tlv = capability.sign(master)
+        self._state_dir = state_dir
+        self._wire = wire
+        self._session_key = SigningKey.generate()
+        self._timeline = uuid.uuid4()
+        self._noise: NoiseIK | None = None
+        self._negotiated: NegotiatedSession | None = None
+        self._receiver_policy: ReceiverPolicy | None = None
+        self._receiver_cap_tlv: bytes | None = None
+        self._keys: DirectionKeys | None = None
+        self._sequencer: SenderSequencer | None = None
+        self.transcript: bytes | None = None
+
+    @property
+    def state(self) -> SessionState:
+        return self._machine.state
+
+    @property
+    def session_public_key(self) -> bytes:
+        return self._session_key.public_bytes
+
+    @property
+    def timeline_id(self) -> uuid.UUID:
+        return self._timeline
+
+    # --- establishment ------------------------------------------------------------
+
+    def start(self) -> bytes:
+        self._machine.advance(SessionState.TRANSPORT_CONNECTING)
+        self._noise = NoiseIK(Role.INITIATOR, self._static, remote_static=self._responder_static)
+        return self._noise.write_handshake(_descriptor_msg(self._descriptor))
+
+    def on_handshake2(self, message: bytes) -> None:
+        try:
+            noise = _need(self._noise, "noise")
+            peer = _read_descriptor(noise.read_handshake(message))
+            self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
+            self._machine.advance(SessionState.PROFILE_NEGOTIATION)
+            self._negotiated = negotiate(self._descriptor, peer)
+            self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
+        except EspError:
+            self._machine.close()
+            raise
+
+    def on_transport1(self, message: bytes) -> bytes:
+        """Verify receiver binding/capability; answer with binding + sender capability."""
+        try:
+            noise = _need(self._noise, "noise")
+            negotiated = _need(self._negotiated, "negotiated profile")
+            parsed = _tlvs(noise.receive(message))
+            binding = parsed.get(SESSION_BINDING_CODE)
+            if binding is None:
+                msg = "receiver did not bind its session key"
+                raise CryptoError(msg)
+            verify_session_binding(binding, noise_h=noise.noise_h)
+            self._receiver_policy = self._verify_receiver_capability(parsed, noise.noise_h)
+            self.transcript = transcript_hash(
+                noise_h=noise.noise_h,
+                initiator=self._descriptor,
+                responder=negotiated.responder,
+                sender_capability=self._capability_tlv.encode(),
+                receiver_capability=self._receiver_cap_tlv,
+            )
+            keys = DirectionKeys.from_split_key(noise.split_keys()[0])
+            store = SequenceStore(
+                self._state_dir / f"seq-{self._timeline}.json", session_fingerprint(keys.aead)
+            )
+            store.initialize()
+            self._sequencer = SenderSequencer(store)
+            TimelineTagRegistry().register(keys, self._timeline)
+            self._keys = keys
+            reply = (
+                session_binding(self._session_key, noise.noise_h).encode()
+                + self._capability_tlv.encode()
+            )
+            self._machine.advance(SessionState.CONSENT_ESTABLISHED)
+            self._machine.advance(SessionState.ACTIVE)
+            return noise.send(reply)
+        except EspError:
+            self._machine.close()
+            raise
+
+    def _verify_receiver_capability(self, parsed: ParsedPayload, noise_h: bytes) -> ReceiverPolicy:
+        rc = parsed.get(RECEIVER_CAPABILITY_CODE)
+        if rc is None:
+            return ReceiverPolicy.default_deny()
+        cap = ReceiverCapability.verify(rc, noise_h=noise_h)
+        if cap.pk_receiver != self._receiver_identity:
+            msg = "receiver capability signed by an unexpected identity"
+            raise CryptoError(msg)
+        self._receiver_cap_tlv = rc.encode()
+        return ReceiverPolicy.from_capability(cap)
+
+    # --- data ------------------------------------------------------------------------
+
+    def effective_policy(self, requested: DisclosurePolicy) -> DisclosurePolicy:
+        """Intersect what the sender wants to share with c_S and the receiver policy."""
+        receiver = _need(self._receiver_policy, "receiver policy")
+        allowed = set(self._capability.types) & set(receiver.accept_types)
+        return DisclosurePolicy(
+            allowed_types=tuple(t for t in requested.allowed_types if t in allowed),
+            bindings=requested.bindings,
+            keep_evidence_refs=requested.keep_evidence_refs,
+        )
+
+    def send_frame(self, frame: ExperienceFrame, policy: DisclosurePolicy, *, now_ns: int) -> bytes:
+        self._machine.require_data()
+        disclosed = frame.disclose(self.effective_policy(policy))
+        encoded = frame_to_payload(disclosed, self._wire)
+        flags = consent_flags_for(encoded, self._rights_flags())
+        return self._seal(encoded.types_bitmap, flags, encoded.payload, now_ns)
+
+    def send_control(self, tlvs: bytes, *, now_ns: int) -> bytes:
+        self._machine.require_data()
+        return self._seal(0, self._rights_flags(), tlvs, now_ns)
+
+    def close(self, *, now_ns: int, reason: CloseReason = CloseReason.NORMAL) -> bytes:
+        packet = self.send_control(SessionClose(reason).encode().encode(), now_ns=now_ns)
+        self._machine.advance(SessionState.CLOSING)
+        self._machine.advance(SessionState.CLOSED)
+        return packet
+
+    def _rights_flags(self) -> int:
+        flags = 0
+        if not self._capability.rights & Rights.ALLOW_REPLAY:
+            flags |= ConsentFlags.NO_REPLAY
+        if not self._capability.rights & Rights.ALLOW_STORE:
+            flags |= ConsentFlags.NO_STORE
+        return int(flags)
+
+    def _seal(self, types_bitmap: int, consent_flags: int, payload: bytes, now_ns: int) -> bytes:
+        sequencer = _need(self._sequencer, "sequencer")
+        keys = _need(self._keys, "traffic keys")
+        negotiated = _need(self._negotiated, "negotiated profile")
+        quantized = self._wire.encoding is LatentEncoding.INT8_SYM
+        seq = sequencer.reserve(payload)
+        header = Header(
+            profile=negotiated.profile,
+            sf_level=negotiated.sf_level,
+            types_bitmap=types_bitmap,
+            consent_flags=consent_flags,
+            privacy_flags=negotiated.dp_level | (int(PrivacyFlags.QUANTIZED) if quantized else 0),
+            capabilities=0,
+            timestamp_ns=now_ns,
+            timeline_id=self._timeline,
+            segment_seq=seq,
+            dt_ms=0,
+            phase=0.0,
+            sender_id=self._session_key.public_bytes,
+            payload_len=0,
+            nonce=deterministic_nonce(keys, self._timeline, seq),
+        )
+        packet = seal_packet(header, payload, keys, self._session_key)
+        sequencer.record_sent(seq, payload, packet)
+        return packet
+
+
+@dataclass(frozen=True, slots=True)
+class ReceiveResult:
+    accepted: bool
+    frame: ExperienceFrame | None = None
+    violations: tuple[str, ...] = ()
+    control: tuple[Tlv, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class _Active:
+    """Everything a receiver needs once the session is ACTIVE."""
+
+    keys: DirectionKeys
+    peer_session_pk: bytes
+    negotiated: NegotiatedSession
+    policy: ReceiverPolicy
+    sender_cap: SenderCapability
+    replay: ReplayWindow
+
+
+class ReceiverEndpoint:
+    """Responder: publishes a receiver capability and accepts frames under consent."""
+
+    def __init__(
+        self,
+        *,
+        identity: SigningKey,
+        static: StaticKeyPair,
+        descriptor: SessionDescriptor,
+        capability: Callable[[bytes], ReceiverCapability] | None,
+        trusted_issuers: frozenset[bytes],
+        wire: WireOptions,
+        lineage: KeyLineage | None = None,
+        accept_state: AcceptState | None = None,
+        revocations: RevocationRegistry | None = None,
+    ) -> None:
+        self._machine = StateMachine()
+        self._identity = identity
+        self._static = static
+        self._descriptor = descriptor
+        self._capability_factory = capability
+        self._trusted = trusted_issuers
+        self._wire = wire
+        self._lineage = lineage
+        self.accept_state = accept_state if accept_state is not None else AcceptState()
+        self.revocations = revocations if revocations is not None else RevocationRegistry()
+        self._session_key = SigningKey.generate()
+        self._noise: NoiseIK | None = None
+        self._negotiated: NegotiatedSession | None = None
+        self._policy: ReceiverPolicy | None = None
+        self._cap_tlv: bytes | None = None
+        self._active: _Active | None = None
+        self._timeline: uuid.UUID | None = None
+        self.transcript: bytes | None = None
+        self.decoder_invocations = 0
+        self.rejections: list[tuple[str, ...]] = []
+
+    @property
+    def state(self) -> SessionState:
+        return self._machine.state
+
+    # --- establishment ------------------------------------------------------------
+
+    def on_handshake1(self, message: bytes) -> tuple[bytes, bytes]:
+        try:
+            self._machine.advance(SessionState.TRANSPORT_CONNECTING)
+            noise = NoiseIK(Role.RESPONDER, self._static)
+            self._noise = noise
+            peer = _read_descriptor(noise.read_handshake(message))
+            hs2 = noise.write_handshake(_descriptor_msg(self._descriptor))
+            self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
+            self._machine.advance(SessionState.PROFILE_NEGOTIATION)
+            self._negotiated = negotiate(peer, self._descriptor)
+            self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
+            payload = session_binding(self._session_key, noise.noise_h).encode()
+            if self._capability_factory is None:
+                self._policy = ReceiverPolicy.default_deny()
+            else:
+                cap = self._capability_factory(noise.noise_h)
+                if cap.pk_receiver != self._identity.public_bytes:
+                    msg = "receiver capability must name this identity"
+                    raise CryptoError(msg)
+                self._policy = ReceiverPolicy.from_capability(cap)
+                self._cap_tlv = cap.sign(self._identity).encode()
+                payload += self._cap_tlv
+            return hs2, noise.send(payload)
+        except EspError:
+            self._machine.close()
+            raise
+
+    def on_transport2(self, message: bytes) -> None:
+        try:
+            noise = _need(self._noise, "noise")
+            negotiated = _need(self._negotiated, "negotiated profile")
+            policy = _need(self._policy, "receiver policy")
+            parsed = _tlvs(noise.receive(message))
+            binding = parsed.get(SESSION_BINDING_CODE)
+            cap_tlv = parsed.get(SENDER_CAPABILITY_CODE)
+            if binding is None or cap_tlv is None:
+                msg = "sender must bind its session key and present a capability"
+                raise CryptoError(msg)
+            peer_pk = verify_session_binding(binding, noise_h=noise.noise_h)
+            cap = SenderCapability.verify(cap_tlv)
+            self._check_issuer(cap)
+            self.transcript = transcript_hash(
+                noise_h=noise.noise_h,
+                initiator=negotiated.initiator,
+                responder=self._descriptor,
+                sender_capability=cap_tlv.encode(),
+                receiver_capability=self._cap_tlv,
+            )
+            self._active = _Active(
+                keys=DirectionKeys.from_split_key(noise.split_keys()[0]),
+                peer_session_pk=peer_pk,
+                negotiated=negotiated,
+                policy=policy,
+                sender_cap=cap,
+                replay=ReplayWindow(negotiated.initiator.w_back, negotiated.initiator.w_fwd),
+            )
+            self._machine.advance(SessionState.CONSENT_ESTABLISHED)
+            self._machine.advance(SessionState.ACTIVE)
+        except EspError:
+            self._machine.close()
+            raise
+
+    def _check_issuer(self, cap: SenderCapability) -> None:
+        trusted = cap.issuer_pk in self._trusted
+        lineage_ok = self._lineage is None or self._lineage.admit_grant(
+            cap.issuer_pk, previously_accepted=True, logged_before_cutoff=False
+        )
+        if not (trusted and lineage_ok):
+            msg = "sender capability issuer is not trusted"
+            raise CryptoError(msg)
+
+    # --- receiving ------------------------------------------------------------------
+
+    def receive(self, packet: bytes, *, now_ns: int) -> ReceiveResult:
+        if self._machine.state is not SessionState.ACTIVE or self._active is None:
+            return self._reject(("0:no active session (data before consent or after close)",))
+        act = self._active
+        try:
+            opened = open_packet(
+                packet,
+                act.keys,
+                expected_sender=act.peer_session_pk,
+                max_payload_len=act.negotiated.initiator.max_payload_len,
+            )
+        except (WireError, CryptoError) as exc:
+            return self._reject((f"1:{type(exc).__name__}",))
+        header = opened.header
+        if self._timeline is None:
+            self._timeline = header.timeline_id  # the first authenticated packet pins it
+        if header.timeline_id != self._timeline:
+            return self._reject(("0:unexpected timeline",))
+        try:
+            act.replay.check(header.segment_seq)
+            extra = ADDENDUM_V1_CODES if self._wire.addendum else frozenset()
+            parsed = parse_payload(opened.plaintext, extra_codes=extra)
+        except (ReplayError, WireError) as exc:
+            return self._reject((f"1:{exc}",))
+        if header.types_bitmap == 0:
+            act.replay.accept(header.segment_seq)
+            return self._handle_control(parsed, act)
+        return self._accept_data(header, opened.plaintext, parsed, now_ns, act)
+
+    def _accept_data(
+        self, header: Header, plaintext: bytes, parsed: ParsedPayload, now_ns: int, act: _Active
+    ) -> ReceiveResult:
+        try:
+            facts = _quarantine_facts(header, parsed)
+        except WireError as exc:
+            return self._reject((f"1:{exc}",))
+        decision = evaluate(
+            facts,
+            act.sender_cap,
+            act.policy,
+            self.accept_state,
+            recipient_pk=self._identity.public_bytes,
+            now_ns=now_ns,
+            clock_tolerance_ns=act.negotiated.clock_tolerance_ms * 1_000_000,
+            revocations=self.revocations,
+        )
+        if not decision.accepted:
+            return self._reject(decision.violations)
+        self.decoder_invocations += 1  # the frame decoder runs only after acceptance
+        try:
+            frame = payload_to_frame(header, plaintext, self._wire)
+        except WireError as exc:
+            return self._reject((f"1:{exc}",))
+        act.replay.accept(header.segment_seq)
+        commit(
+            facts,
+            act.sender_cap,
+            self.accept_state,
+            recipient_pk=self._identity.public_bytes,
+            now_ns=now_ns,
+        )
+        return ReceiveResult(accepted=True, frame=frame)
+
+    def _handle_control(self, parsed: ParsedPayload, act: _Active) -> ReceiveResult:
+        for tlv in parsed.known:
+            if tlv.code == REVOCATION_CODE:
+                intent = self.revocations.apply(
+                    tlv, capability=act.sender_cap, lineage=self._lineage
+                )
+                if intent.effects & Effects.TERMINATE_SESSIONS:
+                    self._machine.advance(SessionState.CLOSING)
+                    self._machine.advance(SessionState.CLOSED)
+            elif tlv.code == SESSION_CLOSE_CODE:
+                SessionClose.decode(tlv)
+                self._machine.advance(SessionState.CLOSING)
+                self._machine.advance(SessionState.CLOSED)
+            elif tlv.code == DESCRIPTOR_CODE:
+                self._machine.close()  # no silent profile change inside a session
+                msg = "session descriptor change requires a new handshake"
+                raise SessionStateError(msg)
+        return ReceiveResult(accepted=True, control=parsed.known)
+
+    def _reject(self, violations: tuple[str, ...]) -> ReceiveResult:
+        self.rejections.append(violations)
+        return ReceiveResult(accepted=False, violations=violations)
+
+
+def _quarantine_facts(header: Header, parsed: ParsedPayload) -> PacketFacts:
+    """Minimal parse: types, latent norms, declared valence. No semantic decoding."""
+    norms: dict[TaossType, float] = {}
+    for tlv in parsed.known:
+        if tlv.code in TYPED_LATENT_CODES:
+            latent = decode_typed_latent(tlv, quantized=header.quantized)
+            norms[latent.type] = float(np.linalg.norm(latent.values))
+    types = frozenset(t for t in TaossType if header.types_bitmap & t.bit)
+    for t in types - set(norms):
+        norms[t] = 0.0  # anchor-only / descriptor-only blocks carry no latent energy
+    valence: float | None = None
+    for tlv in parsed.all(AFFECT_DESCRIPTOR_CODE):
+        v = _declared_valence(tlv)
+        if v is not None and (valence is None or abs(v) > abs(valence)):
+            valence = v
+    return PacketFacts(
+        authenticated=True,
+        types=types,
+        consent_flags=header.consent_flags,
+        norms=norms,
+        valence=valence,
+        timeline_id=header.timeline_id,
+        segment_seq=header.segment_seq,
+    )
+
+
+def _declared_valence(tlv: Tlv) -> float | None:
+    """Read only the ``valence`` field of an affect descriptor (bounded, no model build)."""
+    if not tlv.value or tlv.value[0] != 1 or len(tlv.value) > MAX_DESCRIPTOR_JSON:
+        msg = "unreadable affect descriptor"
+        raise WireError(msg)
+    try:
+        data = json.loads(tlv.value[1:])
+    except ValueError:
+        msg = "unreadable affect descriptor"
+        raise WireError(msg) from None
+    value = data.get("valence") if isinstance(data, dict) else None
+    if value is None:
+        return None
+    if not isinstance(value, float | int) or isinstance(value, bool) or not math.isfinite(value):
+        msg = "invalid declared valence"
+        raise WireError(msg)
+    return float(value)
