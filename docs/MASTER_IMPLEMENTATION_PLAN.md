@@ -3740,7 +3740,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-056 — Quantisierung und Latent-Encodings
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

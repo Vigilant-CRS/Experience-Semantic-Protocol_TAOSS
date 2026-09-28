@@ -45,4 +45,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: uv sync --frozen
-      - run: make verify
+      - run: make verify-full

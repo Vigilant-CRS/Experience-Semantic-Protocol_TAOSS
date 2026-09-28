@@ -8,7 +8,7 @@ UV ?= uv
 RUN := $(UV) run --frozen
 
 .PHONY: setup lint format typecheck unit property integration security fuzz-smoke \
-        conformance milestone benchmark-smoke verify-plan reuse coverage verify clean
+        conformance milestone benchmark-smoke verify-plan reuse coverage verify verify-full clean
 
 setup:
 	$(UV) sync --frozen
@@ -60,6 +60,10 @@ coverage:
 	$(RUN) pytest --cov --cov-report=term-missing -q
 
 verify: lint typecheck reuse verify-plan
+	$(RUN) pytest -q -m "not slow"
+
+# Everything, including slow tests such as the M0 fresh-clone gate (used by CI).
+verify-full: lint typecheck reuse verify-plan
 	$(RUN) pytest -q
 
 clean:
