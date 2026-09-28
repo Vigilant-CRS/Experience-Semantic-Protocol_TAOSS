@@ -65,6 +65,8 @@ from esp.crypto.identity import session_binding, verify_session_binding
 from esp.crypto.keys import DirectionKeys, TimelineTagRegistry, deterministic_nonce
 from esp.crypto.noise_ik import NoiseIK, Role, StaticKeyPair
 from esp.crypto.primitives import CryptoError, SigningKey
+from esp.crypto.provenance import verify_chain
+from esp.decoder.budget import DecodeBudget, decode_cost
 from esp.frame.model import DisclosurePolicy, ExperienceFrame, TypeBlock
 from esp.keys.lineage import KeyLineage
 from esp.privacy.dp import (
@@ -452,6 +454,18 @@ class SenderEndpoint:
 
 
 @dataclass(frozen=True, slots=True)
+class ReceiverHardening:
+    """Receiver-side threat mitigations (WP-060; V13 receiver threats T13-T19)."""
+
+    decode_budget: DecodeBudget | None = None
+    """T16: throttle decoding instead of exhausting resources."""
+    trusted_vendors: frozenset[bytes] | None = None
+    """T18: if set, every data packet needs a verified all-trusted provenance chain."""
+    anchor_only: bool = False
+    """T19: accept anchor coordinates only; raw typed latents are refused."""
+
+
+@dataclass(frozen=True, slots=True)
 class ReceiveResult:
     accepted: bool
     frame: ExperienceFrame | None = None
@@ -490,7 +504,9 @@ class ReceiverEndpoint:
         revocations: RevocationRegistry | None = None,
         metadata: MetadataProtection | None = None,
         inspector: Callable[[Header, ParsedPayload], None] | None = None,
+        hardening: ReceiverHardening | None = None,
     ) -> None:
+        self._hardening = hardening or ReceiverHardening()
         self.regulatory: Assessment = require_permitted(declaration)
         self._declaration = _need(declaration, "regulatory declaration")
         self._machine = StateMachine()
@@ -664,6 +680,9 @@ class ReceiverEndpoint:
             facts = self._audit_dp(header, parsed, facts, act)
         except (WireError, PrivacyBudgetError) as exc:
             return self._reject((f"8:{exc}",))
+        threat = self._screen_threats(parsed)
+        if threat is not None:
+            return self._reject((threat,))
         decision = evaluate(
             facts,
             act.sender_cap,
@@ -676,6 +695,15 @@ class ReceiverEndpoint:
         )
         if not decision.accepted:
             return self._reject(decision.violations)
+        return self._decode_and_commit(header, plaintext, facts, now_ns, act)
+
+    def _decode_and_commit(
+        self, header: Header, plaintext: bytes, facts: PacketFacts, now_ns: int, act: _Active
+    ) -> ReceiveResult:
+        budget = self._hardening.decode_budget
+        if budget is not None and not budget.try_spend(now_ns, decode_cost(len(plaintext))):
+            # T16: throttle; nothing decoded or committed, a retransmission may succeed later
+            return self._reject(("T16:decode budget exhausted (throttled)",))
         self.decoder_invocations += 1  # the frame decoder runs only after acceptance
         try:
             frame = payload_to_frame(header, plaintext, self._wire)
@@ -693,6 +721,20 @@ class ReceiverEndpoint:
             now_ns=now_ns,
         )
         return ReceiveResult(accepted=True, frame=frame)
+
+    def _screen_threats(self, parsed: ParsedPayload) -> str | None:
+        """Cheap pre-decoder screens for T18 (provenance) and T19 (anchor-only)."""
+        h = self._hardening
+        if h.anchor_only and any(t.code in TYPED_LATENT_CODES for t in parsed.known):
+            return "T19:anchor-only receiver refuses raw typed latents"
+        if h.trusted_vendors is not None:
+            try:
+                chain = verify_chain(parsed, trusted_vendors=tuple(h.trusted_vendors))
+            except (WireError, CryptoError) as exc:
+                return f"T18:{exc}"
+            if not chain:
+                return "T18:vendor provenance required but missing"
+        return None
 
     def _audit_dp(
         self, header: Header, parsed: ParsedPayload, facts: PacketFacts, act: _Active
@@ -834,5 +876,8 @@ def _declared_valence(tlv: Tlv) -> float | None:
         return None
     if not isinstance(value, float | int) or isinstance(value, bool) or not math.isfinite(value):
         msg = "invalid declared valence"
+        raise WireError(msg)
+    if not -1.0 <= value <= 1.0:  # T13 pre-screen: bounded even without receiver bounds
+        msg = "declared valence outside [-1, 1]"
         raise WireError(msg)
     return float(value)

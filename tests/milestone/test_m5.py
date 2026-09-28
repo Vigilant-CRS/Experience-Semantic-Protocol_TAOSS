@@ -88,11 +88,21 @@ def captured(capture: list[dict[str, Any]], step: str) -> list[dict[str, Any]]:
     return [c for c in capture if c["event"] == "captured" and c["step"] == step]
 
 
-def test_m5_work_package_verified() -> None:
+def test_m5_work_packages_verified() -> None:
     plan = (ROOT / "docs" / "MASTER_IMPLEMENTATION_PLAN.md").read_text(encoding="utf-8")
-    m = re.search(r"^## WP-025 — .*?\*\*Status:\*\* `([A-Z_]+)`", plan, re.S | re.M)
-    assert m is not None
-    assert m.group(1) == "VERIFIED"
+    for wp in ("WP-025", "WP-059", "WP-060", "WP-078", "WP-082"):
+        m = re.search(rf"^## {wp} — .*?\*\*Status:\*\* `([A-Z_]+)`", plan, re.S | re.M)
+        assert m is not None
+        assert m.group(1) == "VERIFIED", wp
+
+
+def test_art5_guard_is_active_in_the_demo() -> None:
+    """Plan 54a: the M5 demo runs with an active Art. 5(1)(f) guard."""
+    from esp.demo.cli import DECLARATION  # noqa: PLC0415
+    from esp.regulatory.guard import require_permitted  # noqa: PLC0415
+
+    assert require_permitted(DECLARATION).prohibited is False
+    assert DECLARATION.biometric_inputs is False
 
 
 def test_steps_1_to_3_connect_negotiate_consent(run: tuple[list, list]) -> None:
@@ -135,9 +145,10 @@ def test_steps_8_9_emo_consent_makes_emo_appear(run: tuple[list, list]) -> None:
 
 def test_steps_10_11_revoke_emo_then_future_emo_rejected(run: tuple[list, list]) -> None:
     events, capture = run
-    (revocation,) = packets(events, 2, "CONTROL")
+    revocation, close = packets(events, 2, "CONTROL")
     assert revocation["accepted"]
     assert revocation["control"] == ["0x23"]
+    assert close["control"] == ["0x81"]  # orderly close after the revocation
     refused = [c for c in capture if c["event"] == "send_refused"]
     assert [c["step"] for c in refused] == ["emo_after_revoke"]  # sender stops itself
     # reusing the revoked capability: the receiver refuses the session, nothing is decoded

@@ -460,7 +460,22 @@ async def _session(
             return
         capture("session_active", session=n, capability=str(session.capability_id))
         await body(session, conn)
-        await asyncio.sleep(0.3)  # let the receiver drain before the connection closes
+        if session.endpoint.state is not SessionState.CLOSED:
+            with contextlib.suppress(EspError):  # e.g. the receiver already refused us
+                await session.control(conn, "close", session.endpoint.close(now_ns=time.time_ns()))
+        await _await_peer_close(conn)
+
+
+async def _await_peer_close(conn: QuicConnection, timeout: float = 15.0) -> None:
+    """Closing is the receiver's move: it closes after processing SESSION_CLOSE.
+
+    Closing from the sender side on a timer could discard stream data that
+    QUIC has not delivered yet.
+    """
+    with contextlib.suppress(ConnectionClosedError, TimeoutError):
+        async with asyncio.timeout(timeout):
+            while True:
+                await conn.receive()
 
 
 async def send(directory: Path, port: int, capture_stream: TextIO) -> int:
@@ -468,14 +483,12 @@ async def send(directory: Path, port: int, capture_stream: TextIO) -> int:
 
     async def s1(s: SenderSession, conn: QuicConnection) -> None:
         await s.send(conn, "share_without_emo_consent")
-        await s.control(conn, "close", s.endpoint.close(now_ns=time.time_ns()))
 
     async def s2(s: SenderSession, conn: QuicConnection) -> None:
         await s.send(conn, "emo_consented")
         await s.send(conn, "binding_masked", bindings=BindingPolicy())
         await s.control(conn, "revoke_emo", s.endpoint.revoke(now_ns=time.time_ns()))
         await s.send(conn, "emo_after_revoke")
-        await asyncio.sleep(0.2)
 
     async def s3(s: SenderSession, conn: QuicConnection) -> None:
         with contextlib.suppress(ConnectionClosedError):
@@ -483,7 +496,6 @@ async def send(directory: Path, port: int, capture_stream: TextIO) -> int:
 
     async def s4(s: SenderSession, conn: QuicConnection) -> None:
         await s.send(conn, "emo_masked_again")
-        await s.control(conn, "close", s.endpoint.close(now_ns=time.time_ns()))
 
     for n, emo, body in ((1, False, s1), (2, True, s2), (3, True, s3), (4, False, s4)):
         await _session(directory, port, capture, n, emo=emo, body=body)
@@ -512,7 +524,16 @@ def main(argv: list[str] | None = None) -> int:
     p_insp.add_argument("--events", type=Path, required=True)
     p_insp.add_argument("--capture", type=Path, required=True)
     p_insp.add_argument("--out", type=Path, required=True)
+    p_ui = sub.add_parser("ui", help="interactive consent inspector on 127.0.0.1")
+    p_ui.add_argument("--port", type=int, default=8080)
     args = parser.parse_args(argv)
+    if args.command == "ui":
+        from esp.demo.ui import make_server  # noqa: PLC0415 - ui imports this module
+
+        server = make_server(args.port)
+        print(f"ESP consent inspector on http://127.0.0.1:{server.server_address[1]}/")
+        server.serve_forever()
+        return 0
     if args.command == "inspect":
         write_report(args.events, args.capture, args.out)
         return 0

@@ -56,6 +56,13 @@ GATES: dict[str, list[str]] = {
         "tests/integration/test_metadata_protection.py",
         "tests/unit/session",
     ],
+    "M5": [
+        "tests/milestone/test_m5.py",
+        "tests/unit/demo",
+        "tests/unit/decoder",
+        "tests/unit/regulatory",
+        "tests/integration/test_receiver_threats.py",
+    ],
 }
 
 
