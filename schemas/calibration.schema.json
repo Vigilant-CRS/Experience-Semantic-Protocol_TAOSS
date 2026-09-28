@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "ChannelBaseline": {
+      "additionalProperties": false,
+      "description": "Robust baseline statistics for one channel.",
+      "properties": {
+        "channel": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9_.\\-]*$",
+          "title": "Channel",
+          "type": "string"
+        },
+        "mad": {
+          "minimum": 0.0,
+          "title": "Mad",
+          "type": "number"
+        },
+        "median": {
+          "title": "Median",
+          "type": "number"
+        },
+        "modality": {
+          "$ref": "#/$defs/Modality"
+        },
+        "n_samples": {
+          "minimum": 1,
+          "title": "N Samples",
+          "type": "integer"
+        },
+        "quantiles": {
+          "default": [],
+          "items": {
+            "type": "number"
+          },
+          "title": "Quantiles",
+          "type": "array"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "modality",
+        "channel",
+        "unit",
+        "median",
+        "mad",
+        "n_samples"
+      ],
+      "title": "ChannelBaseline",
+      "type": "object"
+    },
+    "DeviceCalibration": {
+      "additionalProperties": false,
+      "description": "Linear device correction ``corrected = raw * gain + offset``.",
+      "properties": {
+        "channel": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9_.\\-]*$",
+          "title": "Channel",
+          "type": "string"
+        },
+        "device_id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Device Id",
+          "type": "string"
+        },
+        "gain": {
+          "default": 1.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Gain",
+          "type": "number"
+        },
+        "offset": {
+          "default": 0.0,
+          "title": "Offset",
+          "type": "number"
+        }
+      },
+      "required": [
+        "device_id",
+        "channel"
+      ],
+      "title": "DeviceCalibration",
+      "type": "object"
+    },
+    "Modality": {
+      "description": "Measurement modality. Neutral: names *what was measured*.",
+      "enum": [
+        "ecg",
+        "ppg",
+        "eda",
+        "respiration",
+        "eeg",
+        "emg",
+        "eye",
+        "temperature",
+        "motion",
+        "audio",
+        "video",
+        "text",
+        "behavior",
+        "event"
+      ],
+      "title": "Modality",
+      "type": "string"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/calibration.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "baselines": {
+      "items": {
+        "$ref": "#/$defs/ChannelBaseline"
+      },
+      "title": "Baselines",
+      "type": "array"
+    },
+    "created_at_ns": {
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Created At Ns",
+      "type": "integer"
+    },
+    "device_calibrations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DeviceCalibration"
+      },
+      "title": "Device Calibrations",
+      "type": "array"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "model_version": {
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?(?:\\+[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?$",
+      "title": "Model Version",
+      "type": "string"
+    },
+    "subject_id": {
+      "pattern": "^subj-[a-z0-9]{8,64}$",
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supersedes"
+    },
+    "valid_from_ns": {
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Valid From Ns",
+      "type": "integer"
+    },
+    "valid_until_ns": {
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Valid Until Ns",
+      "type": "integer"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "subject_id",
+    "version",
+    "created_at_ns",
+    "valid_from_ns",
+    "valid_until_ns",
+    "baselines",
+    "model_version"
+  ],
+  "title": "CalibrationProfile",
+  "type": "object"
+}

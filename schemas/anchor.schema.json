@@ -1,0 +1,94 @@
+{
+  "$defs": {
+    "AnchorStatus": {
+      "enum": [
+        "active",
+        "deprecated"
+      ],
+      "title": "AnchorStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/anchor.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Semantic identity of an anchor. Coordinates live in realizations.",
+  "properties": {
+    "aliases": {
+      "default": [],
+      "items": {
+        "maxLength": 64,
+        "minLength": 1,
+        "pattern": "^[a-z][a-z0-9_\\-]*$",
+        "type": "string"
+      },
+      "title": "Aliases",
+      "type": "array"
+    },
+    "definition": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Definition",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "label": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_\\-]*$",
+      "title": "Label",
+      "type": "string"
+    },
+    "references": {
+      "default": [],
+      "items": {
+        "maxLength": 512,
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "References",
+      "type": "array"
+    },
+    "status": {
+      "$ref": "#/$defs/AnchorStatus",
+      "default": "active"
+    },
+    "type": {
+      "enum": [
+        "KNO",
+        "INT",
+        "EMO",
+        "CTX",
+        "SEN",
+        "TEM"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "vocabulary_id": {
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+      "title": "Vocabulary Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "label",
+    "vocabulary_id",
+    "definition",
+    "version"
+  ],
+  "title": "Anchor",
+  "type": "object"
+}

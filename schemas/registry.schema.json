@@ -1,0 +1,317 @@
+{
+  "$defs": {
+    "Anchor": {
+      "additionalProperties": false,
+      "description": "Semantic identity of an anchor. Coordinates live in realizations.",
+      "properties": {
+        "aliases": {
+          "default": [],
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_\\-]*$",
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "definition": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Definition",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_\\-]*$",
+          "title": "Label",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/AnchorStatus",
+          "default": "active"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "vocabulary_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+          "title": "Vocabulary Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label",
+        "vocabulary_id",
+        "definition",
+        "version"
+      ],
+      "title": "Anchor",
+      "type": "object"
+    },
+    "AnchorSet": {
+      "additionalProperties": false,
+      "description": "Ordered anchor list used for anchor coordinates ``pi_t``.",
+      "properties": {
+        "anchors": {
+          "items": {
+            "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Anchors",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "anchors"
+      ],
+      "title": "AnchorSet",
+      "type": "object"
+    },
+    "AnchorStatus": {
+      "enum": [
+        "active",
+        "deprecated"
+      ],
+      "title": "AnchorStatus",
+      "type": "string"
+    },
+    "EncoderRealization": {
+      "additionalProperties": false,
+      "description": "An encoder/version's validated coordinates for one anchor.",
+      "properties": {
+        "anchor_id": {
+          "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+          "title": "Anchor Id",
+          "type": "string"
+        },
+        "encoder_id": {
+          "pattern": "^[a-z0-9][a-z0-9.\\-]*@(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+          "title": "Encoder Id",
+          "type": "string"
+        },
+        "validation_report": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Report"
+        },
+        "validity": {
+          "$ref": "#/$defs/ValidityRegion"
+        },
+        "vector": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Vector",
+          "type": "array"
+        }
+      },
+      "required": [
+        "anchor_id",
+        "encoder_id",
+        "vector",
+        "validity"
+      ],
+      "title": "EncoderRealization",
+      "type": "object"
+    },
+    "ValidityRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "cosine_min",
+            "l2_ball"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "threshold"
+      ],
+      "title": "ValidityRegion",
+      "type": "object"
+    },
+    "Vocabulary": {
+      "additionalProperties": false,
+      "properties": {
+        "anchors": {
+          "items": {
+            "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Anchors",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+          "title": "Id",
+          "type": "string"
+        },
+        "license": {
+          "pattern": "^[A-Za-z0-9.\\-+]+$",
+          "title": "License",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?(?:\\+[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "version",
+        "title",
+        "license",
+        "anchors"
+      ],
+      "title": "Vocabulary",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/registry.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "anchor_sets": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AnchorSet"
+      },
+      "title": "Anchor Sets",
+      "type": "array"
+    },
+    "anchors": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Anchor"
+      },
+      "title": "Anchors",
+      "type": "array"
+    },
+    "name": {
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+      "title": "Name",
+      "type": "string"
+    },
+    "realizations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EncoderRealization"
+      },
+      "title": "Realizations",
+      "type": "array"
+    },
+    "version": {
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?(?:\\+[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?$",
+      "title": "Version",
+      "type": "string"
+    },
+    "vocabularies": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Vocabulary"
+      },
+      "title": "Vocabularies",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "version"
+  ],
+  "title": "Registry",
+  "type": "object"
+}

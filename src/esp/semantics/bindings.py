@@ -17,10 +17,11 @@ Rule 2 prevents a binding from leaking information about a masked type
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Iterable
 from enum import StrEnum, unique
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 
 from esp.core.ids import UUID4, LocalRef
 from esp.core.model import EspModel
@@ -74,10 +75,24 @@ class SemanticBinding(EspModel):
 
 
 class BindingPolicy(EspModel):
-    """Which bindings may be disclosed. Empty policy = disclose none."""
+    """Which bindings may be disclosed. Empty policy = disclose none.
 
-    allowed_binding_ids: frozenset[UUID4] = frozenset()
-    allowed_relations: frozenset[RelationClass] = frozenset()
+    Collections are sorted, duplicate-free tuples (not sets) so that the
+    canonical JSON of a policy is deterministic.
+    """
+
+    allowed_binding_ids: tuple[UUID4, ...] = ()
+    allowed_relations: tuple[RelationClass, ...] = ()
+
+    @field_validator("allowed_binding_ids")
+    @classmethod
+    def _sorted_ids(cls, value: tuple[uuid.UUID, ...]) -> tuple[uuid.UUID, ...]:
+        return tuple(sorted(set(value), key=str))
+
+    @field_validator("allowed_relations")
+    @classmethod
+    def _sorted_relations(cls, value: tuple[RelationClass, ...]) -> tuple[RelationClass, ...]:
+        return tuple(sorted(set(value), key=lambda r: r.value))
 
     def permits(self, binding: SemanticBinding) -> bool:
         return (

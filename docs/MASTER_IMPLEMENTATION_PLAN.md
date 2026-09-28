@@ -2568,7 +2568,7 @@ A != B
 
 ## WP-005 — Semantic Bindings
 
-**Status:** `IMPLEMENTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -2738,7 +2738,7 @@ in menschliche AffectiveState-Intensitäten.
 
 ## WP-011 — ExperienceFrame
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

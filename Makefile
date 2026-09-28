@@ -50,6 +50,7 @@ benchmark-smoke:
 
 verify-plan:
 	$(RUN) python scripts/verify_plan_sync.py
+	$(RUN) python scripts/generate_schemas.py --check
 
 reuse:
 	$(RUN) reuse lint

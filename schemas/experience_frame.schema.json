@@ -1,0 +1,962 @@
+{
+  "$defs": {
+    "ActionReadiness": {
+      "additionalProperties": false,
+      "description": "An action tendency / urge (e.g. ``avoid``, ``approach``, ``attack``, ``freeze``).",
+      "properties": {
+        "anchor_id": {
+          "anyOf": [
+            {
+              "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Id"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "intensity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Intensity",
+          "type": "number"
+        },
+        "tendency": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_\\-]*$",
+          "title": "Tendency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tendency",
+        "intensity"
+      ],
+      "title": "ActionReadiness",
+      "type": "object"
+    },
+    "AffectScope": {
+      "description": "What an affect statement is about (plan section 4.5, ADR-0008).\n\nV13 section 6.4: L1 EMO is content-side; subject-side inferred affect\nbelongs to L2+ and must never be confused with it on the same channel.",
+      "enum": [
+        "content",
+        "self_declared",
+        "inferred_subject",
+        "machine_relay"
+      ],
+      "title": "AffectScope",
+      "type": "string"
+    },
+    "AffectiveDescriptor": {
+      "additionalProperties": false,
+      "description": "Interpretable description of an EMO state from one source.",
+      "properties": {
+        "additional_dimensions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DimensionValue"
+          },
+          "title": "Additional Dimensions",
+          "type": "array"
+        },
+        "affect_scope": {
+          "$ref": "#/$defs/AffectScope"
+        },
+        "arousal": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arousal"
+        },
+        "categories": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CategoryEstimate"
+          },
+          "title": "Categories",
+          "type": "array"
+        },
+        "intensity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intensity"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "valence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valence"
+        },
+        "vocabulary_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+          "title": "Vocabulary Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "vocabulary_id",
+        "affect_scope",
+        "provenance"
+      ],
+      "title": "AffectiveDescriptor",
+      "type": "object"
+    },
+    "AnchorCoordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_id": {
+          "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+          "title": "Anchor Id",
+          "type": "string"
+        },
+        "similarity": {
+          "maximum": 1.0,
+          "minimum": -1.0,
+          "title": "Similarity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "anchor_id",
+        "similarity"
+      ],
+      "title": "AnchorCoordinate",
+      "type": "object"
+    },
+    "CategoryEstimate": {
+      "additionalProperties": false,
+      "description": "One named category (e.g. ``fear``) with independent measures.",
+      "properties": {
+        "anchor_id": {
+          "anyOf": [
+            {
+              "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Id"
+        },
+        "anchor_similarity": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Similarity"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "intensity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Intensity",
+          "type": "number"
+        },
+        "label": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_\\-]*$",
+          "title": "Label",
+          "type": "string"
+        },
+        "model_probability": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Probability"
+        }
+      },
+      "required": [
+        "label",
+        "intensity"
+      ],
+      "title": "CategoryEstimate",
+      "type": "object"
+    },
+    "ClockStamp": {
+      "additionalProperties": false,
+      "description": "A timestamp with explicit clock provenance.",
+      "properties": {
+        "clock_domain": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9_.:\\-]*$",
+          "title": "Clock Domain",
+          "type": "string"
+        },
+        "clock_offset_ns": {
+          "default": 0,
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "title": "Clock Offset Ns",
+          "type": "integer"
+        },
+        "monotonic_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Monotonic Ns",
+          "type": "integer"
+        },
+        "sequence": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "source_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Source Ns",
+          "type": "integer"
+        },
+        "uncertainty_ns": {
+          "default": 0,
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Uncertainty Ns",
+          "type": "integer"
+        },
+        "wall_clock_ns": {
+          "anyOf": [
+            {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall Clock Ns"
+        }
+      },
+      "required": [
+        "source_ns",
+        "monotonic_ns",
+        "clock_domain",
+        "sequence"
+      ],
+      "title": "ClockStamp",
+      "type": "object"
+    },
+    "CommittedIntention": {
+      "additionalProperties": false,
+      "description": "A goal the person has committed to pursue.",
+      "properties": {
+        "anchor_id": {
+          "anyOf": [
+            {
+              "pattern": "^esp:(kno|int|emo|ctx|sen|tem):[a-z0-9][a-z0-9_\\-]*:v[1-9][0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Id"
+        },
+        "commitment": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Commitment",
+          "type": "number"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "goal": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_\\-]*$",
+          "title": "Goal",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goal",
+        "commitment"
+      ],
+      "title": "CommittedIntention",
+      "type": "object"
+    },
+    "ConsentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability Id"
+        }
+      },
+      "title": "ConsentRef",
+      "type": "object"
+    },
+    "DimensionValue": {
+      "additionalProperties": false,
+      "description": "A profile-declared additional dimension (e.g. dominance, agency).",
+      "properties": {
+        "maximum": {
+          "title": "Maximum",
+          "type": "number"
+        },
+        "minimum": {
+          "title": "Minimum",
+          "type": "number"
+        },
+        "name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_\\-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "minimum",
+        "maximum"
+      ],
+      "title": "DimensionValue",
+      "type": "object"
+    },
+    "EmotionEpisode": {
+      "additionalProperties": false,
+      "description": "An emotion as a process with onset, peak and end (reference-clock ns).",
+      "properties": {
+        "decay_half_life_ms": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decay Half Life Ms"
+        },
+        "end_ns": {
+          "anyOf": [
+            {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Ns"
+        },
+        "id": {
+          "format": "uuid",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "onset_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Onset Ns",
+          "type": "integer"
+        },
+        "peak_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Peak Ns",
+          "type": "integer"
+        },
+        "persistence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Persistence"
+        },
+        "recurrence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recurrence"
+        },
+        "volatility": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Volatility"
+        }
+      },
+      "required": [
+        "id",
+        "onset_ns",
+        "peak_ns"
+      ],
+      "title": "EmotionEpisode",
+      "type": "object"
+    },
+    "FrameProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "encoder_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9][a-z0-9.\\-]*@(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Encoder Id"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "model_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{16,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Digest"
+        }
+      },
+      "title": "FrameProvenance",
+      "type": "object"
+    },
+    "IntentionState": {
+      "additionalProperties": false,
+      "description": "INT description from one source. Readiness and commitment stay separate.",
+      "properties": {
+        "commitments": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CommittedIntention"
+          },
+          "title": "Commitments",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "readiness": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ActionReadiness"
+          },
+          "title": "Readiness",
+          "type": "array"
+        }
+      },
+      "required": [
+        "provenance"
+      ],
+      "title": "IntentionState",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Who or what produced a statement, from which evidence.",
+      "properties": {
+        "model_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{16,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Digest"
+        },
+        "producer_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@/\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer Id"
+        },
+        "producer_version": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?(?:\\+[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer Version"
+        },
+        "source_kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "source_refs": {
+          "default": [],
+          "items": {
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+            "type": "string"
+          },
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_kind"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RelationClass": {
+      "description": "Relation registry v1 (plan section 13.2).",
+      "enum": [
+        "elicited_by",
+        "directed_at",
+        "caused_by",
+        "goal_related_to",
+        "appraised_as",
+        "temporally_follows",
+        "temporally_overlaps",
+        "sensory_source_of",
+        "contextualized_by",
+        "supports",
+        "contradicts"
+      ],
+      "title": "RelationClass",
+      "type": "string"
+    },
+    "SemanticBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_id": {
+          "format": "uuid",
+          "title": "Binding Id",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "consent_scope": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consent Scope"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "relation": {
+          "$ref": "#/$defs/RelationClass"
+        },
+        "source": {
+          "$ref": "#/$defs/TypedEndpoint"
+        },
+        "target": {
+          "$ref": "#/$defs/TypedEndpoint"
+        }
+      },
+      "required": [
+        "binding_id",
+        "relation",
+        "source",
+        "target",
+        "confidence",
+        "provenance"
+      ],
+      "title": "SemanticBinding",
+      "type": "object"
+    },
+    "SourceKind": {
+      "description": "Where a statement comes from (plan section 14). Never merged silently.",
+      "enum": [
+        "self_report",
+        "human_annotation",
+        "sensor_observation",
+        "model_inference",
+        "derived",
+        "synthetic_ground_truth"
+      ],
+      "title": "SourceKind",
+      "type": "string"
+    },
+    "TypeBlock": {
+      "additionalProperties": false,
+      "description": "All information about one TAOSS type in a frame.",
+      "properties": {
+        "affect": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AffectiveDescriptor"
+          },
+          "title": "Affect",
+          "type": "array"
+        },
+        "anchor_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z0-9][a-z0-9.\\-]*[a-z0-9]$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Set Id"
+        },
+        "anchors": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AnchorCoordinate"
+          },
+          "title": "Anchors",
+          "type": "array"
+        },
+        "episodes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EmotionEpisode"
+          },
+          "title": "Episodes",
+          "type": "array"
+        },
+        "intention": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/IntentionState"
+          },
+          "title": "Intention",
+          "type": "array"
+        },
+        "latent": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latent"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "TypeBlock",
+      "type": "object"
+    },
+    "TypedEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "ref"
+      ],
+      "title": "TypedEndpoint",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/experience_frame.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bindings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SemanticBinding"
+      },
+      "title": "Bindings",
+      "type": "array"
+    },
+    "consent": {
+      "$ref": "#/$defs/ConsentRef",
+      "default": {
+        "capability_id": null
+      }
+    },
+    "frame_id": {
+      "format": "uuid",
+      "title": "Frame Id",
+      "type": "string"
+    },
+    "masked_types": {
+      "default": [],
+      "items": {
+        "enum": [
+          "KNO",
+          "INT",
+          "EMO",
+          "CTX",
+          "SEN",
+          "TEM"
+        ],
+        "type": "string"
+      },
+      "title": "Masked Types",
+      "type": "array"
+    },
+    "profile": {
+      "default": 1,
+      "maximum": 255,
+      "minimum": 1,
+      "title": "Profile",
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/FrameProvenance",
+      "default": {
+        "encoder_id": null,
+        "evidence_refs": [],
+        "model_digest": null
+      }
+    },
+    "schema_version": {
+      "default": "1.0",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sequence": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "timeline_id": {
+      "format": "uuid",
+      "title": "Timeline Id",
+      "type": "string"
+    },
+    "timestamp": {
+      "$ref": "#/$defs/ClockStamp"
+    },
+    "types": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TypeBlock"
+      },
+      "title": "Types",
+      "type": "array"
+    }
+  },
+  "required": [
+    "frame_id",
+    "timeline_id",
+    "sequence",
+    "timestamp"
+  ],
+  "title": "ExperienceFrame",
+  "type": "object"
+}

@@ -62,12 +62,12 @@ def test_critical_share_fear_without_its_cause() -> None:
     b = fear_elicited_by_dismissal()
     emo_only = frozenset({TaossType.EMO})
     # (a) KNO masked: even an explicitly permitted binding must not leak its target.
-    permissive = BindingPolicy(allowed_relations=frozenset(RelationClass))
+    permissive = BindingPolicy(allowed_relations=tuple(RelationClass))
     assert disclose_bindings([b], emo_only, permissive) == ()
     # (b) KNO disclosed for other content, but this binding not permitted.
     assert disclose_bindings([b], ALL, BindingPolicy()) == ()
     # (c) only when both types and the binding are permitted does it appear.
-    by_id = BindingPolicy(allowed_binding_ids=frozenset({b.binding_id}))
+    by_id = BindingPolicy(allowed_binding_ids=(b.binding_id,))
     assert disclose_bindings([b], ALL, by_id) == (b,)
 
 
@@ -88,7 +88,7 @@ def test_disclosure_matches_oracle(
         confidence=0.5,
         provenance=MODEL,
     )
-    policy = BindingPolicy(allowed_binding_ids=frozenset({b.binding_id}) if permit else frozenset())
+    policy = BindingPolicy(allowed_binding_ids=(b.binding_id,) if permit else ())
     disclosed = disclose_bindings([b], types, policy)
     assert (disclosed == (b,)) == (permit and src in types and dst in types)
 
@@ -97,3 +97,15 @@ def test_relation_registry_v1() -> None:
     assert len(RelationClass) == 11
     for a, c in itertools.combinations(RelationClass, 2):
         assert a.value != c.value
+
+
+def test_policy_canonical_json_is_order_independent() -> None:
+    ids = [uuid.uuid4() for _ in range(5)]
+    rels = list(RelationClass)
+    a = BindingPolicy(allowed_binding_ids=tuple(ids), allowed_relations=tuple(rels))
+    b = BindingPolicy(
+        allowed_binding_ids=(*reversed(ids), ids[0]),
+        allowed_relations=tuple(reversed(rels)),
+    )
+    assert a == b
+    assert a.canonical_json() == b.canonical_json()

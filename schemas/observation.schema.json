@@ -1,0 +1,299 @@
+{
+  "$defs": {
+    "ClockStamp": {
+      "additionalProperties": false,
+      "description": "A timestamp with explicit clock provenance.",
+      "properties": {
+        "clock_domain": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9_.:\\-]*$",
+          "title": "Clock Domain",
+          "type": "string"
+        },
+        "clock_offset_ns": {
+          "default": 0,
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "title": "Clock Offset Ns",
+          "type": "integer"
+        },
+        "monotonic_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Monotonic Ns",
+          "type": "integer"
+        },
+        "sequence": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "source_ns": {
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Source Ns",
+          "type": "integer"
+        },
+        "uncertainty_ns": {
+          "default": 0,
+          "maximum": 18446744073709551615,
+          "minimum": 0,
+          "title": "Uncertainty Ns",
+          "type": "integer"
+        },
+        "wall_clock_ns": {
+          "anyOf": [
+            {
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall Clock Ns"
+        }
+      },
+      "required": [
+        "source_ns",
+        "monotonic_ns",
+        "clock_domain",
+        "sequence"
+      ],
+      "title": "ClockStamp",
+      "type": "object"
+    },
+    "DeviceMetadata": {
+      "additionalProperties": false,
+      "description": "Pseudonymous description of the measuring device.\n\n``device_id`` must be a pseudonymous, deployment-local identifier; raw\nhardware serial numbers are identifying and do not belong here.",
+      "properties": {
+        "device_id": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Device Id",
+          "type": "string"
+        },
+        "firmware_version": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firmware Version"
+        },
+        "kind": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "manufacturer": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Manufacturer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "sampling_rate_hz": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sampling Rate Hz"
+        },
+        "synthetic": {
+          "default": false,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "device_id",
+        "kind"
+      ],
+      "title": "DeviceMetadata",
+      "type": "object"
+    },
+    "Modality": {
+      "description": "Measurement modality. Neutral: names *what was measured*.",
+      "enum": [
+        "ecg",
+        "ppg",
+        "eda",
+        "respiration",
+        "eeg",
+        "emg",
+        "eye",
+        "temperature",
+        "motion",
+        "audio",
+        "video",
+        "text",
+        "behavior",
+        "event"
+      ],
+      "title": "Modality",
+      "type": "string"
+    },
+    "SignalQuality": {
+      "additionalProperties": false,
+      "description": "Quality of a single measurement.",
+      "properties": {
+        "artifact": {
+          "default": false,
+          "title": "Artifact",
+          "type": "boolean"
+        },
+        "dropout": {
+          "default": false,
+          "title": "Dropout",
+          "type": "boolean"
+        },
+        "saturated": {
+          "default": false,
+          "title": "Saturated",
+          "type": "boolean"
+        },
+        "signal_quality": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signal Quality"
+        }
+      },
+      "title": "SignalQuality",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/observation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A raw measurement. Semantically neutral.",
+  "properties": {
+    "calibration_ref": {
+      "anyOf": [
+        {
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Calibration Ref"
+    },
+    "channel": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9_.\\-]*$",
+      "title": "Channel",
+      "type": "string"
+    },
+    "device": {
+      "$ref": "#/$defs/DeviceMetadata"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "modality": {
+      "$ref": "#/$defs/Modality"
+    },
+    "quality": {
+      "$ref": "#/$defs/SignalQuality",
+      "default": {
+        "artifact": false,
+        "dropout": false,
+        "saturated": false,
+        "signal_quality": null
+      }
+    },
+    "timestamp": {
+      "$ref": "#/$defs/ClockStamp"
+    },
+    "unit": {
+      "title": "Unit",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Value"
+    },
+    "value_uncertainty": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value Uncertainty"
+    }
+  },
+  "required": [
+    "id",
+    "modality",
+    "channel",
+    "value",
+    "unit",
+    "device",
+    "timestamp"
+  ],
+  "title": "Observation",
+  "type": "object"
+}

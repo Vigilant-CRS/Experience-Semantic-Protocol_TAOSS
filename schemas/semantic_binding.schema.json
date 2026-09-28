@@ -1,0 +1,180 @@
+{
+  "$defs": {
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Who or what produced a statement, from which evidence.",
+      "properties": {
+        "model_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{16,128}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Digest"
+        },
+        "producer_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@/\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer Id"
+        },
+        "producer_version": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?(?:\\+[0-9A-Za-z\\-]+(?:\\.[0-9A-Za-z\\-]+)*)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer Version"
+        },
+        "source_kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "source_refs": {
+          "default": [],
+          "items": {
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+            "type": "string"
+          },
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_kind"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RelationClass": {
+      "description": "Relation registry v1 (plan section 13.2).",
+      "enum": [
+        "elicited_by",
+        "directed_at",
+        "caused_by",
+        "goal_related_to",
+        "appraised_as",
+        "temporally_follows",
+        "temporally_overlaps",
+        "sensory_source_of",
+        "contextualized_by",
+        "supports",
+        "contradicts"
+      ],
+      "title": "RelationClass",
+      "type": "string"
+    },
+    "SourceKind": {
+      "description": "Where a statement comes from (plan section 14). Never merged silently.",
+      "enum": [
+        "self_report",
+        "human_annotation",
+        "sensor_observation",
+        "model_inference",
+        "derived",
+        "synthetic_ground_truth"
+      ],
+      "title": "SourceKind",
+      "type": "string"
+    },
+    "TypedEndpoint": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "KNO",
+            "INT",
+            "EMO",
+            "CTX",
+            "SEN",
+            "TEM"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "ref"
+      ],
+      "title": "TypedEndpoint",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS/schemas/semantic_binding.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "binding_id": {
+      "format": "uuid",
+      "title": "Binding Id",
+      "type": "string"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "consent_scope": {
+      "anyOf": [
+        {
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Consent Scope"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "relation": {
+      "$ref": "#/$defs/RelationClass"
+    },
+    "source": {
+      "$ref": "#/$defs/TypedEndpoint"
+    },
+    "target": {
+      "$ref": "#/$defs/TypedEndpoint"
+    }
+  },
+  "required": [
+    "binding_id",
+    "relation",
+    "source",
+    "target",
+    "confidence",
+    "provenance"
+  ],
+  "title": "SemanticBinding",
+  "type": "object"
+}
