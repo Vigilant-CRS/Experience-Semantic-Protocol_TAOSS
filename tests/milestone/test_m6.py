@@ -155,7 +155,8 @@ def test_m6_soak_brainflow_lsl_events() -> None:
     assert metrics["rss_growth_after_warmup_mb"] < 64, metrics
     assert cpu < 0.9, metrics
     assert got_markers == [f"m{i}" for i in range(sent_markers)], metrics  # all, in order
-    assert feature_windows >= int(SOAK_S // 10) - 1, metrics
+    # every complete 10-s window of received samples was processed (the last one may be partial)
+    assert feature_windows >= received // int(10 * bf.layout.rate_hz) - 1, metrics
 
 
 def test_m6_replay_is_reproducible(tmp_path: Path) -> None:

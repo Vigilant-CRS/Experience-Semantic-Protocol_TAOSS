@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="t d">
+  <title id="t">Experience Semantic Protocol</title>
+  <desc id="d">ESP transmits typed, consent-bound representations of experience in six types: knowledge, intention, emotion, context, sensory, temporal.</desc>
+  <style>
+    .bg{fill:#f7f8fa}.fg{fill:#1b1f24}.mu{fill:#57606a}.ln{stroke:#d0d7de}
+    .chip text{fill:#ffffff;font-weight:600}
+    @media (prefers-color-scheme: dark){.bg{fill:#161b22}.fg{fill:#e6edf3}.mu{fill:#9da7b3}.ln{stroke:#30363d}}
+    text{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+  </style>
+  <rect class="bg" x="0" y="0" width="960" height="300" rx="18"/>
+  <text class="fg" x="48" y="92" font-size="44" font-weight="700">Experience Semantic Protocol</text>
+  <text class="mu" x="50" y="130" font-size="20">Typed, consent-bound transport of experience — not of words.</text>
+  <text class="mu" x="50" y="158" font-size="16">Reference implementation of ESP V13 and TAOSS · AGPL-3.0 · CC BY-SA 4.0 · CC BY 4.0</text>
+  <line class="ln" x1="48" y1="186" x2="912" y2="186" stroke-width="1.5"/>
+  <g class="chip" font-size="18">
+    <rect x="48"  y="212" width="132" height="52" rx="10" fill="#2f6fbf"/><text x="114" y="245" text-anchor="middle">KNO</text>
+    <rect x="194" y="212" width="132" height="52" rx="10" fill="#7a4fbf"/><text x="260" y="245" text-anchor="middle">INT</text>
+    <rect x="340" y="212" width="132" height="52" rx="10" fill="#c0392b"/><text x="406" y="245" text-anchor="middle">EMO</text>
+    <rect x="486" y="212" width="132" height="52" rx="10" fill="#2e8b57"/><text x="552" y="245" text-anchor="middle">CTX</text>
+    <rect x="632" y="212" width="132" height="52" rx="10" fill="#b8860b"/><text x="698" y="245" text-anchor="middle">SEN</text>
+    <rect x="778" y="212" width="134" height="52" rx="10" fill="#4a6572"/><text x="845" y="245" text-anchor="middle">TEM</text>
+  </g>
+</svg>

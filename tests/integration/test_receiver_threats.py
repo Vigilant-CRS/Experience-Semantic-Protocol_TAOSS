@@ -19,7 +19,7 @@ from hypothesis import strategies as st
 
 from esp.codec.frame_wire import frame_to_payload
 from esp.codec.header import ConsentFlags
-from esp.codec.tlv import encode_tlv, parse_payload
+from esp.codec.tlv import LatentEncoding, encode_tlv, parse_payload
 from esp.core.taoss_types import TaossType, types_to_bitmap
 from esp.crypto.primitives import SigningKey
 from esp.crypto.provenance import ProvenanceRole, VendorProvenance, payload_hash
@@ -50,7 +50,10 @@ def adversarial(
 
 def raw_latent(t: TaossType, values: np.ndarray) -> bytes:
     """F32 typed latent built byte by byte (so NaN/Inf/huge values survive encoding)."""
-    body = struct.pack(">BBHf", t.value, 0, values.size, 1.0) + values.astype(">f4").tobytes()
+    body = (
+        struct.pack(">BBHf", LatentEncoding.F32_BE, 0, values.size, 1.0)
+        + values.astype(">f4").tobytes()
+    )
     return encode_tlv(t.tlv_code, body)
 
 

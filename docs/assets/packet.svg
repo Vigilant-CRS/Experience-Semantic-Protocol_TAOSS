@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="t d">
+  <title id="t">ESP packet layout</title>
+  <desc id="d">An ESP packet is a 100-byte header, an encrypted payload of typed TLVs, a 16-byte authentication tag and a 64-byte Ed25519 signature.</desc>
+  <style>
+    .bg{fill:#f7f8fa}.fg{fill:#1b1f24}.mu{fill:#57606a}
+    @media (prefers-color-scheme: dark){.bg{fill:#161b22}.fg{fill:#e6edf3}.mu{fill:#9da7b3}}
+    text{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+    .w{fill:#fff;font-weight:600}
+  </style>
+  <rect class="bg" width="960" height="300" rx="18"/>
+  <text class="fg" x="40" y="46" font-size="22" font-weight="700">One ESP packet on the wire</text>
+  <rect x="40"  y="72" width="220" height="64" rx="8" fill="#4a6572"/><text class="w" x="150" y="100" font-size="16" text-anchor="middle">header · 100 B</text><text class="w" x="150" y="122" font-size="13" text-anchor="middle">cleartext, authenticated</text>
+  <rect x="266" y="72" width="420" height="64" rx="8" fill="#2f6fbf"/><text class="w" x="476" y="100" font-size="16" text-anchor="middle">payload · typed TLVs</text><text class="w" x="476" y="122" font-size="13" text-anchor="middle">ChaCha20-Poly1305 encrypted</text>
+  <rect x="692" y="72" width="80"  height="64" rx="8" fill="#7a4fbf"/><text class="w" x="732" y="109" font-size="14" text-anchor="middle">tag 16</text>
+  <rect x="778" y="72" width="142" height="64" rx="8" fill="#2e8b57"/><text class="w" x="849" y="100" font-size="15" text-anchor="middle">signature 64</text><text class="w" x="849" y="122" font-size="13" text-anchor="middle">Ed25519</text>
+  <g font-size="14" class="fg">
+    <text x="40" y="172"><tspan font-weight="700">Header</tspan> (readable by the network, but tamper-proof): magic · version · profile · SF level · types bitmap ·</text>
+    <text x="40" y="192">consent flags EMO_MASKED / NO_REPLAY / NO_STORE · privacy &amp; DP flags · timeline · sequence · session key · nonce</text>
+    <text x="40" y="222"><tspan font-weight="700">Payload</tspan> (encrypted): typed latents 0x60–0x65 (F32/F16/INT8) · anchor coordinates · affect with affect_scope ·</text>
+    <text x="40" y="242">intention · bindings · provenance · control messages (consent, revocation, PANIC, SOS, close)</text>
+    <text x="40" y="272"><tspan font-weight="700">Tag + signature</tspan>: the header is the AEAD associated data; Ed25519 signs header ‖ ciphertext ‖ tag</text>
+  </g>
+</svg>

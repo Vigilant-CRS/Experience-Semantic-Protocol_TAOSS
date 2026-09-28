@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" role="img" aria-labelledby="t d">
+  <title id="t">TAOSS: one experience, six typed parts</title>
+  <desc id="d">An experience is split into six typed latent blocks totalling 512 numbers. Each block can be shared or withheld separately; here EMO is withheld and physically absent from the packet.</desc>
+  <style>
+    .bg{fill:#f7f8fa}.fg{fill:#1b1f24}.mu{fill:#57606a}.ln{stroke:#8c959f}.hole{fill:#f7f8fa;stroke:#c0392b}
+    @media (prefers-color-scheme: dark){.bg{fill:#161b22}.fg{fill:#e6edf3}.mu{fill:#9da7b3}.ln{stroke:#6e7681}.hole{fill:#161b22}}
+    text{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+    .w{fill:#fff;font-weight:600}
+  </style>
+  <rect class="bg" width="960" height="430" rx="18"/>
+  <text class="fg" x="40" y="48" font-size="24" font-weight="700">One experience → six typed parts (TAOSS)</text>
+  <circle cx="120" cy="215" r="70" fill="#8250df" opacity="0.18"/>
+  <circle cx="120" cy="215" r="70" fill="none" class="ln" stroke-width="2"/>
+  <text class="fg" x="120" y="208" font-size="17" text-anchor="middle" font-weight="600">experience</text>
+  <text class="mu" x="120" y="232" font-size="14" text-anchor="middle">"I am worried</text>
+  <text class="mu" x="120" y="250" font-size="14" text-anchor="middle">about my job"</text>
+  <g class="ln" stroke-width="1.5" fill="none">
+    <path d="M190 215 C 260 215, 260 95, 320 95"/><path d="M190 215 C 260 215, 260 145, 320 145"/>
+    <path d="M190 215 C 260 215, 260 195, 320 195"/><path d="M190 215 C 260 215, 260 245, 320 245"/>
+    <path d="M190 215 C 260 215, 260 295, 320 295"/><path d="M190 215 C 260 215, 260 345, 320 345"/>
+  </g>
+  <g font-size="15">
+    <rect x="320" y="76"  width="360" height="38" rx="8" fill="#2f6fbf"/><text class="w" x="334" y="101">KNO · knowledge · 240</text>
+    <rect x="320" y="126" width="96"  height="38" rx="8" fill="#7a4fbf"/><text class="w" x="330" y="151">INT · 64</text>
+    <rect x="320" y="176" width="96"  height="38" rx="8" class="hole" stroke-width="2" stroke-dasharray="6 4"/><text x="330" y="201" fill="#c0392b" font-weight="600">EMO · 64</text>
+    <rect x="320" y="226" width="96"  height="38" rx="8" fill="#2e8b57"/><text class="w" x="330" y="251">CTX · 64</text>
+    <rect x="320" y="276" width="96"  height="38" rx="8" fill="#b8860b"/><text class="w" x="330" y="301">SEN · 64</text>
+    <rect x="320" y="326" width="36"  height="38" rx="8" fill="#4a6572"/><text class="fg" x="366" y="351">TEM · 16</text>
+  </g>
+  <g font-size="14">
+    <text class="fg" x="440" y="151">what the person intends / is ready to do</text>
+    <text x="440" y="201" fill="#c0392b" font-weight="600">withheld: not encrypted-and-hidden — not in the packet at all</text>
+    <text class="fg" x="440" y="251">situation, setting, who / where</text>
+    <text class="fg" x="440" y="301">sensory qualities</text>
+    <text class="fg" x="440" y="351">timing, rhythm, phase</text>
+  </g>
+  <text class="mu" x="40" y="400" font-size="14">240 + 64 + 64 + 64 + 64 + 16 = 512 numbers per frame. Consent is decided per type (and per binding between types), signed and revocable.</text>
+</svg>
