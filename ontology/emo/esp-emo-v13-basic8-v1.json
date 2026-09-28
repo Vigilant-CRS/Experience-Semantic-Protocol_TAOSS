@@ -1,0 +1,149 @@
+{
+  "_license": "CC-BY-SA-4.0",
+  "_note": "V13 L1 default EMO anchor profile (Plutchik-inspired, V13 section 6.4). Definitions are operational criteria written for ESP; they do not claim a universal basis of emotion.",
+  "vocabulary": {
+    "id": "esp-emo-v13-basic8-v1",
+    "type": "EMO",
+    "version": "1.0.0",
+    "title": "ESP V13 basic-8 emotion anchors",
+    "license": "CC-BY-SA-4.0",
+    "anchors": [
+      "esp:emo:joy:v1",
+      "esp:emo:trust:v1",
+      "esp:emo:fear:v1",
+      "esp:emo:surprise:v1",
+      "esp:emo:sadness:v1",
+      "esp:emo:anger:v1",
+      "esp:emo:disgust:v1",
+      "esp:emo:anticipation:v1"
+    ]
+  },
+  "anchor_set": {
+    "id": "esp-emo-v13-basic8-v1",
+    "type": "EMO",
+    "anchors": [
+      "esp:emo:joy:v1",
+      "esp:emo:trust:v1",
+      "esp:emo:fear:v1",
+      "esp:emo:surprise:v1",
+      "esp:emo:sadness:v1",
+      "esp:emo:anger:v1",
+      "esp:emo:disgust:v1",
+      "esp:emo:anticipation:v1"
+    ]
+  },
+  "anchors": [
+    {
+      "id": "esp:emo:joy:v1",
+      "type": "EMO",
+      "label": "joy",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Pleasant affect toward something experienced as good, gained or fulfilled; tendency to approach and continue.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:trust:v1",
+      "type": "EMO",
+      "label": "trust",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Affect of reliance and acceptance toward an agent or situation perceived as safe and benevolent.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:fear:v1",
+      "type": "EMO",
+      "label": "fear",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Affect in response to a perceived threat or danger; tendency to avoid, escape or protect.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:surprise:v1",
+      "type": "EMO",
+      "label": "surprise",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Brief affective response to an unexpected event, prior to or independent of its evaluation.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:sadness:v1",
+      "type": "EMO",
+      "label": "sadness",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Unpleasant affect associated with loss, absence or irreversible negative outcome; tendency to withdraw.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:anger:v1",
+      "type": "EMO",
+      "label": "anger",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Affect in response to an obstacle, offence or injustice attributed to an agent; tendency to confront.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:disgust:v1",
+      "type": "EMO",
+      "label": "disgust",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Affect of rejection toward something perceived as contaminating, offensive or repellent.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    },
+    {
+      "id": "esp:emo:anticipation:v1",
+      "type": "EMO",
+      "label": "anticipation",
+      "vocabulary_id": "esp-emo-v13-basic8-v1",
+      "definition": "Affect oriented toward an expected future event, with attention and readiness directed at it.",
+      "references": [
+        "esp-v13:section-6.4:default-l1-anchor",
+        "w3c-emotionml-1.0:interoperability-target"
+      ],
+      "version": 1,
+      "status": "active",
+      "aliases": []
+    }
+  ]
+}

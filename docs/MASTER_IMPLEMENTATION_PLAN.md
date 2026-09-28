@@ -2646,7 +2646,7 @@ innerhalb numerischer Toleranz.
 
 ## WP-008 — Ontology Registry Core
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -2666,11 +2666,20 @@ innerhalb numerischer Toleranz.
 - deterministic digest,
 - deprecated anchor resolvable.
 
+### Präzisierung (v0.2.1, kompatibel mit §23.3)
+
+- Labels und Aliase müssen nur unter **aktiven** Ankern eines Vokabulars
+  eindeutig sein. Eine neue Major-Version (`…:v2`) setzt voraus, dass `…:v1`
+  deprecated ist; `…:v1` bleibt per ID auflösbar, Label-Auflösung liefert v2.
+- Logisches JSON serialisiert TAOSS-Typen per Name (`"EMO"`), nie per Bitnummer.
+- Registry-Snapshots sind nach ID sortiert; die V13-Reihenfolge eines
+  Anker-Sets lebt ausschließlich im `AnchorSet`.
+
 ---
 
 ## WP-009 — V13 Emotion Anchor Profile
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

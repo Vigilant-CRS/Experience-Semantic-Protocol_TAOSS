@@ -26,7 +26,7 @@ from esp.core.ids import UUID4, LocalRef
 from esp.core.model import EspModel
 from esp.core.provenance import Provenance
 from esp.core.scalars import Confidence
-from esp.core.taoss_types import TaossType
+from esp.core.taoss_types import TaossType, TaossTypeName
 
 
 @unique
@@ -47,7 +47,7 @@ class RelationClass(StrEnum):
 
 
 class TypedEndpoint(EspModel):
-    type: TaossType
+    type: TaossTypeName
     ref: LocalRef
 
 

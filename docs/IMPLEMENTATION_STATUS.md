@@ -18,6 +18,8 @@ both agree.
 | WP-005 | IMPLEMENTED | `tests/unit/semantics/test_bindings.py` (default deny; share fear without cause; oracle property). Offen: Protokollobjekt-Test auf Frame-Ebene (WP-011) |
 | WP-006 | VERIFIED | `tests/unit/calibration/test_calibration.py` (versioning, baseline updates, expired calibration, deterministic feature transform, same raw value/different baseline) |
 | WP-007 | VERIFIED | `tests/unit/taoss/test_blocks.py` (V13 offsets; P_s P_t = 0, sum P_t = I, idempotent — exact; compose(split(x)) == x bit-exact via Hypothesis; no silent zero-fill for absent types) |
+| WP-008 | VERIFIED | `tests/unit/ontology/test_registry.py` (duplicate ids rejected; semantic mutation requires new major version; deterministic, order-independent digest; deprecated anchors resolvable; aliases only grow; realizations per encoder with correct dimension) |
+| WP-009 | VERIFIED | `tests/unit/ontology/test_basic8.py` (exactly eight canonical ids; stable V13 order; registry digest fixed by `vectors/ontology/esp-emo-v13-basic8-v1.registry.blake2b256`) |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones

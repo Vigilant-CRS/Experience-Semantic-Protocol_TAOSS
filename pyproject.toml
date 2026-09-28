@@ -46,6 +46,9 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/esp"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"ontology" = "esp/_ontology"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config"]

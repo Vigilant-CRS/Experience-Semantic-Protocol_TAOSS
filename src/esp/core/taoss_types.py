@@ -11,7 +11,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from enum import IntEnum, unique
 from types import MappingProxyType
-from typing import Final
+from typing import Annotated, Final
+
+from pydantic import PlainSerializer, PlainValidator, WithJsonSchema
 
 
 @unique
@@ -91,6 +93,25 @@ def type_from_tlv_code(code: int) -> TaossType:
     except KeyError:
         msg = f"not a TAOSS-6 typed-latent TLV code: 0x{code:02x}"
         raise ValueError(msg) from None
+
+
+def _parse_type_name(value: object) -> TaossType:
+    if isinstance(value, TaossType):
+        return value
+    if isinstance(value, str) and value in TaossType.__members__:
+        return TaossType[value]
+    msg = "expected a TAOSS type name: KNO, INT, EMO, CTX, SEN or TEM"
+    raise ValueError(msg)
+
+
+#: TAOSS type in logical JSON objects, serialized by *name* (``"EMO"``).
+#: Integers are rejected so that bit positions are never confused with names.
+TaossTypeName = Annotated[
+    TaossType,
+    PlainValidator(_parse_type_name),
+    PlainSerializer(lambda t: t.name, return_type=str, when_used="json"),
+    WithJsonSchema({"type": "string", "enum": ["KNO", "INT", "EMO", "CTX", "SEN", "TEM"]}),
+]
 
 
 if sum(L1_DIMS.values()) != L1_TOTAL_DIM:  # pragma: no cover - import-time invariant
