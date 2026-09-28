@@ -34,7 +34,7 @@ from cryptography.hazmat.primitives.serialization import (
 from noise.connection import Keypair, NoiseConnection
 from noise.exceptions import NoiseInvalidMessage
 
-from esp.crypto.primitives import CryptoError
+from esp.crypto.primitives import CryptoError, blake2b
 
 PROTOCOL_NAME: Final = b"Noise_IK_25519_ChaChaPoly_BLAKE2b"
 PROLOGUE: Final = b"esp/v1"
@@ -149,9 +149,19 @@ class NoiseIK:
 
     @property
     def handshake_hash(self) -> bytes:
+        """The raw Noise handshake hash ``h`` (64 bytes for BLAKE2b)."""
         self._require_complete()
         h: bytes = self._conn.get_handshake_hash()
         return h
+
+    @property
+    def noise_h(self) -> bytes:
+        """32-byte transcript identifier for V13 ``noise_h[32]`` fields (GAP-026).
+
+        ``BLAKE2b-256("esp/v1/noise-h" || h)`` — the BLAKE2b Noise hash is 64
+        bytes, V13 reserves 32.
+        """
+        return blake2b(b"esp/v1/noise-h" + self.handshake_hash)
 
     @property
     def remote_static(self) -> bytes:

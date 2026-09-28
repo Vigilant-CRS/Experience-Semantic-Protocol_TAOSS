@@ -2333,6 +2333,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-023 | ExperienceBench-Korpora: V13 nennt Aufgaben, aber keine Datensätze/Lizenzen. | §ExperienceBench | hoch (für H1–H3) | Datensatz-Register mit Lizenzprüfung; Smoke-Korpus synthetisch; echte Korpora nur mit geklärter Lizenz. ADR-0024 | WP-034 … WP-037, WP-083 | OPEN |
 | GAP-024 | Hybrid-PQ-Profil: V13 verlangt Deklaration classical-only vs. hybrid, aber kein Feld. | §Crypto PQ | niedrig | Session-Descriptor-Feld `pq_mode ∈ {CLASSICAL_ONLY, HYBRID_OUTER, HYBRID_NOISE}`; v1 = CLASSICAL_ONLY, nie als PQ beworben. | WP-048, WP-075 | OPEN |
 | GAP-025 | V13 §7.6 sagt, die ReceiverCapability stehe im ersten Responder-Handshake-Payload, bindet sie aber an `noise_h`. Der finale Transkript-Hash deckt genau dieses Payload ab (zirkulär). Gleiches gilt für Identity Proof und Session-Binding. | §7.6, §9.4 | hoch | ADR-0013 Amendment: Übertragung in der jeweils ersten Noise-Transportnachricht nach dem Handshake, vor jedem ESP-Anwendungspaket | WP-018, WP-051, WP-052 | RESOLVED |
+| GAP-026 | `noise_h[32]` in 0x20/0x21 vs. 64-Byte-Handshake-Hash von `Noise_IK_25519_ChaChaPoly_BLAKE2b` (HASHLEN = 64). | §9.4, §7.6 | hoch | ADR-0013 Amendment: `noise_h = BLAKE2b-256("esp/v1/noise-h" ‖ h)` | WP-018, WP-051, WP-052 | RESOLVED |
 
 ---
 
@@ -2902,7 +2903,7 @@ Header modification MUST fail authentication.
 
 ## WP-018 — Session Pseudonymous Identity
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3642,7 +3643,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-052 — Identity Proof (0x20) und Static-Key-Binding
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-006
+**Status:** `VERIFIED` · **Löst:** GAP-006
 
 ### Implementieren
 
@@ -5041,7 +5042,7 @@ psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
 open_gaps: 12        # GAP-007, 012, 014–020, 022–024
-resolved_gaps: 13    # GAP-001–006, 008–011, 013, 021, 025
+resolved_gaps: 14    # GAP-001–006, 008–011, 013, 021, 025, 026
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"
 independent_implementation_status: "NOT_STARTED"

@@ -60,3 +60,16 @@ immediately after the handshake and before any ESP application packet:
 This keeps V13's intent: the initiator learns the receiver capability
 before sending any typed latents. The V13 wording "embeds it in their first
 response payload" is recorded as an errata item (WP-085).
+
+## Amendment 2026-09-28 (GAP-026): 32-byte `noise_h`
+
+For `Noise_IK_25519_ChaChaPoly_BLAKE2b` the Noise handshake hash `h` is
+64 bytes (HASHLEN of BLAKE2b). The V13 fields `noise_h[32]` (0x20, 0x21, 0x85)
+reserve 32 bytes. ESP defines
+
+```text
+noise_h = BLAKE2b-256("esp/v1/noise-h" || h)
+```
+
+and uses it everywhere a 32-byte transcript hash is required. The transcript
+hash of ADR-0012 is computed over this `noise_h`.

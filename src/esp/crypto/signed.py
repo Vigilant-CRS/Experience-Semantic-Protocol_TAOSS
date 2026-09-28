@@ -10,11 +10,11 @@ including ``t`` and ``length`` (which already counts the 64-byte signature).
 from __future__ import annotations
 
 import struct
-from typing import Final
+from typing import Final, Protocol
 
 from esp.codec.errors import WireError
 from esp.codec.tlv import TLV_HEADER_LEN, Tlv
-from esp.crypto.primitives import SIG_LEN, SigningKey, ed25519_verify
+from esp.crypto.primitives import SIG_LEN, ed25519_verify
 
 #: Domain separators of V13 v1 signed objects (V13 section 8.4 / 9).
 DOMAINS: Final = {
@@ -29,11 +29,17 @@ DOMAINS: Final = {
 }
 
 
+class Signer(Protocol):
+    """Anything that produces Ed25519 signatures (software key or hardware)."""
+
+    def sign(self, message: bytes) -> bytes: ...
+
+
 def _prefix(code: int, body_without_sig: bytes) -> bytes:
     return struct.pack(">BI", code, len(body_without_sig) + SIG_LEN) + body_without_sig
 
 
-def sign_tlv(code: int, body_without_sig: bytes, signer: SigningKey) -> Tlv:
+def sign_tlv(code: int, body_without_sig: bytes, signer: Signer) -> Tlv:
     """Build a signed TLV whose last 64 value bytes are the Ed25519 signature."""
     domain = DOMAINS[code]
     signature = signer.sign(domain + _prefix(code, body_without_sig))

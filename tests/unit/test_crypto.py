@@ -133,6 +133,9 @@ def handshake() -> tuple[NoiseIK, NoiseIK, StaticKeyPair, StaticKeyPair]:
 def test_handshake_agrees_on_hash_keys_and_identities() -> None:
     i, r, i_static, r_static = handshake()
     assert i.handshake_hash == r.handshake_hash
+    assert len(i.handshake_hash) == 64  # BLAKE2b HASHLEN
+    assert len(i.noise_h) == 32
+    assert i.noise_h == r.noise_h
     assert i.split_keys() == r.split_keys()
     assert i.split_keys()[0] != i.split_keys()[1]
     assert (r.remote_static, i.remote_static) == (i_static.public_bytes, r_static.public_bytes)

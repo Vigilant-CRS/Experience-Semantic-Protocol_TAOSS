@@ -29,6 +29,8 @@ both agree.
 | WP-016 | VERIFIED | `tests/unit/test_crypto.py` (official vectors: RFC 8439 AEAD, RFC 8032 Ed25519, RFC 7693 BLAKE2b, cacophony Noise_IK_25519_ChaChaPoly_BLAKE2b incl. handshake hash + transport; project golden packet `vectors/crypto/packet_valid.json`; critical: all 800 header bit flips fail authentication; ciphertext/tag/signature tamper; wrong signature key; wrong AD / re-signed modified header fails AEAD; canonical signed TLVs ADR-0015) |
 | WP-017 | VERIFIED | `tests/unit/session/test_sequence_replay.py` (duplicate nonce rejected; same sequence + modified plaintext forbidden; retransmission identical bytes; crash after reserve never reuses; lost/corrupt/foreign state terminates session; exhaustion at 2^32-2; random-nonce redraw; replay window edges; no wrap; bounded memory) |
 | WP-065 | IMPLEMENTED | `tests/unit/session/test_sequence_replay.py` (V13 §9.5 formulas incl. floors/caps, 2.56 s at 50 Hz). Offen: RTT/Jitter-Laufzeitschätzung und Austausch im Session Descriptor (WP-048) |
+| WP-018 | VERIFIED | `tests/unit/test_identity.py` (two sessions -> different sender ids; master key absent from clear header and packet; replayed identity proof fails in another transcript; proof bound to pk_S) |
+| WP-052 | VERIFIED | `tests/unit/test_identity.py` (TLV 0x20 per V13; at-most-once guard; SESSION_BINDING 0x85 and STATIC_KEY_BINDING 0x84 per ADR-0013; 32-byte noise_h per GAP-026) |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones
