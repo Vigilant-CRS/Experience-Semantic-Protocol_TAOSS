@@ -1,0 +1,274 @@
+{
+  "milestone": "M11",
+  "git_commit": "ce1fae24bb31130087e02ea1f1c61c0293d553f2",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-28T21:11:18+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M11",
+  "tests": {
+    "gate": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_suite": {
+      "passed": 771,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "metrics": {
+    "python": "3.12.13",
+    "profiles": [
+      {
+        "sf_level": 0,
+        "encoding": "F32_BE",
+        "types": [
+          "KNO"
+        ],
+        "encode": {
+          "p50_ms": 0.0257,
+          "p99_ms": 0.0841,
+          "mean_ms": 0.0292
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.1215,
+          "p99_ms": 0.1805,
+          "mean_ms": 0.1341
+        },
+        "decode": {
+          "p50_ms": 0.136,
+          "p99_ms": 0.2344,
+          "mean_ms": 0.146
+        },
+        "total_send_receive": {
+          "p50_ms": 2.8471,
+          "p99_ms": 4.7217,
+          "mean_ms": 2.9666
+        },
+        "wire_bytes_per_frame": 1153,
+        "v13_bytes_per_release": 1153,
+        "kbit_s": {
+          "10Hz": 92.2,
+          "25Hz": 230.6,
+          "50Hz": 461.2
+        },
+        "max_sustainable_hz": 212,
+        "peak_memory_kib": 573.4,
+        "cpu_fraction": 0.655
+      },
+      {
+        "sf_level": 0,
+        "encoding": "INT8_SYM",
+        "types": [
+          "KNO"
+        ],
+        "encode": {
+          "p50_ms": 0.0285,
+          "p99_ms": 0.0704,
+          "mean_ms": 0.0305
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.116,
+          "p99_ms": 0.1877,
+          "mean_ms": 0.1262
+        },
+        "decode": {
+          "p50_ms": 0.1333,
+          "p99_ms": 0.2155,
+          "mean_ms": 0.1445
+        },
+        "total_send_receive": {
+          "p50_ms": 2.8619,
+          "p99_ms": 11.4119,
+          "mean_ms": 3.3053
+        },
+        "wire_bytes_per_frame": 433,
+        "v13_bytes_per_release": 433,
+        "kbit_s": {
+          "10Hz": 34.6,
+          "25Hz": 86.6,
+          "50Hz": 173.2
+        },
+        "max_sustainable_hz": 88,
+        "peak_memory_kib": 274.0,
+        "cpu_fraction": 0.625
+      },
+      {
+        "sf_level": 3,
+        "encoding": "F32_BE",
+        "types": [
+          "KNO",
+          "INT",
+          "CTX",
+          "TEM"
+        ],
+        "encode": {
+          "p50_ms": 0.068,
+          "p99_ms": 0.1469,
+          "mean_ms": 0.0731
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.1199,
+          "p99_ms": 0.1813,
+          "mean_ms": 0.1249
+        },
+        "decode": {
+          "p50_ms": 0.2419,
+          "p99_ms": 0.368,
+          "mean_ms": 0.2552
+        },
+        "total_send_receive": {
+          "p50_ms": 4.0904,
+          "p99_ms": 14.5798,
+          "mean_ms": 4.7512
+        },
+        "wire_bytes_per_frame": 1768,
+        "v13_bytes_per_release": 1768,
+        "kbit_s": {
+          "10Hz": 141.4,
+          "25Hz": 353.6,
+          "50Hz": 707.2
+        },
+        "max_sustainable_hz": 69,
+        "peak_memory_kib": 856.6,
+        "cpu_fraction": 0.698
+      },
+      {
+        "sf_level": 3,
+        "encoding": "INT8_SYM",
+        "types": [
+          "KNO",
+          "INT",
+          "CTX",
+          "TEM"
+        ],
+        "encode": {
+          "p50_ms": 0.0754,
+          "p99_ms": 0.1062,
+          "mean_ms": 0.0769
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.1139,
+          "p99_ms": 0.1383,
+          "mean_ms": 0.1158
+        },
+        "decode": {
+          "p50_ms": 0.2282,
+          "p99_ms": 0.3053,
+          "mean_ms": 0.2317
+        },
+        "total_send_receive": {
+          "p50_ms": 3.7108,
+          "p99_ms": 5.419,
+          "mean_ms": 3.8151
+        },
+        "wire_bytes_per_frame": 616,
+        "v13_bytes_per_release": 616,
+        "kbit_s": {
+          "10Hz": 49.3,
+          "25Hz": 123.2,
+          "50Hz": 246.4
+        },
+        "max_sustainable_hz": 185,
+        "peak_memory_kib": 343.7,
+        "cpu_fraction": 0.737
+      },
+      {
+        "sf_level": 7,
+        "encoding": "F32_BE",
+        "types": [
+          "KNO",
+          "INT",
+          "EMO",
+          "CTX",
+          "SEN",
+          "TEM"
+        ],
+        "encode": {
+          "p50_ms": 0.0887,
+          "p99_ms": 0.1566,
+          "mean_ms": 0.0926
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.117,
+          "p99_ms": 0.2434,
+          "mean_ms": 0.1211
+        },
+        "decode": {
+          "p50_ms": 0.2877,
+          "p99_ms": 0.4057,
+          "mean_ms": 0.2994
+        },
+        "total_send_receive": {
+          "p50_ms": 4.376,
+          "p99_ms": 6.2268,
+          "mean_ms": 4.4965
+        },
+        "wire_bytes_per_frame": 2306,
+        "v13_bytes_per_release": 2306,
+        "kbit_s": {
+          "10Hz": 184.5,
+          "25Hz": 461.2,
+          "50Hz": 922.4
+        },
+        "max_sustainable_hz": 161,
+        "peak_memory_kib": 847.5,
+        "cpu_fraction": 0.767
+      },
+      {
+        "sf_level": 7,
+        "encoding": "INT8_SYM",
+        "types": [
+          "KNO",
+          "INT",
+          "EMO",
+          "CTX",
+          "SEN",
+          "TEM"
+        ],
+        "encode": {
+          "p50_ms": 0.1097,
+          "p99_ms": 0.2457,
+          "mean_ms": 0.1221
+        },
+        "open_verify_decrypt": {
+          "p50_ms": 0.117,
+          "p99_ms": 0.2091,
+          "mean_ms": 0.1295
+        },
+        "decode": {
+          "p50_ms": 0.298,
+          "p99_ms": 0.6089,
+          "mean_ms": 0.3123
+        },
+        "total_send_receive": {
+          "p50_ms": 4.2502,
+          "p99_ms": 6.6785,
+          "mean_ms": 4.3611
+        },
+        "wire_bytes_per_frame": 770,
+        "v13_bytes_per_release": 770,
+        "kbit_s": {
+          "10Hz": 61.6,
+          "25Hz": 154.0,
+          "50Hz": 308.0
+        },
+        "max_sustainable_hz": 150,
+        "peak_memory_kib": 374.3,
+        "cpu_fraction": 0.764
+      }
+    ],
+    "network_memory_link": {
+      "p50_ms": 1.3929,
+      "p99_ms": 2.6329,
+      "mean_ms": 1.5275,
+      "frames": 50.0
+    }
+  },
+  "verdict": "PASS"
+}
