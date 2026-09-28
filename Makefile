@@ -46,7 +46,7 @@ milestone:
 	$(RUN) pytest tests/milestone -q
 
 benchmark-smoke:
-	@echo "benchmark-smoke: no benchmarks yet (WP-034)"
+	$(RUN) python -m esp.perf
 
 verify-plan:
 	$(RUN) python scripts/verify_plan_sync.py

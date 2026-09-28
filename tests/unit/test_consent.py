@@ -389,3 +389,6 @@ def test_acceptance_matches_oracle(
     now = NOW + now_offset * DELTA
     got = decide(p, cap, policy, state=state, now_ns=now).accepted
     assert got == oracle(p, cap, policy, spent, count, now)
+
+
+pytestmark = pytest.mark.security

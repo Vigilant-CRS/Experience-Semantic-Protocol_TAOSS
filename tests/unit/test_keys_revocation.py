@@ -540,3 +540,6 @@ def test_grant_first_presented_after_rotation_needs_prior_evidence() -> None:
     assert not lineage.admit_grant(
         NEW.public_bytes, previously_accepted=True, logged_before_cutoff=False
     )
+
+
+pytestmark = pytest.mark.security

@@ -323,3 +323,6 @@ def test_signed_tlv_covers_type_length_and_body() -> None:
         verify_signed_tlv(tlv, SigningKey.from_seed(b"\x06" * 32).public_bytes)
     with pytest.raises(WireError, match="not a canonical signed object"):
         verify_signed_tlv(Tlv(0x60, tlv.value), signer.public_bytes)
+
+
+pytestmark = pytest.mark.security

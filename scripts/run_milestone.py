@@ -77,6 +77,7 @@ GATES: dict[str, list[str]] = {
         "tests/unit/training/test_leakage.py",
     ],
     "M10": ["tests/milestone/test_m10.py", "tests/interop", "tests/conformance"],
+    "M11": ["tests/milestone/test_m11.py", "tests/failure_modes", "tests/integration/test_perf.py"],
     "M5": [
         "tests/milestone/test_m5.py",
         "tests/unit/demo",
@@ -88,7 +89,10 @@ GATES: dict[str, list[str]] = {
 
 
 #: Extra environment per gate (e.g. the M6 30-minute soak).
-GATE_ENV: dict[str, dict[str, str]] = {"M6": {"ESP_SOAK_SECONDS": "1800"}}
+GATE_ENV: dict[str, dict[str, str]] = {
+    "M6": {"ESP_SOAK_SECONDS": "1800"},
+    "M11": {"ESP_FUZZ_ITERATIONS": "1000000", "ESP_PERF_FRAMES": "300"},
+}
 
 
 def git(*args: str) -> str:

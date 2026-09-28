@@ -3458,7 +3458,7 @@ für:
 
 ## WP-043 — Performance and Rate Benchmarks
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Messen
 
@@ -3483,7 +3483,7 @@ Profile:
 
 ## WP-044 — Security Review Harness
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Automatisierte Checks
 
@@ -4202,7 +4202,7 @@ Konformitätssiegel-Prozess (Report-Format, Veröffentlichung).
 
 ## WP-080 — Threat-Model- und Failure-Mode-Regressionen
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 Je ein Regressionstest pro V13-Failure-Mode: Type Collapse, Encoder Drift,
 Anchor Cultural Bias, Audit-Adversary Asymmetry, EMO-Stego-Rekonstruktion,
@@ -5037,8 +5037,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M10
-next_work_package: WP-043
+current_milestone: M11
+next_work_package: WP-046
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"

@@ -29,6 +29,8 @@ from tests.integration.test_endpoint import DECLARATION, NOW, establish, pair
 from tests.unit.frame.factory import full_frame
 from tests.unit.frame.test_frame_wire import full_anchor_frame
 
+pytestmark = pytest.mark.security
+
 S = AffectScope
 C = DeploymentContext
 

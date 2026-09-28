@@ -65,6 +65,7 @@ dev = [
     "pyxdf>=1.17.5",
     "wfdb>=4.3.1",
     "pyedflib>=0.1.42",
+    "pip-audit>=2.10.1",
 ]
 train = [
     "torch>=2.4",

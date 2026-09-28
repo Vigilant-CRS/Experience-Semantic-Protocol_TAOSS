@@ -31,7 +31,7 @@ from esp.session.endpoint import ReceiverEndpoint, SenderEndpoint
 from esp.session.state import SessionState, SessionStateError, StateMachine
 from tests.unit.frame.test_frame_wire import full_anchor_frame
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.security]
 T = TaossType
 MASTER = SigningKey.from_seed(b"\x91" * 32)
 RECEIVER_ID = SigningKey.from_seed(b"\x92" * 32)

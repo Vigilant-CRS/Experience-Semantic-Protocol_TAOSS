@@ -34,7 +34,7 @@ from esp.session.endpoint import ReceiverHardening, SenderEndpoint
 from tests.integration.test_endpoint import NOW, WIRE, establish, pair
 from tests.unit.frame.test_frame_wire import full_anchor_frame
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.security]
 T = TaossType
 KNO = DisclosurePolicy(allowed_types=(T.KNO,))
 SF6 = DisclosurePolicy(allowed_types=tuple(T))

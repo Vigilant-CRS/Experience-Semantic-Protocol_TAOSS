@@ -39,7 +39,7 @@ from tests.integration.test_endpoint import (
 from tests.integration.test_transport import make_clock, wait_until
 from tests.unit.frame.test_frame_wire import full_anchor_frame
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.security]
 T = TaossType
 ALL = DisclosurePolicy(allowed_types=tuple(T))
 NO_EMO = DisclosurePolicy(allowed_types=(T.KNO, T.INT, T.CTX, T.SEN, T.TEM))
