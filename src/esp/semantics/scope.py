@@ -13,6 +13,13 @@ from esp.core.provenance import (
     SourceKind,
 )
 
+#: A self-declared statement comes from a self report, or from a *simulated*
+#: self report in synthetic ground truth (plan section 19.1, WP-012).
+SELF_DECLARED_SOURCES = frozenset({SourceKind.SELF_REPORT, SourceKind.SYNTHETIC_GROUND_TRUTH})
+
+#: Scopes synthetic ground truth may carry: never inferred or relayed affect.
+SYNTHETIC_SCOPES = frozenset({AffectScope.SELF_DECLARED, AffectScope.CONTENT})
+
 
 class AffectScopeError(ValueError):
     """An affect statement violates the content/subject boundary."""
@@ -29,8 +36,11 @@ def check_scope_source(scope: AffectScope, provenance: Provenance) -> None:
     - A self report can never be labelled as content-side or inferred affect.
     """
     kind = provenance.source_kind
-    if scope is AffectScope.SELF_DECLARED and kind is not SourceKind.SELF_REPORT:
+    if scope is AffectScope.SELF_DECLARED and kind not in SELF_DECLARED_SOURCES:
         msg = f"self_declared affect requires source_kind=self_report, got {kind.value}"
+        raise AffectScopeError(msg)
+    if kind is SourceKind.SYNTHETIC_GROUND_TRUTH and scope not in SYNTHETIC_SCOPES:
+        msg = f"synthetic ground truth may only simulate self reports or content, not {scope.value}"
         raise AffectScopeError(msg)
     if kind is SourceKind.SELF_REPORT and scope is not AffectScope.SELF_DECLARED:
         msg = f"a self report is self_declared affect, not {scope.value}"

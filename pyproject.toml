@@ -28,6 +28,7 @@ dependencies = [
     "cryptography>=43",
     "numpy>=2.0",
     "pydantic>=2.9",
+    "pyyaml>=6.0.2",
 ]
 
 [project.urls]
@@ -42,6 +43,7 @@ dev = [
     "mypy>=1.11",
     "reuse>=4",
     "jsonschema>=4.23",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [tool.hatch.build.targets.wheel]

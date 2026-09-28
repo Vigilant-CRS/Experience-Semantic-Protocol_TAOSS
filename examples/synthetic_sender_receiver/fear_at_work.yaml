@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Synthetic episode (plan section 19.1). Ground truth is a *simulated self
+# report*; the ECG/EDA streams follow a declared linear toy model. This is a
+# software test fixture, not a psychological model.
+episode:
+  name: fear-at-work
+  seed: 42
+  duration_s: 10
+  frame_rate_hz: 10
+  keyframes:
+    - {t_s: 0, emotion: {fear: 0.2, sadness: 0.1}, readiness: {avoid: 0.1}, context: {meeting: 1.0}, valence: -0.1}
+    - {t_s: 5, emotion: {fear: 0.8, sadness: 0.3}, readiness: {avoid: 0.7}, context: {meeting: 1.0}, valence: -0.6}
+    - {t_s: 8, emotion: {fear: 0.5, sadness: 0.4}, readiness: {avoid: 0.4}, context: {meeting: 0.0}, valence: -0.4}
+  streams:
+    - modality: ecg
+      channel: heart_rate
+      unit: bpm
+      rate_hz: 4
+      base: 68
+      terms: [{quantity: emotion.fear, gain: 35}]
+      noise_sd: 2
+      dropout_prob: 0.05
+      device_id: sim-ecg-01
+      clock: {domain: "sim:ecg", drift_ppm: 50, offset_ns: 1000000, jitter_ns: 200000}
+    - modality: eda
+      channel: scl
+      unit: uS
+      rate_hz: 8
+      base: 2.0
+      terms: [{quantity: emotion.fear, gain: 3.0}, {quantity: readiness.avoid, gain: 0.5}]
+      noise_sd: 0.05
+      dropout_prob: 0.02
+      device_id: sim-eda-01
+      clock: {domain: "sim:eda", drift_ppm: -80, offset_ns: 3000000}

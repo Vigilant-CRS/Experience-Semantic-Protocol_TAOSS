@@ -363,6 +363,9 @@ Harte Regeln:
    (Addendum-TLV, GAP-004), nie Klartext-Header.
 4. Innerhalb einer Session darf `affect_scope` für EMO nicht wechseln, ohne
    Neuaushandlung (verhindert „Kanalverwechslung“).
+5. `source_kind=synthetic_ground_truth` (Simulator, §19.1) darf nur
+   `SELF_DECLARED` (simulierter Self Report) oder `CONTENT` tragen, nie
+   `INFERRED_SUBJECT` oder `MACHINE_RELAY` (v0.2.1).
 
 ---
 
@@ -2762,7 +2765,7 @@ Gesamtobjekt inkl.:
 
 ## WP-012 — Synthetic Experience Simulator
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### DSL
 
@@ -2788,7 +2791,7 @@ YAML-basierte Episoden.
 
 ## WP-013 — State Estimator Interfaces
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 

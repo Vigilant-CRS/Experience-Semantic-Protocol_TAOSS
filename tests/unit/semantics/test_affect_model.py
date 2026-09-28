@@ -249,3 +249,19 @@ def test_trace_requires_strictly_increasing_time() -> None:
         AffectTrace(
             quantity="fear", points=(TracePoint(t_ns=2, value=0.1), TracePoint(t_ns=2, value=0.3))
         )
+
+
+def test_synthetic_ground_truth_scope_rules() -> None:
+    synthetic = Provenance(source_kind=SourceKind.SYNTHETIC_GROUND_TRUTH)
+    for scope in (AffectScope.SELF_DECLARED, AffectScope.CONTENT):
+        AffectiveDescriptor(vocabulary_id=VOCAB, affect_scope=scope, provenance=synthetic)
+    with pytest.raises(ValidationError, match="synthetic ground truth may only"):
+        AffectiveDescriptor(
+            vocabulary_id=VOCAB,
+            affect_scope=AffectScope.MACHINE_RELAY,
+            provenance=synthetic.model_validate(synthetic.model_dump() | {"source_refs": ("x",)}),
+        )
+    with pytest.raises(ValidationError, match="synthetic ground truth may only"):
+        AffectiveDescriptor(
+            vocabulary_id=VOCAB, affect_scope=AffectScope.INFERRED_SUBJECT, provenance=synthetic
+        )

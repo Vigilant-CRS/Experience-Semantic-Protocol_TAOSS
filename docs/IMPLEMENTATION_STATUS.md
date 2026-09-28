@@ -22,6 +22,8 @@ both agree.
 | WP-009 | VERIFIED | `tests/unit/ontology/test_basic8.py` (exactly eight canonical ids; stable V13 order; registry digest fixed by `vectors/ontology/esp-emo-v13-basic8-v1.registry.blake2b256`) |
 | WP-010 | VERIFIED | `tests/unit/adapters/test_legacy_movie.py` (synthetic fixture: all tags resolve, reproducible mapping, retrieval L1-normalization isolated, malformed sources rejected). Real-data test ran locally on 2026-09-28 against legacy `config/ontology_v3` v3.0.0 with `ESP_LEGACY_MOVIE_ONTOLOGY=…`: 30 anchors, 151 aliases, 5 synonyms dropped with reasons; skipped in CI because the legacy ontology is proprietary |
 | WP-011 | VERIFIED | `tests/unit/frame/test_frame.py` (canonical serialization + determinism; JSON Schema validation against `schemas/experience_frame.schema.json`; missing type ⊥ ≠ 0; masked type omission incl. descriptors/anchors/evidence refs; inferred subject affect rejected on L1) · `scripts/generate_schemas.py --check` in `make verify` |
+| WP-012 | VERIFIED | `tests/unit/simulation/test_simulator.py` (byte-identical same-seed runs; per-stream seed isolation; exact keyframe interpolation; dropout and clock-drift fixtures; DSL validation) · example `examples/synthetic_sender_receiver/fear_at_work.yaml` |
+| WP-013 | VERIFIED | `tests/unit/simulation/test_estimators.py` (Oracle reproduces ground truth exactly; RuleBased yields derived SENSORY features only, traceable to observations, no claim on missing modality; fusion keeps inputs incl. self report, reports conflicts, fused affect refused on L1) |
 | WP-076 | IN_PROGRESS | `reuse lint` in `make verify`; DCO job in `.github/workflows/ci.yml`. Offen: SPDX-Header-Pflicht für neue Dateien in CI, Siegel-Prozess |
 
 ## Milestones
