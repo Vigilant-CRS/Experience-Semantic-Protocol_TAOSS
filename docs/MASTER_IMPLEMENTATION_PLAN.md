@@ -5028,8 +5028,8 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M2
-next_work_package: WP-012
+current_milestone: M3
+next_work_package: WP-014
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"

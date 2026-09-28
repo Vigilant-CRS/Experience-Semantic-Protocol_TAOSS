@@ -1,0 +1,25 @@
+{
+  "milestone": "M2",
+  "git_commit": "7d3baedc6cfbbe1bdd14fef9ebe25c39349b26d1",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-28T13:33:43+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M2",
+  "tests": {
+    "gate": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_suite": {
+      "passed": 223,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "verdict": "PASS"
+}

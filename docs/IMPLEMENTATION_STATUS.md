@@ -32,3 +32,4 @@ both agree.
 |---|---|---|
 | M0 | PASS | `artifacts/test-reports/M0.json` (commit c08c1fc) |
 | M1 | PASS | `artifacts/test-reports/M1.json` (commit 6a98da0) |
+| M2 | PASS | `artifacts/test-reports/M2.json` (commit 7d3baed) |
