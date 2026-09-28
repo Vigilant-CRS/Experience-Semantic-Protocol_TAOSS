@@ -114,3 +114,4 @@ both agree.
 | M10 | PASS | `artifacts/test-reports/M10.json` (commit ce1fae2; Python<->Rust interop matrix, conformance runner with Rust peer) |
 | M11 | PASS | `artifacts/test-reports/M11.json` (commit ce1fae2; Gate at ce1fae2 in a pinned worktree: 771 passed, 1 skipped (proprietary legacy data). 1M-iteration fuzz, perf 300 frames/profile (wire bytes = V13 arithmetic), security review clean; manual threat-model review PENDING (human).) |
 | M14 | PASS | `artifacts/test-reports/M14.json` (commit a647372; Gate in a pinned worktree (ontology projection, registry governance, content affect, XCF capsules/gate/recall/trust).) |
+| M13 | PASS | `artifacts/test-reports/M13.json` (commit 1349314; Gate in a pinned worktree: MEB (machines never author EMO, domain profiles enforced before decoding) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit); scripted agents, no real LLM.) |
