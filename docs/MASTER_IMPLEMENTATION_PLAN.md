@@ -2324,7 +2324,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-014 | Fehlercodes (z. B. `ESP_DECODER_POLICY_FAILED`) werden genannt, aber es gibt kein Fehlercode-Register. | §Decoder | mittel | CS-DECODER + `src/esp/core/errors.py` Register mit stabilen numerischen Codes. ADR-0020 | WP-059 | RESOLVED_IN_IMPLEMENTATION (`esp.core.errors` + `esp-error-codes-v1` registry) |
 | GAP-015 | TEM-Pattern-Constraints („forbidden codebook patterns“) und Gating-Sparsity-Band nicht parametrisiert. | §Covert Channel | mittel | Profil-Parameter in `esp-covert-hardening-v1`, Defaults per Experiment (WP-057) ermittelt, danach eingefroren. | WP-057 | PARTIAL: Band-Prüfungen parametrisiert (`audit/hardening.py`), Default-Werte noch experimentell zu bestimmen |
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | OPEN |
-| GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | OPEN |
+| GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | RESOLVED_IN_IMPLEMENTATION (Referenzprofil ADR-0021: FROST RFC 9591 byte-exakt, Bonawitz-Masked-Sums; MLS, anonyme Credentials und DKG weiter offen) |
 | GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | RESOLVED_IN_IMPLEMENTATION (ADR-0022 PROPOSED) |
 | GAP-019 | Transparenzlog für Key-Rotation/DP-Ledger (RFC 9162-artig) ohne Profil. | §Forward Secrecy, §Consent | mittel | Referenz: lokaler Merkle-Log nach RFC 9162-Struktur + Witness-Signaturen; externer Betrieb später. ADR-0023 | WP-053 | RESOLVED_IN_IMPLEMENTATION (ADR-0023 PROPOSED: Betreiber der Witnesses offen) |
 | GAP-020 | Repository-Rollen: V13 nennt das Movie-Engine-Repo „official implementation repository“; TAOSS-Repo ist dort nicht genannt. | Präambel, §L1, §V12→V13 | niedrig | V13-Errata: TAOSS-Repo als „reference implementation (wire/conformance)“ eintragen. | WP-085 | ERRATA_PROPOSED (docs/errata/V13-ERRATA.md) |
@@ -3502,7 +3502,7 @@ Threat Model Review vor v1.0.
 
 ## WP-045 — Future Neural Adapter Interface
 
-**Status:** `FUTURE`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -3953,7 +3953,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-066 — Machine Experience Bridge (MEB)
 
-**Status:** `NOT_STARTED` · **Klasse:** `V13_NORMATIVE` (Constraints) + `EXPERIMENTAL` (Alignment)
+**Status:** `VERIFIED` · **Klasse:** `V13_NORMATIVE` (Constraints) + `EXPERIMENTAL` (Alignment)
 
 ### Implementieren
 
@@ -3977,7 +3977,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-067 — ESP-Agent-Profil (LLM-/Agenten-Kommunikation)
 
-**Status:** `NOT_STARTED` · **Ohne Hardware sofort baubar**
+**Status:** `VERIFIED` · **Ohne Hardware sofort baubar**
 
 ### Implementieren
 
@@ -4043,7 +4043,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-070 — Typed Hive (0x70–0x73)
 
-**Status:** `NOT_STARTED` · **Stufe:** v2-research · **Löst:** GAP-017
+**Status:** `VERIFIED` · **Stufe:** v2-research · **Löst:** GAP-017
 
 ### Implementieren
 
@@ -4068,7 +4068,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-071 — Experience Legacy Profile
 
-**Status:** `FUTURE`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -4098,7 +4098,7 @@ Posthume EMO-Synthese nur mit ausdrücklicher Vorab-Zustimmung.
 
 ## WP-073 — Encoder: Stabilitätsmechanismen und Certified-Stability-Mode
 
-**Status:** `NOT_STARTED` · **Klasse:** `EXPERIMENTAL`
+**Status:** `VERIFIED` · **Klasse:** `EXPERIMENTAL`
 
 ### Implementieren
 
@@ -4118,7 +4118,7 @@ Posthume EMO-Synthese nur mit ausdrücklicher Vorab-Zustimmung.
 
 ## WP-074 — Type-Discovery-Frontier und Ablationen
 
-**Status:** `NOT_STARTED` · **Klasse:** Research
+**Status:** `VERIFIED` · **Klasse:** Research
 
 TAOSS-3/-6/-8/-12 über `TLV_TYPE_PROFILE`, Frontier
 `max Utility − λ_p·Leak_V`, EMO-default-masked-Ablation, covariance-only
@@ -4128,7 +4128,7 @@ vs. adversarial-only vs. beides, Pseudonyme an/aus.
 
 ## WP-075 — Post-Quantum-Deklaration und Hybrid-Pfad
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-024
+**Status:** `VERIFIED` · **Löst:** GAP-024
 
 - `pq_mode` im Session Descriptor, v1 `CLASSICAL_ONLY`,
 - Hybrid-Outer-Channel-Adapter (TLS 1.3 mit X25519MLKEM768) als Option,
@@ -4778,7 +4778,8 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0018 | DP-Referenzprofile und Accountant (GAP-012) | ACCEPTED |
 | ADR-0019 | Default Δ_clock pro Profil (GAP-013) | ACCEPTED |
 | ADR-0020 | Fehlercode-Register (GAP-014) | PROPOSED |
-| ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED |
+| ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED (implementiert) |
+| ADR-0028 | MEB- und ESP-Agent-Profil, TLV 0x98/0x99 | PROPOSED (implementiert) |
 | ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED (implementiert) |
 | ADR-0023 | Transparenzlog-Profil (GAP-019) | PROPOSED |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
@@ -5039,7 +5040,7 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 
 ```yaml
 current_milestone: M12
-next_work_package: WP-047
+next_work_package: WP-047 (M12 blockiert auf menschliche Freigaben: WP-084, Threat-Review, ADRs)
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
 scope_target: "MAXIMAL (M17)"
@@ -5049,7 +5050,7 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 4        # GAP-015 (partial), 016, 017, 023 (partial)
+open_gaps: 4        # GAP-015 (partial), 016, 017 (partial: MLS/Credentials/DKG), 023 (partial)
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "SMOKE_IMPLEMENTED (preregistered runs need real corpora, GAP-023)"

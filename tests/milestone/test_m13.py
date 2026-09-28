@@ -12,7 +12,9 @@ Details in ``tests/unit/meb``, ``tests/unit/agent``,
 ``tests/integration/test_agent_profile.py``.
 """
 
+import re
 import uuid
+from pathlib import Path
 
 import pytest
 
@@ -68,3 +70,14 @@ def test_two_agents_exchange_over_esp_with_event_audit() -> None:
     assert r.reports[0]["taoss_types"] == ["KNO", "INT", "CTX"]
     assert r.reports[1]["consent_guarantees"] is None  # opaque is never TAOSS
     assert r.refused  # INT without capability is refused
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_m13_work_packages_verified() -> None:
+    plan = (ROOT / "docs" / "MASTER_IMPLEMENTATION_PLAN.md").read_text(encoding="utf-8")
+    for wp in ("WP-066", "WP-067"):
+        m = re.search(rf"^## {wp} — .*?\*\*Status:\*\* `([A-Z_]+)`", plan, re.S | re.M)
+        assert m is not None
+        assert m.group(1) == "VERIFIED", wp

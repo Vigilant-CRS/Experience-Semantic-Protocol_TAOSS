@@ -182,6 +182,30 @@ only once V13.1 adopts them. Each entry records:
 
 - The descriptor field `pq_mode` exists. v1 permits only `CLASSICAL_ONLY` and never claims
   post-quantum protection.
+- `esp.session.pq.assess()` is the only permitted statement about quantum resistance. A hybrid
+  outer channel (TLS 1.3 `X25519MLKEM768`) is reported only when it was verifiably negotiated;
+  the inner ESP session remains classical-only. A repository-wide claim lint enforces this.
+- *Finding:* with aioquic 1.3.0 and Python 3.12 the hybrid group is neither offered nor
+  observable, so a hybrid outer channel cannot currently be verified in the reference stack.
+
+**E-24 (GAP-017, PROPOSED, ADR-0021): Typed Hive reference profile**
+
+- *Proposed:* the 0x70–0x73 layouts as in ADR-0021 (grant 153+9n, contribution 92+p, exit
+  52+p, collective intent 169 bytes).
+- Grant and CIC signatures use the ADR-0015 canonical form; the CIC carries a
+  FROST(Ed25519, SHA-512) signature (RFC 9591) that verifies as plain Ed25519.
+- Contribution commitment: `BLAKE2b-256("esp/v1/hive-contribution" ‖ episode_id ‖ x ‖ r)` with
+  `x = type u8 ‖ round u32 ‖ float32_be[d]`; `member_ref_root` is an RFC 9162 Merkle root.
+- EMO is released only as a DP histogram over anchor bins; EMO coupling is always 0.
+- *Still open:* MLS, anonymous credentials and DKG companion profiles.
+- *Tests:* `vectors/hive/tlvs.json`, `tests/unit/hive/`.
+
+**E-25 (FINDING, ADR-0028): machine and agent profiles**
+
+- Custom type-set profiles can require `EMO_MASKED=1` and consent flags such as `NO_REPLAY`
+  on every data packet. Both endpoints enforce this before decoding.
+- Agent state travels as a signed opaque-latent descriptor (0x98) and agent events (0x99). It
+  is never labelled TAOSS without a passed leakage audit.
 
 ## Repository roles
 
@@ -200,5 +224,5 @@ only once V13.1 adopts them. Each entry records:
 - **GAP-015:** default values for the TEM pattern and gating-sparsity bands. The checks exist;
   the values need experiments.
 - **GAP-016:** replay watermark TLV code.
-- **GAP-017:** Typed Hive companion profiles (MLS, FROST, secure aggregation).
+- **GAP-017 (partial):** MLS, anonymous-credential and DKG companion profiles for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.
