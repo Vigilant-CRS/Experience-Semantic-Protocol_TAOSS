@@ -1,0 +1,665 @@
+{
+  "ablations": {
+    "emo_default_masked": {
+      "adv_only": {
+        "emo_leak_bits_per_dim": 4.898861322878407,
+        "emo_target_r2_from_visible_latents": 0.788679055595824,
+        "visible_utility": 0.8035132700109333
+      },
+      "both": {
+        "emo_leak_bits_per_dim": 4.785815246148111,
+        "emo_target_r2_from_visible_latents": 0.7791363954177334,
+        "visible_utility": 0.7951423366107707
+      },
+      "cov_only": {
+        "emo_leak_bits_per_dim": 4.792082259815184,
+        "emo_target_r2_from_visible_latents": 0.7790180594243425,
+        "visible_utility": 0.7951656058242382
+      },
+      "neither": {
+        "emo_leak_bits_per_dim": 4.9031400614938265,
+        "emo_target_r2_from_visible_latents": 0.7885434285793887,
+        "visible_utility": 0.8035176204124347
+      }
+    },
+    "emo_inherent": {
+      "emo_target_r2_from_visible_targets": 0.06655440928118672,
+      "inherent_emo_leak_bits_per_dim": 0.06384902415645073
+    },
+    "pseudonyms": {
+      "chance": 0.05,
+      "pseudonyms_off": {
+        "linked_by_id": 1.0
+      },
+      "pseudonyms_on": {
+        "content_accuracy_by_offset_scale": {
+          "0": 0.0,
+          "0.1": 0.35,
+          "0.25": 0.95,
+          "0.5": 1.0
+        },
+        "linked_by_id": 0.0
+      },
+      "subjects": 20
+    },
+    "rank_bottleneck": {
+      "d_model=32": {
+        "emo_masked": {
+          "emo_leak_bits_per_dim": 6.133703601801642,
+          "emo_target_r2_from_visible_latents": 0.6697103436701743,
+          "visible_utility": 0.6788216255479259
+        },
+        "leak": {
+          "joint": 5.832305389781818,
+          "max": 0.5027868215809058,
+          "mean": 0.2082765679202537
+        },
+        "utility": 0.67153635266546
+      },
+      "d_model=48": {
+        "emo_masked": {
+          "emo_leak_bits_per_dim": 4.785815246148111,
+          "emo_target_r2_from_visible_latents": 0.7791363954177334,
+          "visible_utility": 0.7951423366107707
+        },
+        "leak": {
+          "joint": 4.286173588669994,
+          "max": 0.2430444554523928,
+          "mean": 0.094411358198253
+        },
+        "utility": 0.7881355565877745
+      },
+      "d_model=96": {
+        "emo_masked": {
+          "emo_leak_bits_per_dim": 1.1458549372057882,
+          "emo_target_r2_from_visible_latents": 0.4494932193328621,
+          "visible_utility": 0.8844812259397542
+        },
+        "leak": {
+          "joint": 1.034657185476696,
+          "max": 0.07851786308586413,
+          "mean": 0.027432347086104703
+        },
+        "utility": 0.881214929994097
+      },
+      "sum_type_dims": 36
+    },
+    "regularization": {
+      "adv_only": {
+        "beta_adv": 0.1,
+        "lambda_cov": 0.0,
+        "leak": {
+          "joint": 4.324018772469098,
+          "max": 0.25619370430633265,
+          "mean": 0.08914503170508196
+        },
+        "utility": 0.7969407253690275
+      },
+      "both": {
+        "beta_adv": 0.1,
+        "lambda_cov": 5.0,
+        "leak": {
+          "joint": 4.286173588669994,
+          "max": 0.2430444554523928,
+          "mean": 0.094411358198253
+        },
+        "utility": 0.7881355565877745
+      },
+      "cov_only": {
+        "beta_adv": 0.0,
+        "lambda_cov": 5.0,
+        "leak": {
+          "joint": 4.290093782747331,
+          "max": 0.2432298619943296,
+          "mean": 0.094234835247123
+        },
+        "utility": 0.7881278356137342
+      },
+      "neither": {
+        "beta_adv": 0.0,
+        "lambda_cov": 0.0,
+        "leak": {
+          "joint": 4.325699078912289,
+          "max": 0.2565774486751735,
+          "mean": 0.08912898364703044
+        },
+        "utility": 0.7969000878665177
+      }
+    }
+  },
+  "claims": "NOT preregistered evidence; no H1/H2/H3 claim",
+  "config": {
+    "d_model": 48,
+    "emo_degrees": [
+      1,
+      2
+    ],
+    "lambdas": [
+      0.0,
+      0.5,
+      1.0,
+      2.0,
+      5.0
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "stable": false,
+    "steps": 300,
+    "world": {
+      "cross_rho": 0.25,
+      "eval_n": 4000,
+      "factor_dim": 3,
+      "modality_dims": {
+        "audio": 12,
+        "physio": 8,
+        "text": 16
+      },
+      "n": 1024,
+      "noise": 0.05,
+      "seed": 1,
+      "sibling_rho": 0.4
+    }
+  },
+  "frontier": [
+    {
+      "aggregate": "mean",
+      "best": "TAOSS-12",
+      "lambda_p": 0.0,
+      "scores": {
+        "TAOSS-12": 0.7972623296666258,
+        "TAOSS-3": 0.763075929899483,
+        "TAOSS-6": 0.7904734602560822,
+        "TAOSS-8": 0.7813269741888762
+      }
+    },
+    {
+      "aggregate": "mean",
+      "best": "TAOSS-12",
+      "lambda_p": 0.5,
+      "scores": {
+        "TAOSS-12": 0.7785711616435796,
+        "TAOSS-3": 0.5496109391775928,
+        "TAOSS-6": 0.745213869330902,
+        "TAOSS-8": 0.7500009007510137
+      }
+    },
+    {
+      "aggregate": "mean",
+      "best": "TAOSS-12",
+      "lambda_p": 1.0,
+      "scores": {
+        "TAOSS-12": 0.7598799936205336,
+        "TAOSS-3": 0.33614594845570267,
+        "TAOSS-6": 0.6999542784057218,
+        "TAOSS-8": 0.718674827313151
+      }
+    },
+    {
+      "aggregate": "mean",
+      "best": "TAOSS-12",
+      "lambda_p": 2.0,
+      "scores": {
+        "TAOSS-12": 0.7224976575744414,
+        "TAOSS-3": -0.09078403298807769,
+        "TAOSS-6": 0.6094350965553613,
+        "TAOSS-8": 0.6560226804374258
+      }
+    },
+    {
+      "aggregate": "mean",
+      "best": "TAOSS-12",
+      "lambda_p": 5.0,
+      "scores": {
+        "TAOSS-12": 0.6103506494361647,
+        "TAOSS-3": -1.3715739773194189,
+        "TAOSS-6": 0.3378775510042799,
+        "TAOSS-8": 0.46806623981025036
+      }
+    },
+    {
+      "aggregate": "max",
+      "best": "TAOSS-12",
+      "lambda_p": 0.0,
+      "scores": {
+        "TAOSS-12": 0.7972623296666258,
+        "TAOSS-3": 0.763075929899483,
+        "TAOSS-6": 0.7904734602560822,
+        "TAOSS-8": 0.7813269741888762
+      }
+    },
+    {
+      "aggregate": "max",
+      "best": "TAOSS-6",
+      "lambda_p": 0.5,
+      "scores": {
+        "TAOSS-12": 0.624697254875846,
+        "TAOSS-3": 0.5157957460364322,
+        "TAOSS-6": 0.6669407852854787,
+        "TAOSS-8": 0.6393377917998093
+      }
+    },
+    {
+      "aggregate": "max",
+      "best": "TAOSS-6",
+      "lambda_p": 1.0,
+      "scores": {
+        "TAOSS-12": 0.4521321800850663,
+        "TAOSS-3": 0.2685155621733813,
+        "TAOSS-6": 0.5434081103148752,
+        "TAOSS-8": 0.4973486094107425
+      }
+    },
+    {
+      "aggregate": "max",
+      "best": "TAOSS-6",
+      "lambda_p": 2.0,
+      "scores": {
+        "TAOSS-12": 0.10700203050350676,
+        "TAOSS-3": -0.22604480555272044,
+        "TAOSS-6": 0.29634276037366825,
+        "TAOSS-8": 0.21337024463260879
+      }
+    },
+    {
+      "aggregate": "max",
+      "best": "TAOSS-6",
+      "lambda_p": 5.0,
+      "scores": {
+        "TAOSS-12": -0.9283884182411718,
+        "TAOSS-3": -1.7097259087310257,
+        "TAOSS-6": -0.4448532894499527,
+        "TAOSS-8": -0.6385648497017924
+      }
+    },
+    {
+      "aggregate": "joint",
+      "best": "TAOSS-12",
+      "lambda_p": 0.0,
+      "scores": {
+        "TAOSS-12": 0.7972623296666258,
+        "TAOSS-3": 0.763075929899483,
+        "TAOSS-6": 0.7904734602560822,
+        "TAOSS-8": 0.7813269741888762
+      }
+    },
+    {
+      "aggregate": "joint",
+      "best": "TAOSS-3",
+      "lambda_p": 0.5,
+      "scores": {
+        "TAOSS-12": -1.7011661528470108,
+        "TAOSS-3": -0.615783787960836,
+        "TAOSS-6": -1.2616187954683031,
+        "TAOSS-8": -1.530624733821878
+      }
+    },
+    {
+      "aggregate": "joint",
+      "best": "TAOSS-3",
+      "lambda_p": 1.0,
+      "scores": {
+        "TAOSS-12": -4.199594635360648,
+        "TAOSS-3": -1.9946435058211551,
+        "TAOSS-6": -3.3137110511926884,
+        "TAOSS-8": -3.842576441832632
+      }
+    },
+    {
+      "aggregate": "joint",
+      "best": "TAOSS-3",
+      "lambda_p": 2.0,
+      "scores": {
+        "TAOSS-12": -9.19645160038792,
+        "TAOSS-3": -4.752362941541793,
+        "TAOSS-6": -7.417895562641458,
+        "TAOSS-8": -8.46647985785414
+      }
+    },
+    {
+      "aggregate": "joint",
+      "best": "TAOSS-3",
+      "lambda_p": 5.0,
+      "scores": {
+        "TAOSS-12": -24.18702249546974,
+        "TAOSS-3": -13.025521248703708,
+        "TAOSS-6": -19.730449096987773,
+        "TAOSS-8": -22.338190105918667
+      }
+    }
+  ],
+  "label": "exploratory",
+  "objective": "Utility_T - lambda_p * Leak_V; Leak_V in bits per masked dimension",
+  "profiles": {
+    "TAOSS-12": {
+      "inherent_leak": {
+        "joint": 0.1552466151722447,
+        "max": 0.13927502848406714,
+        "mean": 0.013363910367527673
+      },
+      "k": 12,
+      "leak": {
+        "joint": 4.996856965027273,
+        "max": 0.3451301495815595,
+        "mean": 0.03738233604609222
+      },
+      "per_seed": [
+        {
+          "leak": {
+            "joint": 4.700623449608401,
+            "max": 0.34821752992461735,
+            "mean": 0.03773147381116387
+          },
+          "utility": 0.7960991782191978
+        },
+        {
+          "leak": {
+            "joint": 5.219897181375651,
+            "max": 0.33733108159405994,
+            "mean": 0.036777111837539254
+          },
+          "utility": 0.8001911758490851
+        },
+        {
+          "leak": {
+            "joint": 5.070050264097768,
+            "max": 0.3498418372260013,
+            "mean": 0.03763842248957353
+          },
+          "utility": 0.7954966349315943
+        }
+      ],
+      "profile_id": "d206c7bc-b034-4e72-8a1a-b1869dcfac2e",
+      "registry_digest": "692ce9a080440eb3a3bf6534b04814f8a64bfb645a20638c26e010ca664cfb53",
+      "scenarios_expressible": {
+        "clinician: EMO+CTX, KNO masked": true,
+        "collaboration: KNO+INT, EMO masked": true,
+        "film: EMO+TEM, KNO masked": true,
+        "finer: emotion category without dimensions": true,
+        "finer: skills without facts": true,
+        "surgical skill: INT+SEN+TEM, EMO masked": true
+      },
+      "type_profile_tlv": "1100000032d206c7bcb0344e728a1ab1869dcfac2e000c692ce9a080440eb3a3bf6534b04814f8a64bfb645a20638c26e010ca664cfb53",
+      "types": {
+        "CTXP": [
+          "CTXP"
+        ],
+        "CTXS": [
+          "CTXS"
+        ],
+        "EMOC": [
+          "EMOC"
+        ],
+        "EMOD": [
+          "EMOD"
+        ],
+        "INTG": [
+          "INTG"
+        ],
+        "INTR": [
+          "INTR"
+        ],
+        "KNOF": [
+          "KNOF"
+        ],
+        "KNOS": [
+          "KNOS"
+        ],
+        "SENA": [
+          "SENA"
+        ],
+        "SENV": [
+          "SENV"
+        ],
+        "TEMP": [
+          "TEMP"
+        ],
+        "TEMR": [
+          "TEMR"
+        ]
+      },
+      "utility": 0.7972623296666258,
+      "utility_sd": 0.002085564603608811
+    },
+    "TAOSS-3": {
+      "inherent_leak": {
+        "joint": 0.008044606975025145,
+        "max": 0.015472262142069463,
+        "mean": 0.005108920518106914
+      },
+      "k": 3,
+      "leak": {
+        "joint": 2.757719435720638,
+        "max": 0.49456036772610174,
+        "mean": 0.42692998144378036
+      },
+      "per_seed": [
+        {
+          "leak": {
+            "joint": 2.7501125275426546,
+            "max": 0.48642178737651226,
+            "mean": 0.4143127761645698
+          },
+          "utility": 0.7635513890500998
+        },
+        {
+          "leak": {
+            "joint": 2.9045211789869527,
+            "max": 0.49470712144771767,
+            "mean": 0.45734347720263174
+          },
+          "utility": 0.7576863456373242
+        },
+        {
+          "leak": {
+            "joint": 2.6185246006323073,
+            "max": 0.5025521943540755,
+            "mean": 0.4091336909641396
+          },
+          "utility": 0.7679900550110255
+        }
+      ],
+      "profile_id": "f3649a49-8f4c-49de-b411-6f4f1f096afb",
+      "registry_digest": "07b4e0ea2dc902c266883a6f7879f430aec78e089900fff0d5cc9e1fa64232a2",
+      "scenarios_expressible": {
+        "clinician: EMO+CTX, KNO masked": false,
+        "collaboration: KNO+INT, EMO masked": false,
+        "film: EMO+TEM, KNO masked": false,
+        "finer: emotion category without dimensions": false,
+        "finer: skills without facts": false,
+        "surgical skill: INT+SEN+TEM, EMO masked": false
+      },
+      "type_profile_tlv": "1100000032f3649a498f4c49deb4116f4f1f096afb000307b4e0ea2dc902c266883a6f7879f430aec78e089900fff0d5cc9e1fa64232a2",
+      "types": {
+        "AFF": [
+          "INTG",
+          "INTR",
+          "EMOC",
+          "EMOD"
+        ],
+        "PER": [
+          "SENV",
+          "SENA",
+          "TEMR",
+          "TEMP"
+        ],
+        "SEM": [
+          "KNOF",
+          "KNOS",
+          "CTXS",
+          "CTXP"
+        ]
+      },
+      "utility": 0.763075929899483,
+      "utility_sd": 0.004219885683076716
+    },
+    "TAOSS-6": {
+      "inherent_leak": {
+        "joint": 0.027059231749999677,
+        "max": 0.03371077309993679,
+        "mean": 0.006159059007530487
+      },
+      "k": 6,
+      "leak": {
+        "joint": 4.1041845114487705,
+        "max": 0.247065349941207,
+        "mean": 0.09051918185036047
+      },
+      "per_seed": [
+        {
+          "leak": {
+            "joint": 4.286173588669994,
+            "max": 0.2430444554523928,
+            "mean": 0.094411358198253
+          },
+          "utility": 0.7881355565877745
+        },
+        {
+          "leak": {
+            "joint": 3.9049386035061464,
+            "max": 0.23374499094750423,
+            "mean": 0.09000043794870469
+          },
+          "utility": 0.78988050725957
+        },
+        {
+          "leak": {
+            "joint": 4.121441342170169,
+            "max": 0.26440660342372385,
+            "mean": 0.08714574940412374
+          },
+          "utility": 0.7934043169209022
+        }
+      ],
+      "profile_id": "b35c133d-9fdb-41ca-9e4f-54e5d75d96d3",
+      "registry_digest": "d6e8d90c7e81faa579d543865e3c0b4badbcf01eacef3569cc0ecfe374ff6c25",
+      "scenarios_expressible": {
+        "clinician: EMO+CTX, KNO masked": true,
+        "collaboration: KNO+INT, EMO masked": true,
+        "film: EMO+TEM, KNO masked": true,
+        "finer: emotion category without dimensions": false,
+        "finer: skills without facts": false,
+        "surgical skill: INT+SEN+TEM, EMO masked": true
+      },
+      "type_profile_tlv": "1100000032b35c133d9fdb41ca9e4f54e5d75d96d30006d6e8d90c7e81faa579d543865e3c0b4badbcf01eacef3569cc0ecfe374ff6c25",
+      "types": {
+        "CTX": [
+          "CTXS",
+          "CTXP"
+        ],
+        "EMO": [
+          "EMOC",
+          "EMOD"
+        ],
+        "INT": [
+          "INTG",
+          "INTR"
+        ],
+        "KNO": [
+          "KNOF",
+          "KNOS"
+        ],
+        "SEN": [
+          "SENV",
+          "SENA"
+        ],
+        "TEM": [
+          "TEMR",
+          "TEMP"
+        ]
+      },
+      "utility": 0.7904734602560822,
+      "utility_sd": 0.0021914460680928843
+    },
+    "TAOSS-8": {
+      "inherent_leak": {
+        "joint": 0.09236629278656212,
+        "max": 0.13927502848406714,
+        "mean": 0.013305889352422193
+      },
+      "k": 8,
+      "leak": {
+        "joint": 4.623903416021508,
+        "max": 0.2839783647781337,
+        "mean": 0.06265214687572516
+      },
+      "per_seed": [
+        {
+          "leak": {
+            "joint": 4.456606812468266,
+            "max": 0.329273238916546,
+            "mean": 0.06582788809015112
+          },
+          "utility": 0.7739568190567522
+        },
+        {
+          "leak": {
+            "joint": 4.798687168503292,
+            "max": 0.22576529003626997,
+            "mean": 0.06202747774416601
+          },
+          "utility": 0.7819657903938725
+        },
+        {
+          "leak": {
+            "joint": 4.616416267092967,
+            "max": 0.2968965653815851,
+            "mean": 0.060101074792858374
+          },
+          "utility": 0.7880583131160039
+        }
+      ],
+      "profile_id": "63f7829a-0ba9-4b0d-aeda-0cc996ceab32",
+      "registry_digest": "f15c54ab5af4e940ff1fecb76810c8a32d20c9ecc8686bda7a64c2f30e790b85",
+      "scenarios_expressible": {
+        "clinician: EMO+CTX, KNO masked": true,
+        "collaboration: KNO+INT, EMO masked": true,
+        "film: EMO+TEM, KNO masked": true,
+        "finer: emotion category without dimensions": true,
+        "finer: skills without facts": true,
+        "surgical skill: INT+SEN+TEM, EMO masked": true
+      },
+      "type_profile_tlv": "110000003263f7829a0ba94b0daeda0cc996ceab320008f15c54ab5af4e940ff1fecb76810c8a32d20c9ecc8686bda7a64c2f30e790b85",
+      "types": {
+        "CTX": [
+          "CTXS",
+          "CTXP"
+        ],
+        "EMOC": [
+          "EMOC"
+        ],
+        "EMOD": [
+          "EMOD"
+        ],
+        "INT": [
+          "INTG",
+          "INTR"
+        ],
+        "KNOF": [
+          "KNOF"
+        ],
+        "KNOS": [
+          "KNOS"
+        ],
+        "SEN": [
+          "SENV",
+          "SENA"
+        ],
+        "TEM": [
+          "TEMR",
+          "TEMP"
+        ]
+      },
+      "utility": 0.7813269741888762,
+      "utility_sd": 0.005774605226541614
+    }
+  },
+  "reasons": [
+    "no preregistration",
+    "synthetic world (planted dependence), not an ExperienceBench corpus"
+  ],
+  "runtime_s": 209.0,
+  "wp": "WP-074"
+}
