@@ -1,0 +1,203 @@
+{
+  "milestone": "M4",
+  "git_commit": "0b9e8f3c62159e154096f561307922dee728e610",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-28T15:58:51+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M4",
+  "tests": {
+    "gate": {
+      "passed": 94,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_suite": {
+      "passed": 558,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "metrics": {
+    "DATAGRAM/lat0ms-jit0ms-loss0pct": {
+      "freshness_ms": 90.828,
+      "loss": 0.0,
+      "mean_frame_age_ms": 29.478,
+      "p50_latency_ms": 29.229,
+      "p95_latency_ms": 41.331,
+      "p99_latency_ms": 42.71,
+      "rejected": 1.0,
+      "throughput_frames_s": 2539.775,
+      "throughput_kbit_s": 18367.655
+    },
+    "DATAGRAM/lat0ms-jit0ms-loss10pct": {
+      "freshness_ms": 90.489,
+      "loss": 0.175,
+      "mean_frame_age_ms": 31.394,
+      "p50_latency_ms": 29.251,
+      "p95_latency_ms": 50.74,
+      "p99_latency_ms": 51.961,
+      "rejected": 1.0,
+      "throughput_frames_s": 2275.89,
+      "throughput_kbit_s": 16459.233
+    },
+    "DATAGRAM/lat0ms-jit50ms-loss0pct": {
+      "freshness_ms": 169.331,
+      "loss": 0.0,
+      "mean_frame_age_ms": 31.086,
+      "p50_latency_ms": 33.533,
+      "p95_latency_ms": 45.114,
+      "p99_latency_ms": 45.876,
+      "rejected": 1.0,
+      "throughput_frames_s": 982.543,
+      "throughput_kbit_s": 7105.75
+    },
+    "DATAGRAM/lat0ms-jit50ms-loss10pct": {
+      "freshness_ms": 168.22,
+      "loss": 0.1,
+      "mean_frame_age_ms": 31.049,
+      "p50_latency_ms": 29.745,
+      "p95_latency_ms": 49.05,
+      "p99_latency_ms": 51.74,
+      "rejected": 1.0,
+      "throughput_frames_s": 968.478,
+      "throughput_kbit_s": 7004.035
+    },
+    "DATAGRAM/lat200ms-jit0ms-loss0pct": {
+      "freshness_ms": 822.803,
+      "loss": 0.0,
+      "mean_frame_age_ms": 200.964,
+      "p50_latency_ms": 200.994,
+      "p95_latency_ms": 201.403,
+      "p99_latency_ms": 201.441,
+      "rejected": 1.0,
+      "throughput_frames_s": 876.833,
+      "throughput_kbit_s": 6341.259
+    },
+    "DATAGRAM/lat200ms-jit0ms-loss10pct": {
+      "freshness_ms": 2029.423,
+      "loss": 0.125,
+      "mean_frame_age_ms": 200.942,
+      "p50_latency_ms": 200.943,
+      "p95_latency_ms": 201.441,
+      "p99_latency_ms": 201.53,
+      "rejected": 1.0,
+      "throughput_frames_s": 808.669,
+      "throughput_kbit_s": 5848.291
+    },
+    "DATAGRAM/lat200ms-jit50ms-loss0pct": {
+      "freshness_ms": 836.581,
+      "loss": 0.0,
+      "mean_frame_age_ms": 198.682,
+      "p50_latency_ms": 200.343,
+      "p95_latency_ms": 236.845,
+      "p99_latency_ms": 246.178,
+      "rejected": 1.0,
+      "throughput_frames_s": 360.454,
+      "throughput_kbit_s": 2606.803
+    },
+    "DATAGRAM/lat200ms-jit50ms-loss10pct": {
+      "freshness_ms": 893.53,
+      "loss": 0.125,
+      "mean_frame_age_ms": 210.981,
+      "p50_latency_ms": 210.584,
+      "p95_latency_ms": 249.013,
+      "p99_latency_ms": 250.872,
+      "rejected": 1.0,
+      "throughput_frames_s": 267.121,
+      "throughput_kbit_s": 1931.819
+    },
+    "STATE/lat0ms-jit0ms-loss0pct": {
+      "freshness_ms": 91.135,
+      "loss": 0.0,
+      "mean_frame_age_ms": 30.299,
+      "p50_latency_ms": 29.833,
+      "p95_latency_ms": 42.657,
+      "p99_latency_ms": 44.026,
+      "rejected": 1.0,
+      "throughput_frames_s": 2468.561,
+      "throughput_kbit_s": 32071.541
+    },
+    "STATE/lat0ms-jit0ms-loss10pct": {
+      "freshness_ms": 91.327,
+      "loss": 0.0,
+      "mean_frame_age_ms": 30.148,
+      "p50_latency_ms": 30.176,
+      "p95_latency_ms": 42.473,
+      "p99_latency_ms": 43.879,
+      "rejected": 1.0,
+      "throughput_frames_s": 2522.899,
+      "throughput_kbit_s": 32777.507
+    },
+    "STATE/lat0ms-jit50ms-loss0pct": {
+      "freshness_ms": 167.101,
+      "loss": 0.0,
+      "mean_frame_age_ms": 41.125,
+      "p50_latency_ms": 40.622,
+      "p95_latency_ms": 46.467,
+      "p99_latency_ms": 47.888,
+      "rejected": 1.0,
+      "throughput_frames_s": 969.862,
+      "throughput_kbit_s": 12600.45
+    },
+    "STATE/lat0ms-jit50ms-loss10pct": {
+      "freshness_ms": 167.719,
+      "loss": 0.0,
+      "mean_frame_age_ms": 44.155,
+      "p50_latency_ms": 44.329,
+      "p95_latency_ms": 49.87,
+      "p99_latency_ms": 50.956,
+      "rejected": 1.0,
+      "throughput_frames_s": 1015.027,
+      "throughput_kbit_s": 13187.224
+    },
+    "STATE/lat200ms-jit0ms-loss0pct": {
+      "freshness_ms": 865.253,
+      "loss": 0.0,
+      "mean_frame_age_ms": 200.934,
+      "p50_latency_ms": 200.902,
+      "p95_latency_ms": 201.462,
+      "p99_latency_ms": 201.679,
+      "rejected": 1.0,
+      "throughput_frames_s": 974.625,
+      "throughput_kbit_s": 12662.329
+    },
+    "STATE/lat200ms-jit0ms-loss10pct": {
+      "freshness_ms": 2052.68,
+      "loss": 0.0,
+      "mean_frame_age_ms": 589.757,
+      "p50_latency_ms": 201.144,
+      "p95_latency_ms": 1399.968,
+      "p99_latency_ms": 1401.064,
+      "rejected": 1.0,
+      "throughput_frames_s": 32.381,
+      "throughput_kbit_s": 420.699
+    },
+    "STATE/lat200ms-jit50ms-loss0pct": {
+      "freshness_ms": 916.633,
+      "loss": 0.0,
+      "mean_frame_age_ms": 235.889,
+      "p50_latency_ms": 236.139,
+      "p95_latency_ms": 245.605,
+      "p99_latency_ms": 246.869,
+      "rejected": 1.0,
+      "throughput_frames_s": 859.438,
+      "throughput_kbit_s": 11165.817
+    },
+    "STATE/lat200ms-jit50ms-loss10pct": {
+      "freshness_ms": 3306.129,
+      "loss": 0.0,
+      "mean_frame_age_ms": 1168.087,
+      "p50_latency_ms": 1382.568,
+      "p95_latency_ms": 1446.396,
+      "p99_latency_ms": 1446.91,
+      "rejected": 1.0,
+      "throughput_frames_s": 31.117,
+      "throughput_kbit_s": 404.266
+    }
+  },
+  "verdict": "PASS"
+}
