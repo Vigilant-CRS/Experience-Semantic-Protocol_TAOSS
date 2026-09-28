@@ -11,3 +11,4 @@ build/
 *.egg-info/
 target/
 artifacts/test-reports/*.tmp
+data/

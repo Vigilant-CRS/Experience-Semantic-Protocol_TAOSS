@@ -11,7 +11,7 @@ SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["docs/**", "spec/**", "README.md", "CONTRIBUTING.md", "SECURITY.md", "artifacts/**", "CHANGELOG.md", "TRADEMARKS.md", "PATENTS.md", "NOTICE"]
+path = ["docs/**", "spec/**", "datasets/**", "README.md", "CONTRIBUTING.md", "SECURITY.md", "artifacts/**", "CHANGELOG.md", "TRADEMARKS.md", "PATENTS.md", "NOTICE"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Vigilant e.K. and contributors"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
