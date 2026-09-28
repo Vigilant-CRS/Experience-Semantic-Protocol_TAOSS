@@ -104,3 +104,4 @@ both agree.
 | M9 | PASS | `artifacts/test-reports/M9.json` (commit 49ad9a4; ExperienceBench smoke, audit suite, red-team sender detected) |
 | M10 | PASS | `artifacts/test-reports/M10.json` (commit ce1fae2; Python<->Rust interop matrix, conformance runner with Rust peer) |
 | M11 | PASS | `artifacts/test-reports/M11.json` (commit ce1fae2; Gate at ce1fae2 in a pinned worktree: 771 passed, 1 skipped (proprietary legacy data). 1M-iteration fuzz, perf 300 frames/profile (wire bytes = V13 arithmetic), security review clean; manual threat-model review PENDING (human).) |
+| M14 | PASS | `artifacts/test-reports/M14.json` (commit a647372; Gate in a pinned worktree (ontology projection, registry governance, content affect, XCF capsules/gate/recall/trust).) |
