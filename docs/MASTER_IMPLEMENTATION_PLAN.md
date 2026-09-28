@@ -2335,6 +2335,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-025 | V13 §7.6 sagt, die ReceiverCapability stehe im ersten Responder-Handshake-Payload, bindet sie aber an `noise_h`. Der finale Transkript-Hash deckt genau dieses Payload ab (zirkulär). Gleiches gilt für Identity Proof und Session-Binding. | §7.6, §9.4 | hoch | ADR-0013 Amendment: Übertragung in der jeweils ersten Noise-Transportnachricht nach dem Handshake, vor jedem ESP-Anwendungspaket | WP-018, WP-051, WP-052 | RESOLVED |
 | GAP-026 | `noise_h[32]` in 0x20/0x21 vs. 64-Byte-Handshake-Hash von `Noise_IK_25519_ChaChaPoly_BLAKE2b` (HASHLEN = 64). | §9.4, §7.6 | hoch | ADR-0013 Amendment: `noise_h = BLAKE2b-256("esp/v1/noise-h" ‖ h)` | WP-018, WP-051, WP-052 | RESOLVED |
 | GAP-027 | SF-Level: V13 nennt Pflicht- und Optionaltypen, sagt aber nicht, ob sie pro Paket gelten und welchen `sf_level` Custom-Typ-Sets (MEB-HANDOVER ohne KNO) tragen. | §8.6, §17 | mittel | ADR-0025: strikt pro Paket; Custom-Sets registriert, `sf_level=0` | WP-063, WP-066 | RESOLVED |
+| GAP-028 | SOS: "1-bit INT shortcut without EMO/KNO" ohne Kodierung. | §16 | niedrig | ADR-0026 (PROPOSED): Addendum-TLV 0x86 = 0x01 auf CONTROL | WP-064 | RESOLVED_IN_IMPLEMENTATION |
 
 ---
 
@@ -3913,7 +3914,7 @@ Reihenfolge, nicht die Nummer.
 
 ## WP-064 — Turn Token (0x52), SOS, PANIC
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
@@ -4779,6 +4780,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0023 | Transparenzlog-Profil (GAP-019) | PROPOSED |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
 | ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |
+| ADR-0026 | SOS-Kodierung (GAP-028) | PROPOSED |
 
 ---
 

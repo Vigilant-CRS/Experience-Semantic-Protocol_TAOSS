@@ -79,6 +79,7 @@ from esp.privacy.dp import (
 )
 from esp.session.control import CloseReason, SessionClose
 from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
+from esp.session.floor import is_sos, sos_tlv
 from esp.session.profiles import TypeSetProfile, profile_for
 from esp.session.replay import ReplayError, ReplayWindow
 from esp.session.sequence import SenderSequencer, SequenceStore, session_fingerprint
@@ -340,6 +341,21 @@ class SenderEndpoint:
         self._revoked = True
         return packet
 
+    def panic(self, *, now_ns: int) -> bytes:
+        """PANIC: revoke with TERMINATE_SESSIONS and close. Must go on CONTROL (plan 31.5)."""
+        packet = self.revoke(
+            now_ns=now_ns,
+            effects=Effects.REVOKE_FUTURE_USE | Effects.TERMINATE_SESSIONS,
+            reason=ConsentRevocationReason.CONSENT_WITHDRAWN,
+        )
+        self._machine.advance(SessionState.CLOSING)
+        self._machine.advance(SessionState.CLOSED)
+        return packet
+
+    def sos(self, *, now_ns: int) -> bytes:
+        """SOS: a 1-bit control signal without EMO/KNO content (GAP-028)."""
+        return self.send_control(sos_tlv().encode(), now_ns=now_ns)
+
     def close(self, *, now_ns: int, reason: CloseReason = CloseReason.NORMAL) -> bytes:
         packet = self.send_control(SessionClose(reason).encode().encode(), now_ns=now_ns)
         self._machine.advance(SessionState.CLOSING)
@@ -438,6 +454,7 @@ class ReceiverEndpoint:
         self.transcript: bytes | None = None
         self.decoder_invocations = 0
         self.rejections: list[tuple[str, ...]] = []
+        self.sos_signals = 0
         self._auditor: DpAuditor | None = None
 
     @property
@@ -631,6 +648,8 @@ class ReceiverEndpoint:
                 if intent.effects & Effects.TERMINATE_SESSIONS:
                     self._machine.advance(SessionState.CLOSING)
                     self._machine.advance(SessionState.CLOSED)
+            elif is_sos(tlv):
+                self.sos_signals += 1
             elif tlv.code == SESSION_CLOSE_CODE:
                 SessionClose.decode(tlv)
                 self._machine.advance(SessionState.CLOSING)

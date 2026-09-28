@@ -20,7 +20,7 @@ from esp.session.driver import (
     establish_sender,
     send_frame,
 )
-from esp.session.state import SessionStateError
+from esp.session.state import SessionState, SessionStateError
 from esp.transport.base import (
     Channel,
     Connection,
@@ -260,3 +260,26 @@ def test_oversized_datagram_is_refused_not_silently_lost(tmp_path: Path) -> None
             await send_frame(sender, s_conn, full_anchor_frame(), KNO, channel=Channel.DATAGRAM)
 
     asyncio.run(scenario())
+
+
+def test_panic_and_sos_arrive_under_loss_and_stop_data(tmp_path: Path) -> None:
+    async def scenario() -> tuple[int, SessionState, int]:
+        sender, receiver = pair(tmp_path)
+        s_conn, r_conn = memory_link(FaultProfile(latency_s=0.05, jitter_s=0.02, loss=0.1, seed=9))
+        await asyncio.gather(establish_sender(sender, s_conn), establish_receiver(receiver, r_conn))
+        clock = make_clock()
+        pump = ReceiverPump(receiver, r_conn, clock=clock)
+        task = asyncio.create_task(pump.run())
+        await s_conn.send(Channel.CONTROL, sender.sos(now_ns=clock()))
+        await send_frame(
+            sender, s_conn, full_anchor_frame(), KNO, channel=Channel.STATE, clock=clock
+        )
+        await s_conn.send(Channel.CONTROL, sender.panic(now_ns=clock()))
+        await wait_until(lambda: receiver.state is SessionState.CLOSED)
+        await asyncio.wait_for(task, 5)
+        return receiver.sos_signals, receiver.state, pump.metrics.accepted_frames
+
+    sos, state, frames = asyncio.run(scenario())
+    assert sos == 1
+    assert state is SessionState.CLOSED  # PANIC terminated the session
+    assert frames <= 1
