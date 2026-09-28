@@ -26,6 +26,7 @@ from esp.transport.memory import FaultProfile, memory_link
 from esp.transport.netem import NetemProxy
 from esp.transport.quic import QuicConnection, connect_quic, self_signed_certificate, serve_quic
 from tests.integration.test_endpoint import (
+    DECLARATION,
     MASTER,
     RECEIVER_ID,
     descriptor,
@@ -54,6 +55,7 @@ class ReceiverHost:
             capability=receiver_capability_for(0x3F),
             trusted_issuers=frozenset({MASTER.public_bytes}),
             wire=WIRE_INT8,
+            declaration=DECLARATION,
             accept_state=self.accept_state,
             revocations=self.revocations,
         )
@@ -69,6 +71,7 @@ def sender_for(host: ReceiverHost, cap: SenderCapability, tmp_path: Path) -> Sen
         capability=cap,
         state_dir=tmp_path,
         wire=WIRE_INT8,
+        declaration=DECLARATION,
     )
 
 

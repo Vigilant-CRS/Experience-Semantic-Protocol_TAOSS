@@ -18,6 +18,7 @@ from esp.privacy.dp import REFERENCE_PROFILES, DpConfig, PrivacyBudgetError, Pri
 from esp.semantics.bindings import BindingPolicy, RelationClass, SemanticBinding, TypedEndpoint
 from esp.session.endpoint import ReceiverEndpoint, SenderEndpoint
 from tests.integration.test_endpoint import (
+    DECLARATION,
     MASTER,
     NOW,
     RECEIVER_ID,
@@ -59,6 +60,7 @@ def dp_pair(tmp_path: Path, *, ceiling: float = 8.0, dp: bool = True):  # type: 
         capability=cap,
         state_dir=tmp_path,
         wire=WIRE,
+        declaration=DECLARATION,
         dp=config,
     )
     receiver = ReceiverEndpoint(
@@ -68,6 +70,7 @@ def dp_pair(tmp_path: Path, *, ceiling: float = 8.0, dp: bool = True):  # type: 
         capability=receiver_capability,
         trusted_issuers=frozenset({MASTER.public_bytes}),
         wire=WIRE,
+        declaration=DECLARATION,
     )
     establish(sender, receiver)
     return sender, receiver, ledger
@@ -156,6 +159,7 @@ def test_dp_config_must_match_descriptor(tmp_path: Path) -> None:
             capability=cap,
             state_dir=tmp_path,
             wire=WIRE,
+            declaration=DECLARATION,
             dp=DpConfig(DpLevel.L1_BALANCED_REF, clip_norm=1.0, sigma=SIGMA, ledger=ledger),
         )
     with pytest.raises(ValueError, match="below the L1_PRIVATE_REF reference"):

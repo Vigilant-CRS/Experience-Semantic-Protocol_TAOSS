@@ -45,6 +45,7 @@ from esp.consent.accept import AcceptState
 from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
 from esp.consent.revocation import RevocationRegistry
 from esp.core.errors import EspError
+from esp.core.provenance import AffectScope
 from esp.core.taoss_types import TaossType, bitmap_to_types, types_to_bitmap
 from esp.crypto.noise_ik import StaticKeyPair
 from esp.crypto.primitives import SigningKey
@@ -52,6 +53,7 @@ from esp.demo.compose import DemoState, compose_frame
 from esp.demo.inspector import write_report
 from esp.frame.model import DisclosurePolicy, ExperienceFrame
 from esp.ontology.profiles import BASIC8_ID, basic8_registry
+from esp.regulatory.guard import DeploymentContext, Regime, RegulatoryDeclaration
 from esp.semantics.bindings import BindingPolicy, RelationClass
 from esp.session.descriptor import SessionDescriptor
 from esp.session.driver import establish_receiver, establish_sender
@@ -80,6 +82,14 @@ STATE: Final = DemoState(
 )
 ALL_BINDINGS: Final = BindingPolicy(allowed_relations=(RelationClass.ELICITED_BY,))
 HOUR_NS: Final = 3600 * 10**9
+#: WP-078: the demo shares only the sender's own, self-declared affect; no biometric inputs.
+DECLARATION: Final = RegulatoryDeclaration(
+    regimes=(Regime.EU_AI_ACT, Regime.EU_GDPR),
+    intended_use="BCI-free demonstration of typed consent between two consenting parties",
+    deployment_context=DeploymentContext.OTHER,
+    biometric_inputs=False,
+    affect_scopes=(AffectScope.SELF_DECLARED,),
+)
 
 
 def wire() -> WireOptions:
@@ -240,6 +250,7 @@ async def receive(directory: Path, port: int, events: TextIO, sessions: int) -> 
                 capability=receiver_capability(identity),
                 trusted_issuers=trusted,
                 wire=wire(),
+                declaration=DECLARATION,
                 accept_state=accept_state,
                 revocations=revocations,
                 inspector=inspector,
@@ -323,6 +334,7 @@ class SenderSession:
             capability=sender_capability(master, receiver_pk, emo=emo),
             state_dir=directory / "sender" / "state",
             wire=wire(),
+            declaration=DECLARATION,
         )
         self.capability_id = CAP_WITH_EMO if emo else CAP_NO_EMO
         self.sequence = 0

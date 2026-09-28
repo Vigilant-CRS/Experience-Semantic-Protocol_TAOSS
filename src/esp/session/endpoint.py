@@ -79,6 +79,13 @@ from esp.privacy.dp import (
 )
 from esp.privacy.metadata import REGISTRY_NAME as METADATA_REGISTRY
 from esp.privacy.metadata import MetadataProtection
+from esp.regulatory.guard import (
+    Assessment,
+    MisdeclarationError,
+    RegulatoryDeclaration,
+    check_frame,
+    require_permitted,
+)
 from esp.session.control import CloseReason, SessionClose
 from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
 from esp.session.floor import is_sos, sos_tlv
@@ -134,9 +141,13 @@ class SenderEndpoint:
         capability: SenderCapability,
         state_dir: Path,
         wire: WireOptions,
+        declaration: RegulatoryDeclaration | None,
         dp: DpConfig | None = None,
         metadata: MetadataProtection | None = None,
     ) -> None:
+        # WP-078: no declaration, or a prohibited one, and the pipeline does not start
+        self.regulatory: Assessment = require_permitted(declaration)
+        self._declaration = _need(declaration, "regulatory declaration")
         if capability.issuer_pk != master.public_bytes:
             msg = "capability must be issued by this master key"
             raise CryptoError(msg)
@@ -276,6 +287,7 @@ class SenderEndpoint:
             msg = "consent was withdrawn: no further frames under this capability"
             raise SessionStateError(msg)
         disclosed = frame.disclose(self.effective_policy(policy))
+        check_frame(self._declaration, disclosed)
         trailer = b""
         _need(self._profile, "type-set profile").check(
             frozenset(disclosed.present_types), frozenset(disclosed.masked_types)
@@ -472,12 +484,15 @@ class ReceiverEndpoint:
         capability: Callable[[bytes], ReceiverCapability] | None,
         trusted_issuers: frozenset[bytes],
         wire: WireOptions,
+        declaration: RegulatoryDeclaration | None,
         lineage: KeyLineage | None = None,
         accept_state: AcceptState | None = None,
         revocations: RevocationRegistry | None = None,
         metadata: MetadataProtection | None = None,
         inspector: Callable[[Header, ParsedPayload], None] | None = None,
     ) -> None:
+        self.regulatory: Assessment = require_permitted(declaration)
+        self._declaration = _need(declaration, "regulatory declaration")
         self._machine = StateMachine()
         self._inspector = inspector
         self._identity = identity
@@ -664,8 +679,11 @@ class ReceiverEndpoint:
         self.decoder_invocations += 1  # the frame decoder runs only after acceptance
         try:
             frame = payload_to_frame(header, plaintext, self._wire)
+            check_frame(self._declaration, frame)  # never deliver undeclared affect scopes
         except WireError as exc:
             return self._reject((f"1:{exc}",))
+        except MisdeclarationError as exc:
+            return self._reject((f"regulatory:{exc}",))
         act.replay.accept(header.segment_seq)
         commit(
             facts,

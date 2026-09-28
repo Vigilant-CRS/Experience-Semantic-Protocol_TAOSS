@@ -12,6 +12,7 @@ meaning. Ranges:
 - ``0x05xx`` session
 - ``0x06xx`` decoder
 - ``0x07xx`` registry / ontology
+- ``0x08xx`` regulatory guard (WP-078)
 """
 
 from __future__ import annotations
@@ -41,6 +42,10 @@ class ErrorCode(IntEnum):
 
     REGISTRY_CONFLICT = 0x0700
     REGISTRY_UNKNOWN_ID = 0x0701
+
+    REGULATORY_DECLARATION_MISSING = 0x0800
+    REGULATORY_PROHIBITED_PRACTICE = 0x0801
+    REGULATORY_MISDECLARED = 0x0802
 
 
 class EspError(Exception):

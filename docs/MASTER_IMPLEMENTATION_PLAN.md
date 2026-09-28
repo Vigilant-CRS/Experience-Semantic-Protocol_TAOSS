@@ -2337,6 +2337,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-027 | SF-Level: V13 nennt Pflicht- und Optionaltypen, sagt aber nicht, ob sie pro Paket gelten und welchen `sf_level` Custom-Typ-Sets (MEB-HANDOVER ohne KNO) tragen. | §8.6, §17 | mittel | ADR-0025: strikt pro Paket; Custom-Sets registriert, `sf_level=0` | WP-063, WP-066 | RESOLVED |
 | GAP-028 | SOS: "1-bit INT shortcut without EMO/KNO" ohne Kodierung. | §16 | niedrig | ADR-0026 (PROPOSED): Addendum-TLV 0x86 = 0x01 auf CONTROL | WP-064 | RESOLVED_IN_IMPLEMENTATION |
 | GAP-029 | Constant-Bitmap/Dummy-Inhalte ohne Kodierung: Empfänger kann Dummies nicht von echten Inhalten unterscheiden; `EMO_MASKED` im Klartext leakt selbst. | §8.3 | mittel | ADR-0027 (PROPOSED): Registry-Profil `esp-metadata-protection-v1`, TLV 0x87 (dummy/mask bitmaps im AEAD), 0x88 Filler | WP-062 | RESOLVED_IN_IMPLEMENTATION |
+| GAP-030 | `EmotionEpisode` trägt kein `affect_scope` (M1-Gate verlangt es für alle EMO-Objekte). | §6.4, Plan §4.5 | mittel | Mitigation (WP-078): unter einer Regulatory Declaration nur zusammen mit einem Affect-Descriptor im selben EMO-Block zulässig; Feld `affect_scope` am Episode-Objekt noch offen (Schema-/Vektor-Änderung) | WP-078, WP-050 | OPEN |
 
 ---
 
@@ -4166,7 +4167,7 @@ Konformitätssiegel-Prozess (Report-Format, Veröffentlichung).
 
 ## WP-078 — Regulatorik-Schicht (EU AI Act, GDPR)
 
-**Status:** `NOT_STARTED` · **Löst:** GAP-001 (Durchsetzung)
+**Status:** `VERIFIED` · **Löst:** GAP-001 (Durchsetzung)
 
 ### Implementieren
 
@@ -5047,7 +5048,7 @@ reference_transport: "QUIC (hinter Transport-Abstraktion, ADR-0001)"
 psychology_model_status: "PROPOSED_ADDENDUM"
 affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
-open_gaps: 11        # GAP-007, 014–020, 022–024
+open_gaps: 12        # GAP-007, 014–020, 022–024, 030
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
 work_packages_total: 86   # WP-000 … WP-085
 experiencebench_status: "DESIGN"

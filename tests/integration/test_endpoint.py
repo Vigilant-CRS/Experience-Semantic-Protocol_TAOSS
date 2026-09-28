@@ -19,11 +19,13 @@ from esp.codec.frame_wire import WireOptions
 from esp.codec.tlv import encode_tlv
 from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
 from esp.consent.revocation import ConsentRevocationReason, Effects, RevocationIntent
+from esp.core.provenance import AffectScope
 from esp.core.taoss_types import TaossType
 from esp.crypto.noise_ik import StaticKeyPair
 from esp.crypto.primitives import CryptoError, SigningKey
 from esp.frame.model import DisclosurePolicy
 from esp.ontology.profiles import BASIC8_ID, basic8_registry
+from esp.regulatory.guard import DeploymentContext, Regime, RegulatoryDeclaration
 from esp.session.descriptor import NegotiationError, SessionDescriptor
 from esp.session.endpoint import ReceiverEndpoint, SenderEndpoint
 from esp.session.state import SessionState, SessionStateError, StateMachine
@@ -38,6 +40,13 @@ WIRE = WireOptions(addendum=True, anchor_sets={BASIC8_ID: REGISTRY.anchor_set(BA
 REGISTRIES = {"esp-addendum-v1": b"\xa1" * 32, BASIC8_ID: bytes.fromhex(REGISTRY.digest_hex())}
 NOW = 1_000 * 10**9
 CAP_ID = uuid.UUID("21212121-2121-4121-8121-212121212121")
+DECLARATION = RegulatoryDeclaration(
+    regimes=(Regime.EU_AI_ACT, Regime.EU_GDPR),
+    intended_use="ESP reference implementation tests (synthetic data)",
+    deployment_context=DeploymentContext.OTHER,
+    biometric_inputs=False,
+    affect_scopes=(AffectScope.CONTENT, AffectScope.SELF_DECLARED),
+)
 
 
 def descriptor(**kw: object) -> SessionDescriptor:
@@ -104,6 +113,7 @@ def pair(
         capability=cap or sender_capability(),
         state_dir=tmp_path,
         wire=wire,
+        declaration=DECLARATION,
     )
     receiver = ReceiverEndpoint(
         identity=RECEIVER_ID,
@@ -112,6 +122,7 @@ def pair(
         capability=None if receiver_types is None else receiver_capability_for(receiver_types),
         trusted_issuers=trusted if trusted is not None else frozenset({MASTER.public_bytes}),
         wire=wire,
+        declaration=DECLARATION,
     )
     return sender, receiver
 

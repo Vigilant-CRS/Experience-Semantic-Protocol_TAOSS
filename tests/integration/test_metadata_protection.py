@@ -25,6 +25,7 @@ from esp.transport.base import Channel, Message
 from esp.transport.memory import FaultProfile, memory_link
 from esp.transport.overlay import LayeredConnection
 from tests.integration.test_endpoint import (
+    DECLARATION,
     MASTER,
     NOW,
     RECEIVER_ID,
@@ -68,6 +69,7 @@ def build(
         capability=sender_capability(),
         state_dir=tmp_path,
         wire=WIRE,
+        declaration=DECLARATION,
         metadata=s_meta,
     )
     receiver = ReceiverEndpoint(
@@ -77,6 +79,7 @@ def build(
         capability=receiver_capability_for(receiver_types),
         trusted_issuers=frozenset({MASTER.public_bytes}),
         wire=WIRE,
+        declaration=DECLARATION,
         metadata=r_meta,
     )
     return sender, receiver
@@ -162,6 +165,7 @@ def test_pin_must_match_configuration(tmp_path: Path) -> None:
             capability=sender_capability(),
             state_dir=tmp_path,
             wire=WIRE,
+            declaration=DECLARATION,
             metadata=PROTECT,
         )
 
