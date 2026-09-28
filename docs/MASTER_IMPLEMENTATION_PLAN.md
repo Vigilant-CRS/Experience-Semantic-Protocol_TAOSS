@@ -4155,7 +4155,7 @@ Konformitätssiegel-Prozess (Report-Format, Veröffentlichung).
 
 ## WP-077 — Registry-Governance und Registry-Service
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 - Registries für: Anchor-Sets, TAOSS-Profile, DP-Profile, Addendum-TLV-Codes,
   Fehlercodes, Decoder-Profile, Relationsklassen,
@@ -4190,7 +4190,7 @@ Konformitätssiegel-Prozess (Report-Format, Veröffentlichung).
 
 ## WP-079 — Content-Side-Affect-Pipeline und Movie-Engine-Integration
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 - `A_t = α_a·g_audio + α_f·g_face + α_s·g_text` (α = softmax(w), Gauß-Glättung),
   Face-Gate: kein Gesicht ⇒ α_f = 0,
