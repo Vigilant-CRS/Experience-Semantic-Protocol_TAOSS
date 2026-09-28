@@ -487,6 +487,7 @@ async def send(directory: Path, port: int, capture_stream: TextIO) -> int:
     async def s2(s: SenderSession, conn: QuicConnection) -> None:
         await s.send(conn, "emo_consented")
         await s.send(conn, "binding_masked", bindings=BindingPolicy())
+        await conn.drain(Channel.STATE)  # deliver these frames before withdrawing consent
         await s.control(conn, "revoke_emo", s.endpoint.revoke(now_ns=time.time_ns()))
         await s.send(conn, "emo_after_revoke")
 

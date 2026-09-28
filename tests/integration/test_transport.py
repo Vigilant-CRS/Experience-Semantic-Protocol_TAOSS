@@ -283,3 +283,34 @@ def test_panic_and_sos_arrive_under_loss_and_stop_data(tmp_path: Path) -> None:
     assert sos == 1
     assert state is SessionState.CLOSED  # PANIC terminated the session
     assert frames <= 1
+
+
+def test_quic_drain_waits_for_peer_acknowledgement() -> None:
+    async def scenario() -> tuple[int, int]:
+        cert, key = self_signed_certificate("localhost")
+        accepted: asyncio.Queue[QuicConnection] = asyncio.Queue()
+        server = await serve_quic(
+            "127.0.0.1", 0, certificate_pem=cert, key_pem=key, on_connection=accepted.put_nowait
+        )
+        port = server._transport.get_extra_info("sockname")[1]
+        slow = FaultProfile(latency_s=0.08, jitter_s=0.02, loss=0.05, seed=21)
+        proxy = NetemProxy(("127.0.0.1", port), up=slow, down=slow)
+        target = await proxy.start()
+        try:
+            async with connect_quic("127.0.0.1", target, ca_pem=cert) as client:
+                server_conn = await asyncio.wait_for(accepted.get(), 10)
+                for i in range(50):
+                    await client.send(Channel.STATE, i.to_bytes(4, "big") * 64)
+                queued_before = server_conn._protocol.esp_inbox.qsize()
+                await client.drain(Channel.STATE, timeout=20)
+                queued_after = server_conn._protocol.esp_inbox.qsize()
+                with pytest.raises(TransportError, match="cannot be drained"):
+                    await client.drain(Channel.DATAGRAM)
+                return queued_before, queued_after
+        finally:
+            proxy.close()
+            server.close()
+
+    before, after = asyncio.run(scenario())
+    assert before < 50  # 80 ms latency: nothing can have arrived yet
+    assert after == 50  # acknowledged => already in the peer's inbox, in order

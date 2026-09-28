@@ -112,6 +112,32 @@ class QuicConnection:
             quic.send_stream_data(STREAM_OF[channel], StreamDeframer.frame(data))
         self._protocol.transmit()
 
+    async def drain(self, channel: Channel, timeout: float = 10.0) -> None:
+        """Wait until the peer's QUIC stack acknowledged everything sent on ``channel``.
+
+        Streams are independent: a revocation on CONTROL may overtake frames still
+        in flight on STATE and then (correctly, V13) causes them to be rejected.
+        A sender that wants earlier frames delivered first drains STATE before
+        revoking. Acknowledged data is already in the peer's inbox, ahead of
+        anything sent afterwards.
+        """
+        if channel is Channel.DATAGRAM:
+            msg = "datagrams are unreliable and cannot be drained"
+            raise TransportError(msg)
+        stream = self._protocol._quic._streams.get(STREAM_OF[channel])
+        if stream is None:
+            return
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        while len(stream.sender._buffer) > 0:  # unacknowledged bytes remain
+            if self._protocol.esp_terminated:
+                msg = "connection terminated while draining"
+                raise ConnectionClosedError(msg)
+            if loop.time() > deadline:
+                msg = f"{channel.name} not acknowledged within {timeout} s"
+                raise TransportError(msg)
+            await asyncio.sleep(0.005)
+
     async def receive(self) -> Message:
         item = await self._protocol.esp_inbox.get()
         if item is None:
