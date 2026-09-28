@@ -219,18 +219,18 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M9 | Audit suite (KSG/MINE/HSIC/dCor, V-information ladder, red-team steganography) and ExperienceBench (9 task families, H1–H3 evaluators, preregistration guard) | ✅ PASS |
 | M10 | **Independent Rust implementation** (`rust/esp-rs`): same vectors, live interop matrix Python⇄Rust, conformance CLI | ✅ PASS |
 | M11 | Performance benchmark, security review (dependency audit, 1 M-input fuzz, threat model T1–T19), failure-mode regressions | ✅ PASS |
-| M12 | Release candidate 1.0: guides with executed examples ✅, frozen vectors; still needs maintainer ADR decisions and the human legal/threat review | 🧑‍⚖️ waiting for humans |
-| M13 | Machine Experience Bridge (machines never authorize EMO) and ESP-Agent profile for LLM agents | 🛠 in progress |
+| M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate. Still needs the human legal review, the manual threat review and four ADR decisions ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ waiting for humans |
+| M13 | Machine Experience Bridge (machines never author EMO; handover, surgical and drone profiles) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit) | ✅ PASS |
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
-| M15 | Typed Hive: consented collective episodes, EMO never mixed, quorum threshold signatures | 🛠 in progress |
-| M16 | Horizon interfaces: neural adapter contract, legacy profile, post-quantum declaration | 🛠 in progress |
-| M17 | Final coverage matrix and errata for V13.1 | 📋 planned |
+| M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) | ✅ implemented · gate running |
+| M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ implemented · gate running |
+| M17 | Every V13 section maps to finished work; errata E-01…E-27 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials, DKG), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
 
 ---
 
 ## 5. Test results
 
-The full suite has almost 800 automated tests: unit, property-based (Hypothesis), conformance
+The full suite has more than 1,100 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
 Security rules are **mutation-checked**: each rule is deliberately broken once, and a test must
 fail.
@@ -349,6 +349,27 @@ under a fresh consent check. Access to a capsule can be gated by a guardian quor
 tombstone blocks any future release. A "no replay" flag anywhere in the capsule's history blocks
 recall. Each recall also reports a **trust vector** (signature, anchor age, drift, privacy
 budget, lineage) instead of a single opaque score.
+
+### Research findings so far (exploratory, not evidence)
+
+- **The encoder leaks through the other types.** When EMO is masked, the reference TAOSS
+  encoder's visible latents still predict the hidden emotional content with R² ≈ 0.78. The
+  data itself explains only R² ≈ 0.07. The pairwise penalties do not remove this at the tested
+  scale. This is exactly why ESP measures leakage instead of assuming type independence, and
+  why the covert-channel audit is mandatory.
+- **"Best" number of types depends on how leakage is counted.** TAOSS-3, -6 and -12 each win
+  under a different aggregation (mean, max or joint). There is no free lunch in type
+  granularity.
+- **Covert-channel hardening works against crude tricks.** Out-of-band excursions, sparsity
+  on/off codes, repeating phases and code ramps were caught in ≥ 98.9 % of bit windows, at
+  ≤ 0.07 % false alarms on honest streams. Randomized quantization with half a step of noise
+  drives a sub-step parity code to chance. Subtle in-band codes are left to the V-information
+  audit.
+- **Machine bridges and agents.** A machine never authors emotional content. An agent's
+  internal state is sent as an opaque, signed object. It is only called "TAOSS" after a passed
+  leakage audit.
+
+Details: `artifacts/research/`, [claims](docs/CLAIMS.md).
 
 ---
 
