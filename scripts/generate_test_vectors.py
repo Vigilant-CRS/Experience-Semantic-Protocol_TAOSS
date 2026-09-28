@@ -17,7 +17,11 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from esp.codec.header import HEADER_LEN, ConsentFlags, Header, PrivacyFlags, float32
+from esp.codec.tlv import LatentEncoding, encode_tlv, encode_typed_latent
+from esp.core.taoss_types import TaossType
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "vectors"
@@ -150,6 +154,73 @@ def invalid_header_vectors() -> list[dict[str, Any]]:
     return [{"name": n, "hex": b.hex(), "expect_error": e} for n, b, e in cases]
 
 
+#: Fixed TEM latent (16 coordinates) used by the latent vectors.
+TEM_VALUES = [
+    0.0,
+    0.5,
+    -0.5,
+    1.0,
+    -1.0,
+    0.25,
+    -0.25,
+    0.125,
+    2.0,
+    -2.0,
+    0.1,
+    -0.1,
+    3.5,
+    -3.5,
+    0.0,
+    0.75,
+]
+
+
+def valid_latent_vectors() -> list[dict[str, Any]]:
+    values = np.array(TEM_VALUES)
+    out = []
+    for enc in LatentEncoding:
+        raw = encode_typed_latent(TaossType.TEM, values, enc)
+        out.append(
+            {
+                "name": f"tem_{enc.name.lower()}",
+                "type": "TEM",
+                "encoding": enc.name,
+                "input_values": TEM_VALUES,
+                "hex": raw.hex(),
+                "body_len": len(raw) - 5,
+            }
+        )
+    return out
+
+
+def invalid_latent_vectors() -> list[dict[str, Any]]:
+    good = encode_typed_latent(TaossType.TEM, np.array(TEM_VALUES), LatentEncoding.INT8_SYM)
+    body = bytearray(good[5:])
+    minus128 = bytearray(body)
+    minus128[8] = 0x80
+    flags = bytearray(body)
+    flags[1] = 1
+    zero_scale = bytearray(body)
+    zero_scale[4:8] = bytes(4)
+    f32 = encode_typed_latent(TaossType.TEM, np.array(TEM_VALUES))[5:]
+    nan = bytearray(f32)
+    nan[8:12] = bytes.fromhex("7fc00000")
+    scale2 = bytearray(f32)
+    scale2[4:8] = bytes.fromhex("40000000")
+    cases = [
+        ("int8_minus_128", encode_tlv(0x65, bytes(minus128)), "-128"),
+        ("nonzero_flags", encode_tlv(0x65, bytes(flags)), "flags"),
+        ("int8_zero_scale", encode_tlv(0x65, bytes(zero_scale)), "scale"),
+        ("f32_nan", encode_tlv(0x65, bytes(nan)), "NaN"),
+        ("f32_scale_not_one", encode_tlv(0x65, bytes(scale2)), "exactly 1.0"),
+        ("wrong_dims", encode_tlv(0x65, bytes(body[:2]) + b"\x00\x0f" + bytes(body[4:-1])), "dims"),
+        ("body_too_long", encode_tlv(0x65, bytes(body) + b"\x00"), "length mismatch"),
+        ("unknown_encoding", encode_tlv(0x65, b"\x03" + bytes(body[1:])), "encoding"),
+        ("truncated_subheader", encode_tlv(0x65, bytes(body[:7])), "truncated"),
+    ]
+    return [{"name": n, "hex": b.hex(), "expect_error": e} for n, b, e in cases]
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -160,6 +231,10 @@ def documents() -> dict[Path, dict[str, Any]]:
     return {
         OUT / "wire" / "header_valid.json": meta | {"vectors": valid_header_vectors()},
         OUT / "malformed" / "header_invalid.json": meta | {"vectors": invalid_header_vectors()},
+        OUT / "wire" / "latent_valid.json": meta
+        | {"spec": "ESP V13 section 8.4", "vectors": valid_latent_vectors()},
+        OUT / "malformed" / "latent_invalid.json": meta
+        | {"spec": "ESP V13 section 8.4", "vectors": invalid_latent_vectors()},
     }
 
 

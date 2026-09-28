@@ -1,0 +1,53 @@
+{
+  "header_len": 100,
+  "license": "CC-BY-4.0",
+  "spec": "ESP V13 section 8.4",
+  "suite_version": "1.0.0",
+  "vectors": [
+    {
+      "expect_error": "-128",
+      "hex": "6500000018020000103ce1c3878012ee24dc09f70549b704fc7f81001b",
+      "name": "int8_minus_128"
+    },
+    {
+      "expect_error": "flags",
+      "hex": "6500000018020100103ce1c3870012ee24dc09f70549b704fc7f81001b",
+      "name": "nonzero_flags"
+    },
+    {
+      "expect_error": "scale",
+      "hex": "650000001802000010000000000012ee24dc09f70549b704fc7f81001b",
+      "name": "int8_zero_scale"
+    },
+    {
+      "expect_error": "NaN",
+      "hex": "6500000048000000103f8000007fc000003f000000bf0000003f800000bf8000003e800000be8000003e00000040000000c00000003dcccccdbdcccccd40600000c0600000000000003f400000",
+      "name": "f32_nan"
+    },
+    {
+      "expect_error": "exactly 1.0",
+      "hex": "65000000480000001040000000000000003f000000bf0000003f800000bf8000003e800000be8000003e00000040000000c00000003dcccccdbdcccccd40600000c0600000000000003f400000",
+      "name": "f32_scale_not_one"
+    },
+    {
+      "expect_error": "dims",
+      "hex": "65000000170200000f3ce1c3870012ee24dc09f70549b704fc7f8100",
+      "name": "wrong_dims"
+    },
+    {
+      "expect_error": "length mismatch",
+      "hex": "6500000019020000103ce1c3870012ee24dc09f70549b704fc7f81001b00",
+      "name": "body_too_long"
+    },
+    {
+      "expect_error": "encoding",
+      "hex": "6500000018030000103ce1c3870012ee24dc09f70549b704fc7f81001b",
+      "name": "unknown_encoding"
+    },
+    {
+      "expect_error": "truncated",
+      "hex": "6500000007020000103ce1c3",
+      "name": "truncated_subheader"
+    }
+  ]
+}

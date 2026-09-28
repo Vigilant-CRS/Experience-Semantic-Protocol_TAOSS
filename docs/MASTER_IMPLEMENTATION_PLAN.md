@@ -2835,7 +2835,7 @@ für kanonische Pakete.
 
 ## WP-015 — TLV Codec
 
-**Status:** `NOT_STARTED`
+**Status:** `VERIFIED`
 
 ### Implementieren
 
