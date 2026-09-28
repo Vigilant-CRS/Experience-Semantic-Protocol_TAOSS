@@ -29,6 +29,7 @@ CODE_NAMES: Final = {
     "0x65": "LATENT TEM",
     "0x81": "SESSION_CLOSE",
     "0x86": "SOS",
+    "0x89": "REPLAY_WATERMARK",
     "0x90": "SEMANTIC_BINDING",
     "0x92": "AFFECT_DESCRIPTOR",
     "0x93": "EMOTION_EPISODE",

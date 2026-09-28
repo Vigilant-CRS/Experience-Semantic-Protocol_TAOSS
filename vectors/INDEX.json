@@ -8,6 +8,7 @@
     "malformed/header_invalid.json": "b0fde7d38ea5ff28987bf8ea32434ccf03075fd86e88ffe4f2d405e81c1d6097",
     "malformed/latent_invalid.json": "882c9d34b62c75d446711fa7e425b47740ddb72b9c98644222fac56792e03081",
     "privacy/dp_accounting.json": "2ebbdd621e7624873a2152e1c7b7afed97c613391ea9471d737c94b7bc7744fa",
+    "replay/watermark.json": "6c5417796191276f99c0e97b8e86191f420f680eb9e531412823f2700e5d28ff",
     "replay/windows.json": "7890a8d24730b57ef79f6f047bf389c353f2ee8a5ae7686e04efbea5fba6e28a",
     "session/descriptor.json": "ec5baede6e1c332e0ef0453a53c4b910f22f71623f61378a22610543c2d6817f",
     "wire/header_valid.json": "7f1d52d5c8430307c302bae43f84663cbd6932f171197deaa6bc2e429f2f8d59",

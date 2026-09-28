@@ -35,6 +35,7 @@ class ErrorCode(IntEnum):
     CRYPTO_AUTH_FAILED = 0x0300
 
     CONSENT_DENIED = 0x0400
+    REPLAY_WATERMARK_INVALID = 0x0401  # GAP-016, ADR-0030: replay segment off its watermark
 
     SESSION_STATE = 0x0500
 

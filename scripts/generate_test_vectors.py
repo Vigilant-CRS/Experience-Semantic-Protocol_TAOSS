@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 
 from esp.codec.header import HEADER_LEN, ConsentFlags, DpLevel, Header, PrivacyFlags, float32
-from esp.codec.tlv import LatentEncoding, encode_tlv, encode_typed_latent
+from esp.codec.tlv import LatentEncoding, Tlv, encode_tlv, encode_typed_latent
 from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
 from esp.consent.revocation import (
     ConsentRevocationReason,
@@ -721,6 +721,89 @@ def hive_vectors() -> list[dict[str, Any]]:
     ]
 
 
+def replay_watermark_vectors() -> list[dict[str, Any]]:
+    """GAP-016 / ADR-0030: REPLAY_WATERMARK 0x89 bodies, schedule offsets and must-reject cases."""
+    from esp.xcf.gate import RecallFrame  # noqa: PLC0415
+    from esp.xcf.watermark import (  # noqa: PLC0415
+        ReplaySchedule,
+        ReplayWatermarker,
+        VendorKey,
+        Watermark,
+        watermark_tag,
+    )
+
+    vendor = VendorKey(bytes(range(0x40, 0x50)), bytes(range(0x80, 0xA0)))
+    schedule = ReplaySchedule(period_ns=200_000_000, jitter_ns=50_000_000, tolerance_ns=5_000_000)
+    marker = ReplayWatermarker(vendor, schedule)
+    base_ns = marker.start_epoch(1_727_000_000_000_000_000)
+    latent = encode_typed_latent(TaossType.KNO, np.linspace(-1.0, 1.0, 240), LatentEncoding.F32_BE)
+    out: list[dict[str, Any]] = []
+    for i in range(4):
+        recall = RecallFrame(b"\xc1" * 32, offset_ns=i * 200_000_000, span_ns=200_000_000)
+        prefix = latent + recall.encode().encode()
+        timestamp = marker.scheduled_time()
+        tlv, ts = marker.watermark(TIMELINE, prefix)
+        if ts != timestamp:
+            msg = "watermarker timestamp differs from its schedule"
+            raise RuntimeError(msg)
+        wm = Watermark.decode(Tlv(tlv[0], tlv[5:]))
+        out.append(
+            {
+                "name": f"segment_{i}",
+                "valid": True,
+                "vendor_id": vendor.vendor_id.hex(),
+                "vendor_key": vendor.key.hex(),
+                "timeline_id": str(TIMELINE),
+                "period_ns": schedule.period_ns,
+                "jitter_ns": schedule.jitter_ns,
+                "tolerance_ns": schedule.tolerance_ns,
+                "start_grid_ns": schedule.start_grid_ns,
+                "epoch": wm.epoch,
+                "index": wm.index,
+                "base_timestamp_ns": base_ns,
+                "scheduled_offset_ns": wm.scheduled_offset_ns,
+                "header_timestamp_ns": timestamp,
+                "prefix_hex": prefix.hex(),
+                "tlv_hex": tlv.hex(),
+            }
+        )
+    good = bytes.fromhex(out[1]["tlv_hex"])
+    bad_tag = good[:-1] + bytes([good[-1] ^ 0x01])
+    shifted = bytearray(good)
+    shifted[5 + 24 + 7] ^= 0x01  # scheduled_offset_ns lowest byte
+    wm1 = Watermark.decode(Tlv(good[0], good[5:]))
+    forged_offset = wm1.scheduled_offset_ns + 1
+    forged = Watermark(
+        wm1.vendor_id,
+        wm1.epoch,
+        wm1.index,
+        forged_offset,
+        watermark_tag(
+            vendor,
+            TIMELINE,
+            epoch=wm1.epoch,
+            index=wm1.index,
+            offset_ns=forged_offset,
+            prefix=bytes.fromhex(out[1]["prefix_hex"]),
+        ),
+    )
+    for name, tlv_bytes, reason in (
+        ("tag_bit_flip", bad_tag, "replay watermark tag does not verify"),
+        ("offset_bit_flip", bytes(shifted), "replay watermark tag does not verify"),
+        (
+            "keyed_offset_off_schedule",
+            forged.encode().encode(),
+            "scheduled offset differs from the vendor schedule",
+        ),
+        ("short_body", encode_tlv(0x89, good[5:-1]), "malformed REPLAY_WATERMARK"),
+    ):
+        out.append(
+            out[1]
+            | {"name": name, "valid": False, "tlv_hex": tlv_bytes.hex(), "expect_error": reason}
+        )
+    return out
+
+
 def documents() -> dict[Path, dict[str, Any]]:
     meta = {
         "suite_version": SUITE_VERSION,
@@ -750,6 +833,11 @@ def documents() -> dict[Path, dict[str, Any]]:
         | {"spec": "ESP V13 section 9.4; ADR-0013", "vectors": identity_vectors()},
         OUT / "replay" / "windows.json": meta
         | {"spec": "ESP V13 section 9.5; ADR-0016", "vectors": replay_vectors()},
+        OUT / "replay" / "watermark.json": meta
+        | {
+            "spec": "ESP V13 covert-channel hardening, replay watermark; GAP-016, ADR-0030",
+            "vectors": replay_watermark_vectors(),
+        },
         OUT / "privacy" / "dp_accounting.json": meta
         | {"spec": "ESP V13 section 12; ADR-0018", "vectors": dp_vectors()},
         OUT / "xcf" / "capsules.json": meta

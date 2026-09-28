@@ -95,6 +95,16 @@ from esp.session.profiles import TypeSetProfile, profile_for
 from esp.session.replay import ReplayError, ReplayWindow
 from esp.session.sequence import SenderSequencer, SequenceStore, session_fingerprint
 from esp.session.state import SessionState, SessionStateError, StateMachine
+from esp.xcf.gate import RecallFrame
+from esp.xcf.watermark import (
+    REPLAY_WATERMARK_CODE,
+    ReplayAdvance,
+    ReplayVerifier,
+    ReplayWatermarker,
+    ReplayWatermarkError,
+    ReplayWatermarkPolicy,
+    is_replay_segment,
+)
 
 DESCRIPTOR_CODE = 0x80
 SESSION_BINDING_CODE = 0x85
@@ -289,6 +299,45 @@ class SenderEndpoint:
         )
 
     def send_frame(self, frame: ExperienceFrame, policy: DisclosurePolicy, *, now_ns: int) -> bytes:
+        bitmap, flags, payload, masked = self._prepare_frame(frame, policy)
+        return self._seal(bitmap, flags, payload, now_ns, masked)
+
+    def send_replay_segment(
+        self,
+        frame: ExperienceFrame,
+        policy: DisclosurePolicy,
+        recall: RecallFrame,
+        watermarker: ReplayWatermarker,
+        *,
+        now_ns: int,
+    ) -> bytes:
+        """A replay segment (RECALL_FRAME 0x51 + REPLAY_WATERMARK 0x89; GAP-016, ADR-0030).
+
+        The header timestamp is the vendor schedule's, and the segment may only be
+        sent within the schedule's tolerance of that time: the sender cannot choose
+        replay timing.
+        """
+        if not self._capability.rights & Rights.ALLOW_REPLAY:
+            msg = "replay needs ALLOW_REPLAY in the sender capability"
+            raise SessionStateError(msg)
+        if self._metadata is not None:
+            msg = "replay segments are not defined under esp-metadata-protection-v1 (ADR-0030)"
+            raise SessionStateError(msg)
+        if not self._wire.addendum:
+            msg = "the replay watermark needs esp-addendum-v1"
+            raise SessionStateError(msg)
+        scheduled = watermarker.scheduled_time()
+        if abs(now_ns - scheduled) > watermarker.schedule.tolerance_ns:
+            msg = "replay segment outside its scheduled time"
+            raise ReplayWatermarkError(msg)
+        bitmap, flags, payload, masked = self._prepare_frame(frame, policy)
+        payload += recall.encode().encode()
+        mark, timestamp = watermarker.watermark(self.timeline_id, payload)
+        return self._seal(bitmap, flags, payload + mark, timestamp, masked)
+
+    def _prepare_frame(
+        self, frame: ExperienceFrame, policy: DisclosurePolicy
+    ) -> tuple[int, int, bytes, frozenset[TaossType]]:
         self._machine.require_data()
         if self._revoked:
             msg = "consent was withdrawn: no further frames under this capability"
@@ -305,7 +354,7 @@ class SenderEndpoint:
         flags = consent_flags_for(encoded, self._rights_flags())
         _need(self._profile, "type-set profile").check_flags(flags)  # e.g. MEB-SURGICAL NO_REPLAY
         masked = frozenset(disclosed.masked_types)
-        return self._seal(encoded.types_bitmap, flags, encoded.payload + trailer, now_ns, masked)
+        return encoded.types_bitmap, flags, encoded.payload + trailer, masked
 
     def _privatize(self, frame: ExperienceFrame) -> tuple[ExperienceFrame, bytes]:
         """Clip + noise every latent, charge the ledger first, return the 0x30 TLV bytes."""
@@ -469,6 +518,8 @@ class ReceiverHardening:
     """T18: if set, every data packet needs a verified all-trusted provenance chain."""
     anchor_only: bool = False
     """T19: accept anchor coordinates only; raw typed latents are refused."""
+    replay_watermark: ReplayWatermarkPolicy | None = None
+    """GAP-016: replay segments (0x51) are accepted only with a verified watermark (0x89)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -513,6 +564,8 @@ class ReceiverEndpoint:
         hardening: ReceiverHardening | None = None,
     ) -> None:
         self._hardening = hardening or ReceiverHardening()
+        policy = self._hardening.replay_watermark
+        self._replay_verifier = None if policy is None else ReplayVerifier(policy)
         self.regulatory: Assessment = require_permitted(declaration)
         self._declaration = _need(declaration, "regulatory declaration")
         self._machine = StateMachine()
@@ -695,6 +748,10 @@ class ReceiverEndpoint:
         threat = self._screen_threats(parsed)
         if threat is not None:
             return self._reject((threat,))
+        try:
+            advance = self._screen_replay(header, plaintext, parsed, now_ns, act)
+        except ReplayWatermarkError as exc:
+            return self._reject((f"replay:{exc}",))
         decision = evaluate(
             facts,
             act.sender_cap,
@@ -707,10 +764,34 @@ class ReceiverEndpoint:
         )
         if not decision.accepted:
             return self._reject(decision.violations)
-        return self._decode_and_commit(header, plaintext, facts, now_ns, act)
+        return self._decode_and_commit(header, plaintext, facts, now_ns, act, advance=advance)
+
+    def _screen_replay(
+        self, header: Header, plaintext: bytes, parsed: ParsedPayload, now_ns: int, act: _Active
+    ) -> ReplayAdvance | None:
+        """GAP-016 / ADR-0030: replay segments need consent and a verified watermark."""
+        if not is_replay_segment(parsed):
+            if parsed.all(REPLAY_WATERMARK_CODE):
+                msg = "watermark on a non-replay segment"
+                raise ReplayWatermarkError(msg)
+            return None
+        if not act.sender_cap.rights & Rights.ALLOW_REPLAY:
+            msg = "replay segment without ALLOW_REPLAY consent"
+            raise ReplayWatermarkError(msg)
+        if self._replay_verifier is None or self._metadata is not None:
+            msg = "no replay-watermark policy: replay segments are refused (fail closed)"
+            raise ReplayWatermarkError(msg)
+        return self._replay_verifier.check(header, plaintext, parsed, now_ns=now_ns)
 
     def _decode_and_commit(
-        self, header: Header, plaintext: bytes, facts: PacketFacts, now_ns: int, act: _Active
+        self,
+        header: Header,
+        plaintext: bytes,
+        facts: PacketFacts,
+        now_ns: int,
+        act: _Active,
+        *,
+        advance: ReplayAdvance | None = None,
     ) -> ReceiveResult:
         budget = self._hardening.decode_budget
         if budget is not None and not budget.try_spend(now_ns, decode_cost(len(plaintext))):
@@ -725,6 +806,8 @@ class ReceiverEndpoint:
         except MisdeclarationError as exc:
             return self._reject((f"regulatory:{exc}",))
         act.replay.accept(header.segment_seq)
+        if advance is not None:
+            _need(self._replay_verifier, "replay verifier").commit(advance)
         commit(
             facts,
             act.sender_cap,

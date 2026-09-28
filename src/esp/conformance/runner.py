@@ -20,6 +20,7 @@ import hashlib
 import json
 import sys
 import traceback
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import partial
@@ -28,11 +29,13 @@ from typing import Any
 
 from esp.codec.header import Header
 from esp.codec.tlv import (
+    ADDENDUM_V1_CODES,
     LatentEncoding,
     Tlv,
     decode_typed_latent,
     encode_typed_latent,
     iter_tlvs,
+    parse_payload,
 )
 from esp.consent.capability import SENDER_CAPABILITY_CODE, ReceiverCapability, SenderCapability
 from esp.consent.revocation import DeletionAttestation, RevocationIntent
@@ -45,6 +48,12 @@ from esp.ontology.profiles import basic8_registry
 from esp.privacy.dp import DpParams
 from esp.session.descriptor import SessionDescriptor
 from esp.session.replay import ReplayError, ReplayWindow
+from esp.xcf.watermark import (
+    ReplaySchedule,
+    ReplayVerifier,
+    ReplayWatermarkError,
+    ReplayWatermarkPolicy,
+)
 
 DEFAULT_VECTORS = Path(__file__).resolve().parents[3] / "vectors"
 
@@ -187,6 +196,10 @@ class Suite:
     def replay(self) -> None:
         for v in self.load("replay/windows.json"):
             self.check("replay", v["name"], partial(_window, v))
+        marks = self.load("replay/watermark.json")
+        self.check("replay", "watermark_stream", partial(_watermark_stream, marks))
+        for v in (m for m in marks if not m["valid"]):
+            self.check("replay", f"watermark_{v['name']}", partial(_watermark_reject, marks, v))
 
     def privacy(self) -> None:
         for v in self.load("privacy/dp_accounting.json"):
@@ -300,6 +313,62 @@ def _window(v: dict[str, Any]) -> None:
         except ReplayError:
             got.append(0)
     _require(got == v["accept"], f"accept pattern {got}")
+
+
+def _watermark_verifier(v: dict[str, Any]) -> ReplayVerifier:
+    schedule = ReplaySchedule(
+        period_ns=v["period_ns"],
+        jitter_ns=v["jitter_ns"],
+        tolerance_ns=v["tolerance_ns"],
+        start_grid_ns=v["start_grid_ns"],
+    )
+    vendors = {bytes.fromhex(v["vendor_id"]): bytes.fromhex(v["vendor_key"])}
+    return ReplayVerifier(ReplayWatermarkPolicy(vendors, schedule))
+
+
+def _watermark_segment(verifier: ReplayVerifier, v: dict[str, Any]) -> None:
+    payload = bytes.fromhex(v["prefix_hex"]) + bytes.fromhex(v["tlv_hex"])
+    header = Header(
+        profile=1,
+        sf_level=0,
+        types_bitmap=0x0001,
+        consent_flags=0,
+        privacy_flags=0,
+        capabilities=0,
+        timestamp_ns=v["header_timestamp_ns"],
+        timeline_id=uuid.UUID(v["timeline_id"]),
+        segment_seq=v["index"],
+        dt_ms=0,
+        phase=0.0,
+        sender_id=bytes(32),
+        payload_len=0,
+        nonce=bytes(12),
+    )
+    parsed = parse_payload(payload, extra_codes=ADDENDUM_V1_CODES)
+    advance = verifier.check(header, payload, parsed, now_ns=v["header_timestamp_ns"])
+    _require(advance is not None, "replay segment not recognized")
+    if advance is not None:
+        verifier.commit(advance)
+
+
+def _watermark_stream(marks: list[dict[str, Any]]) -> None:
+    valid = [m for m in marks if m["valid"]]
+    verifier = _watermark_verifier(valid[0])
+    for v in valid:
+        _watermark_segment(verifier, v)
+
+
+def _watermark_reject(marks: list[dict[str, Any]], v: dict[str, Any]) -> None:
+    valid = [m for m in marks if m["valid"]]
+    verifier = _watermark_verifier(valid[0])
+    _watermark_segment(verifier, valid[0])
+    try:
+        _watermark_segment(verifier, v)
+    except ReplayWatermarkError as exc:
+        _require(v["expect_error"] in str(exc), f"wrong refusal: {exc}")
+        return
+    msg = f"{v['name']} was accepted"
+    raise ConformanceError(msg)
 
 
 def _registry_digest(expected: str) -> None:

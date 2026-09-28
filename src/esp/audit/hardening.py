@@ -10,7 +10,7 @@
 - **gating sparsity band**: the fraction of near-zero coordinates must stay in
   a declared band (on/off patterns are a classic covert carrier).
 Norm caps are enforced by the Accept predicate (condition 10). The replay
-watermark stays DEFERRED until V13 assigns a TLV code.
+watermark is :mod:`esp.xcf.watermark` (addendum TLV 0x89, GAP-016, ADR-0030).
 """
 
 from __future__ import annotations
