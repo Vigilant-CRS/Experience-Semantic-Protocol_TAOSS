@@ -78,7 +78,21 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
-def download(asset_id: str, dest: Path, size: int) -> None:
+def download(asset_id: str, dest: Path, size: int, attempts: int = 8) -> None:
+    """Download with resume (HTTP Range) and exponential backoff on connection errors."""
+    for attempt in range(attempts):
+        try:
+            _download_once(asset_id, dest, size)
+            return
+        except OSError as exc:
+            if attempt == attempts - 1:
+                raise
+            wait = min(300, 5 * 2**attempt)
+            print(f"  retry {attempt + 1}/{attempts - 1} in {wait}s after: {exc}", flush=True)
+            time.sleep(wait)
+
+
+def _download_once(asset_id: str, dest: Path, size: int) -> None:
     url = f"{API}/assets/{asset_id}/download/"
     part = dest.with_suffix(dest.suffix + ".part")
     have = part.stat().st_size if part.exists() else 0
