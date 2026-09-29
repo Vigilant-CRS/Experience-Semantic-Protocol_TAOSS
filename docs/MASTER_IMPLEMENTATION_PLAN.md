@@ -46,6 +46,7 @@ werden.
 | Version | Datum | Änderung |
 |---|---|---|
 | 0.1.0 | 2026-09-28 | Planungsbaseline (L1-Kern, WP-000 … WP-047, M0 … M12). |
+| 0.3.0 | 2026-09-29 | M18 Implant-Ready Protocol Profile: WP-086 … WP-091 (Neural-Modalitäten, NWB/BIDS-iEEG-Replay, öffentliche invasive Datensätze, Emulator, Referenzdecoder und Mapping-Profil, Vendor-SDK, Gate). Kein Wire-Change. |
 | 0.2.0 | 2026-09-28 | Vollabgleich gegen V13 (alle Kapitel inkl. Part III/IV und Anhänge). Neu: §4.5 Content- vs. Subject-Affect, §52a Lizenz & Governance, §52b Lückenregister (GAP-001 … GAP-024), §52c V13-Abdeckungsmatrix, WP-048 … WP-085, Meilensteine M3a und M13 … M17, erweiterte Traceability, ADR-0005 … ADR-0024, Zielbild „maximale Ausbaustufe“. |
 
 ## 0.2 Ausbaustufe
@@ -2379,7 +2380,7 @@ referenziert.
 | §13 Audit Suite | KSG, MINE, HSIC, dCor, Probes, Bootstrap | WP-058 | v1-audit |
 | §14 H1/H2/H3, ExperienceBench | 9 Tasks, Baselines, Präregistrierung | WP-034 … WP-038, WP-083 | Research |
 | §15 L1 Use Cases | Retrieval, Director's Cut, Collab-Tools, LLM-Augmentation | WP-079, WP-067 | v1-demo |
-| §16 L2–L3 | Decoder Interface Boundary, I2I-Envelopes, Rate-Semantik, Turn/SOS/PANIC | WP-045, WP-063, WP-064 | v1 / FUTURE |
+| §16 L2–L3 | Decoder Interface Boundary, I2I-Envelopes, Rate-Semantik, Turn/SOS/PANIC | WP-045, WP-063, WP-064, WP-086 … WP-091 | v1 / FUTURE |
 | §17 MEB | T_mach, Adapter, Alignment, Domain-Profile, M2H-Defaults | WP-066 | v1-ext |
 | §18 ESP-Agent | Opaque-Latent-Deskriptor, Agenten-Governance | WP-067 | v1-ext |
 | §19.1 XCF | 148-Byte-Header, HPKE, GATED_CEK, CID, Tombstones | WP-068 | v2 |
@@ -4265,6 +4266,117 @@ Spec normativ.
 
 ---
 
+## WP-086 — Neural Modality Model und Replay-Profil
+
+**Status:** `VERIFIED` · **Meilenstein:** M18 · **Klasse:** `V13_COMPATIBLE_ADDENDUM`
+
+### Implementieren
+
+- Modalitäten `ECOG`, `SEEG`, `INTRACORTICAL_SPIKES`, `LFP`, `MUA`, `SPIKE_COUNTS`,
+  `NEURAL_FEATURES` (herstellerabgeleitet) neben EEG/EMG/EYE,
+- `NeuralDeviceDescriptor` (Hersteller, Modell, Firmware, pseudonyme Device-ID,
+  Kanäle, Elektroden, Referenz, Abtastrate, Einheit, Clock-Domain, Verarbeitungskette),
+  `NeuralSampleBlock` (Zeitstempel int64 ns, Kanäle × Samples oder Bins, Qualität),
+- Profil `L4-REPLAY` (Forschung): invasive **Aufzeichnungen** nur mit Deklaration
+  (Datensatz, Lizenz, Einwilligungsgrundlage); **live** invasiv bleibt in v1 verweigert,
+- keine Änderung am ESP-Wire.
+
+### Tests
+
+- Deskriptor-Validierung (Einheiten, Kanalnamen ohne Interpretation, Monotonie),
+- Live-L4 ohne Profil → Reject; Replay ohne Deklaration → Reject.
+
+---
+
+## WP-087 — NWB- und BIDS-iEEG-Replay-Adapter
+
+**Status:** `VERIFIED` · **Meilenstein:** M18
+
+### Implementieren
+
+- NWB (DANDI) → `NeuralSampleBlock`: ElectricalSeries, Units/Spike-Zeiten, gebinnte
+  Zählungen, Verhaltens-Zeitreihen, Trials/Events; lokal und per HTTP-Range-Streaming,
+- BIDS-iEEG (`*_ieeg.json`, `channels.tsv`, `electrodes.tsv`, `events.tsv`; EDF/BrainVision/NWB)
+  → identisches Interface,
+- dieselbe Schnittstelle für Replay und Live: alles rechts vom Adapter weiß nicht, ob
+  eine Datei oder ein Gerät liefert.
+
+### Tests
+
+- Roundtrip gegen PyNWB-Referenzwerte, BIDS-Fixture, Chunking-Invarianz, Streaming = lokal.
+
+---
+
+## WP-088 — Öffentliche invasive Datensätze und Implant-Stream-Emulator
+
+**Status:** `VERIFIED` · **Meilenstein:** M18
+
+### Implementieren
+
+- gepinnte Manifeste (Version, Asset-ID, SHA-256, Lizenz, Zitation) für FALCON H1
+  (DANDI 000954), FALCON H2 (000950), DANDI 000019 (Human-ECoG Sprache), AJILE12 (000055);
+  Daten nur in `data/external/` (git-ignoriert), `scripts/fetch_dandi.py`,
+- Emulator: Echtzeit/beschleunigt mit Jitter, Dropout, Kanalausfall, Uhrendrift,
+  Reconnect, Tagesdrift, Gain-Änderung, Paketverlust, Elektrodenentfernung.
+
+### Tests
+
+- Manifest-Verifikation, Emulator-Determinismus, jede Störung erkannt/gemeldet.
+
+---
+
+## WP-089 — Neural-Referenzdecoder und Neural→TAOSS-Mapping-Profil
+
+**Status:** `VERIFIED` · **Meilenstein:** M18 · **Klasse:** `EXPERIMENTAL`
+
+### Implementieren
+
+- Referenzdecoder (Ridge/Wiener) für Proxy-Targets: versuchte Bewegung/Kinematik
+  (FALCON H1), Handschrift-Symbol (H2), Artikulation (000019), natürliche Bewegung (AJILE12),
+- Mapping-Profil `esp-neural-mapping-v1`: decodierte Bewegungsabsicht → INT,
+  gemessene Kinematik → SEN (nicht INT), Taskkontext → CTX, Timing → TEM;
+  **nie** EMO aus neuronalen Rohmerkmalen,
+- Evaluation auf held-out Sitzungen/Tagen (Drift), Rekalibrierung versioniert.
+- Merkmals-Cache (einmal aus den großen NWB-Dateien berechnen, klein zwischenspeichern;
+  `ESP_FEATURE_CACHE`, git-ignoriert), parallel über Sitzungen/Kanäle auf der CPU,
+- vorgemerkt: optionaler GPU-Pfad (PyTorch CUDA) für größere Decoder/Encoder auf echten
+  Korpora; Pflichttests und Evidenzläufe bleiben CPU-deterministisch (bitgenau reproduzierbar).
+
+### Tests
+
+- Mapping verweigert EMO, Decoder-Leistung über Chance auf held-out Tagen, Drift erkannt.
+
+---
+
+## WP-090 — Neural Vendor SDK und Neural-Konformität
+
+**Status:** `VERIFIED` · **Meilenstein:** M18
+
+### Implementieren
+
+- herstellerneutraler Vertrag: Python-Protocol, Rust-Trait (C-ABI später),
+  Beispieladapter (Simulator, Replay),
+- `esp-conformance`-Kategorie `neural`: prüft einen Adapter gegen den Vertrag
+  (Deskriptor, Zeitstempel, Einheiten, Störungsverhalten, Mapping).
+
+### Tests
+
+- Simulator, NWB-Replay und BIDS-Replay bestehen dieselbe Suite; defekte Adapter fallen durch.
+
+---
+
+## WP-091 — Implant-Ready-Gate
+
+**Status:** `VERIFIED` · **Meilenstein:** M18
+
+End-to-end: echte öffentliche Human-Neurodaten → Adapter → Decoder → Mapping →
+TAOSS-Frame → ESP-Session → Empfänger, mit Consent und Provenienz. Aussage danach:
+„ESP provides a hardware-agnostic, conformance-tested interface from invasive and
+non-invasive neural data and decoder outputs into typed semantic communication. Live
+implant validation remains vendor- and device-specific.“
+
+---
+
 # 54. Meilensteine
 
 ---
@@ -4677,6 +4789,28 @@ Funktionsbehauptung (Klasse `FUTURE`).
 
 ---
 
+## M18 — Implant-Ready Protocol Profile
+
+Enthält:
+
+```text
+WP-086
+WP-087
+WP-088
+WP-089
+WP-090
+WP-091
+```
+
+### Gate
+
+Öffentliche invasive Human-Neurodaten (FALCON H1/H2, DANDI 000019, AJILE12) laufen
+durch denselben Adaptervertrag wie ein künftiges Gerät, end-to-end bis zum Empfänger;
+Simulator, Replay und Referenzadapter bestehen die Neural-Konformität; das Mapping
+verweigert EMO; kein ESP-Wire-Change. Live-Implantat-Validierung bleibt Claims-Stufe 6.
+
+---
+
 # 55. Milestone-Testreports
 
 Jeder Meilenstein erzeugt:
@@ -5040,7 +5174,7 @@ Damit bleibt das System testbar, falsifizierbar und hardwareunabhängig.
 # 65. Projektstatus
 
 ```yaml
-current_milestone: M12
+current_milestone: M12 (M18 technisch abgeschlossen)
 next_work_package: WP-047 (M12 blockiert auf menschliche Freigaben: WP-084, Threat-Review, ADRs)
 overall_status: IN_PROGRESS
 plan_version: "0.2.0"
@@ -5053,7 +5187,7 @@ affect_scope_model: "PROPOSED (ADR-0008)"
 license_model: "ACCEPTED (ADR-0005)"
 open_gaps: 2        # GAP-017 (partial: MLS/anonyme Credentials), 023 (partial: echte Korpora)
 resolved_gaps: 16    # GAP-001–006, 008–013, 021, 025–027
-work_packages_total: 86   # WP-000 … WP-085
+work_packages_total: 92   # WP-000 … WP-091
 experiencebench_status: "SMOKE_IMPLEMENTED (preregistered runs need real corpora, GAP-023)"
 independent_implementation_status: "VERIFIED (rust/esp-rs, M10)"
 ```

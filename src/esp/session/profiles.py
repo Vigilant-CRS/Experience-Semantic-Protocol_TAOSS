@@ -143,6 +143,12 @@ CUSTOM_PROFILES: Final = MappingProxyType(
         "esp-typeset-agent-v1": TypeSetProfile(
             "AGENT", frozenset({K}), frozenset({I, C}), maskable=_EMO, must_mask=_EMO
         ),
+        #: Neural decoder outputs (M18, esp-neural-mapping-v1): decoded intention (INT) with
+        #: optional measured body state, context and timing. KNO is not allowed at all and
+        #: EMO must be masked in every packet: neither is ever decoded from neural features.
+        "esp-typeset-neural-v1": TypeSetProfile(
+            "NEURAL", frozenset({I}), frozenset({S, C, T}), maskable=_EMO, must_mask=_EMO
+        ),
         #: BCI-free demo (WP-025): KNO+INT+CTX, EMO only under explicit consent.
         "esp-typeset-demo-v1": TypeSetProfile(
             "DEMO", frozenset({K, I, C}), frozenset({E}), frozenset({E})

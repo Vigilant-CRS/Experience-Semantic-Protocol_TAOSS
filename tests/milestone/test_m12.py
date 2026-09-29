@@ -31,7 +31,7 @@ def _statuses() -> dict[str, str]:
 
 def test_every_work_package_except_the_release_and_legal_review_is_verified() -> None:
     statuses = _statuses()
-    assert len(statuses) == 86
+    assert len(statuses) == 92
     open_wps = {wp: s for wp, s in statuses.items() if s != "VERIFIED" and wp not in HUMAN_ONLY}
     assert open_wps == {}
 

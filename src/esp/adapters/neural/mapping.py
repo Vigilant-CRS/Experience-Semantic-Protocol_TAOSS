@@ -32,6 +32,7 @@ every recalibration is versioned.
 from __future__ import annotations
 
 import hashlib
+import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -40,9 +41,11 @@ from typing import Final
 import numpy as np
 from numpy.typing import NDArray
 
-from esp.adapters.neural.interface import NeuralFeatures
+from esp.adapters.neural.interface import NeuralFeatures, decode_boundary
+from esp.core.clock import ClockStamp
 from esp.core.provenance import Provenance, SourceKind
 from esp.core.taoss_types import L1_DIMS, TaossType
+from esp.frame.model import ExperienceFrame, FrameProvenance, TypeBlock
 
 F64 = NDArray[np.float64]
 PROFILE_ID: Final = "esp-neural-mapping-v1"
@@ -242,3 +245,43 @@ class MappedNeuralDecoder:
             producer_version=self.version,
             source_refs=tuple(source_refs),
         )
+
+
+def typed_frame(
+    decoder: MappedNeuralDecoder,
+    features: NeuralFeatures,
+    consented: frozenset[TaossType],
+    *,
+    timeline_id: uuid.UUID,
+    sequence: int,
+    now_ns: int,
+    source_refs: Sequence[str] = (),
+) -> ExperienceFrame:
+    """One ESP frame from neural features, through the V13 decoder boundary.
+
+    Only consented types are decoded, and EMO/KNO never come from neural features.
+    Provenance names the decoder and every calibration (``calibration:<digest>``) plus
+    the caller's source references (e.g. ``dataset:DANDI.000954``).
+    """
+    latents = decode_boundary(decoder, features, consented)
+    stamp = ClockStamp(
+        source_ns=features.window_end_ns,
+        monotonic_ns=now_ns,
+        clock_domain="neural:replay",
+        sequence=sequence,
+    )
+    refs = (*(f"calibration:{d.calibration}" for d in decoder.decoders), *source_refs)
+    return ExperienceFrame(
+        frame_id=uuid.uuid4(),
+        timeline_id=timeline_id,
+        sequence=sequence,
+        timestamp=stamp,
+        types=tuple(
+            TypeBlock(type=t, latent=tuple(float(x) for x in v))
+            for t, v in sorted(latents.items(), key=lambda kv: kv[0].value)
+        ),
+        masked_types=tuple(sorted(NEVER_FROM_NEURAL, key=lambda t: t.value)),
+        provenance=FrameProvenance(
+            encoder_id=f"esp-neural-ridge@{decoder.version}", evidence_refs=refs
+        ),
+    )

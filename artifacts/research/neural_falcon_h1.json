@@ -1,0 +1,72 @@
+{
+  "dataset": "DANDI:000954 (FALCON H1), CC BY 4.0",
+  "decoder": {
+    "alpha": 1000.0,
+    "alpha_validation_r2": {
+      "1.0": 0.2265,
+      "10.0": 0.2265,
+      "100.0": 0.2265,
+      "1000.0": 0.2265,
+      "10000.0": 0.2261
+    },
+    "bin_s": 0.02,
+    "id": "esp-ridge-attempted_movement@a2615c7825ce",
+    "kind": "ridge/Wiener on causally smoothed binned spike counts",
+    "lags": 4,
+    "tau_bins": 3.0
+  },
+  "held_out_frozen_r2": {
+    "19250126 (+25 d)": 0.1454,
+    "19250127 (+26 d)": 0.0087,
+    "19250129 (+28 d)": 0.0171,
+    "19250202 (+32 d)": -0.0988,
+    "19250203 (+33 d)": -0.0544,
+    "19250206 (+36 d)": -0.0087,
+    "19250209 (+39 d)": 0.019
+  },
+  "held_out_second_half_frozen_r2": {
+    "19250126": 0.0731,
+    "19250127": -0.0114,
+    "19250129": 0.0583,
+    "19250202": -0.0612,
+    "19250203": -0.1207,
+    "19250206": 0.0446,
+    "19250209": -0.0288
+  },
+  "held_out_second_half_recalibrated_r2": {
+    "19250126": 0.0891,
+    "19250127": 0.0141,
+    "19250129": 0.0557,
+    "19250202": 0.0134,
+    "19250203": 0.0483,
+    "19250206": 0.1283,
+    "19250209": 0.014
+  },
+  "label": "EXPLORATORY: FALCON H1 public human iBCI data; not preregistered evidence",
+  "recalibration_decoder_ids": {
+    "19250126": "esp-ridge-attempted_movement@33c95cd97c52",
+    "19250127": "esp-ridge-attempted_movement@37bc0101345d",
+    "19250129": "esp-ridge-attempted_movement@4bb2298b5fd6",
+    "19250202": "esp-ridge-attempted_movement@48eef4981f36",
+    "19250203": "esp-ridge-attempted_movement@e2b0233ff25f",
+    "19250206": "esp-ridge-attempted_movement@aa7c4f7d0f2e",
+    "19250209": "esp-ridge-attempted_movement@c68ddf428617"
+  },
+  "shuffled_control_r2_mean": -0.2458,
+  "summary": {
+    "held_out_frozen_mean": 0.004,
+    "held_out_second_half_frozen_mean": -0.0066,
+    "held_out_second_half_recalibrated_mean": 0.0518,
+    "within_day_mean": 0.2085
+  },
+  "train_bins_masked": 132476,
+  "units": 176,
+  "within_day_r2": {
+    "19250101": 0.1181,
+    "19250108": 0.2589,
+    "19250113": 0.2341,
+    "19250115": 0.1881,
+    "19250119": 0.2966,
+    "19250120": 0.1553
+  }
+}

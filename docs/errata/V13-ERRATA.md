@@ -245,6 +245,19 @@ only once V13.1 adopts them. Each entry records:
 - *Tests:* `tests/unit/audit/test_hardening_profile.py`,
   `artifacts/research/hardening_calibration.json`.
 
+**E-28 (FINDING, ADR-0034): neural companion profile**
+
+- *V13* defines `f_decode` but no source-side contract.
+- *Proposed:* one `NeuralAdapter` contract for live devices and recorded datasets, with these
+  profiles:
+  - `L3-LIVE`;
+  - `L4-REPLAY`, which needs a declaration of dataset, version, license and consent;
+  - `L4-LIVE`, refused in v1.
+- The mapping profile `esp-neural-mapping-v1` never populates EMO or KNO from neural
+  features. The type-set profile is `esp-typeset-neural-v1`: INT required, KNO not allowed,
+  EMO always masked.
+- *Tests:* `tests/milestone/test_m18.py` on FALCON H1 (DANDI 000954).
+
 ## Repository roles
 
 **E-21 (GAP-020): repositories**

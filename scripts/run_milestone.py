@@ -102,6 +102,13 @@ GATES: dict[str, list[str]] = {
         "tests/interop",
     ],
     "M17": ["tests/milestone/test_m17.py", "tests/milestone"],
+    "M18": [
+        "tests/milestone/test_m18.py",
+        "tests/unit/adapters/neural",
+        "tests/unit/neural_sdk",
+        "tests/unit/bench/test_neural_falcon.py",
+        "tests/conformance",
+    ],
     "M5": [
         "tests/milestone/test_m5.py",
         "tests/unit/demo",

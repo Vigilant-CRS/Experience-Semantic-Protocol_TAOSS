@@ -8,7 +8,7 @@
   <a href="docs/LICENSING.md"><img alt="Vectors: CC BY 4.0" src="https://img.shields.io/badge/vectors-CC%20BY%204.0-lightgrey"></a>
   <img alt="Python 3.12 + Rust" src="https://img.shields.io/badge/python%203.12%20%2B%20rust-interoperable-3776ab">
   <img alt="Milestones M0–M11, M13–M16 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M11%2C%20M13%E2%80%93M16%20PASS-2e8b57">
-  <img alt="1100+ tests" src="https://img.shields.io/badge/tests-1100%2B-2e8b57">
+  <img alt="1300+ tests" src="https://img.shields.io/badge/tests-1300%2B-2e8b57">
   <img alt="Spec ESP V13" src="https://img.shields.io/badge/spec-ESP%20V13-8250df">
 </p>
 
@@ -182,7 +182,8 @@ of the protocol, not a later add-on.
 
 **Neural interfaces (L3 and beyond).** ESP defines the *decoder interface boundary*: device
 makers turn neural signals into typed parts, and ESP carries them with the same consent, privacy
-and provenance. A future brain interface should not need to reinvent any of this.
+and provenance. A future brain interface should not need to reinvent any of this. This boundary is already exercised with public human implant and ECoG recordings
+(see [M18](#real-human-implant-data-m18-exploratory)).
 
 **L∞: the long horizon.** Persistent, interoperable semantic memory, human–machine and eventually
 human–human exchange through substrates that need not be linguistic, and collective alignment on
@@ -225,7 +226,7 @@ uv run esp-demo send $D/keys --port 4433 --capture $D/send.jsonl    # the 11-ste
 uv run esp-demo inspect --events $D/recv.jsonl --capture $D/send.jsonl --out $D/inspector.html
 ```
 
-Full verification (lint, types, licenses, plan sync, schemas, frozen vectors, 1,100+ tests):
+Full verification (lint, types, licenses, plan sync, schemas, frozen vectors, 1,300+ tests):
 
 ```bash
 make verify
@@ -305,13 +306,14 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
 | M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation | ✅ PASS |
 | M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ PASS |
-| M17 | Every V13 section maps to finished work; errata E-01…E-27 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
+| M17 | Every V13 section maps to finished work; errata E-01…E-28 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
+| M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust) and neural conformance | ✅ implemented · gate running |
 
 ---
 
 ## 8. Test results
 
-The full suite has more than 1,100 automated tests: unit, property-based (Hypothesis), conformance
+The full suite has more than 1,300 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
 Security rules are **mutation-checked**: each rule is deliberately broken once, and a test must
 fail.
@@ -430,6 +432,52 @@ under a fresh consent check. Access to a capsule can be gated by a guardian quor
 tombstone blocks any future release. A "no replay" flag anywhere in the capsule's history blocks
 recall. Each recall also reports a **trust vector** (signature, anchor age, drift, privacy
 budget, lineage) instead of a single opaque score.
+
+### Real human implant data (M18, exploratory)
+
+A future brain interface should need to implement exactly one thing: the neural adapter
+contract. To test that without an implant, public, de-identified human recordings run through
+the same contract (CC BY 4.0; downloaded locally with checksums, never committed):
+
+| Dataset | Signal | What it shows |
+|---|---|---|
+| FALCON H1 (DANDI 000954) | intracortical arrays, reach and grasp | all 40 sessions byte-identical to the official benchmark loader |
+| FALCON H2 (DANDI 000950) | intracortical, handwriting | 192 channels, identical to direct NWB reads |
+| DANDI 000019 | 256-channel ECoG while speaking syllables | ECoG in µV at 3,052 Hz, identical to direct NWB reads |
+| AJILE12 (DANDI 000055) | long naturalistic intracranial recordings | lazy streaming from 16 GB files |
+
+End to end, a real FALCON recording passes the live-device contract, survives an emulated
+reconnect and gain step, and its decoded *attempted movement* arrives at the receiver as a
+typed ESP frame:
+- INT only; EMO explicitly masked and KNO never sent;
+- encrypted and consented;
+- with a versioned decoder calibration in its provenance.
+
+A deliberately simple reference decoder (ridge/Wiener filter) shows why that versioning
+matters:
+
+| Attempted arm velocity (7 DoF) | R² |
+|---|---:|
+| held-out trials, same days | 0.21 |
+| later days, frozen decoder (+25 … +39 days) | ≈ 0.00 |
+| later days, versioned recalibration | 0.05 |
+| shuffled control | −0.25 |
+
+Neural drift across days is real. Better decoders plug into the same contract; ESP carries
+their output with consent, provenance and recalibration history.
+
+### Independent code review (2026-09-29)
+
+An external review found 14 integration gaps and provided 13 executable counterexamples.
+Examples:
+- a capsule gate that trusted an unsigned capability;
+- a rotated key that could still grant access;
+- two privacy ledgers that could overspend together.
+
+All 13 reproduced. **All are fixed**, and each counterexample is now a permanent regression
+test. Receiver consent limits also persist across sessions and restarts now. Details:
+[review status](docs/reviews/2026-09-29-external-review.md) and
+[ADR-0033](docs/decisions/ADR-0033-review-hardening.md).
 
 ### Research findings so far (exploratory, not evidence)
 
@@ -618,7 +666,7 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | 1 | Implementation conforms to wire and consent tests | ✅ two interoperable implementations |
 | 2 | Semantic states transfer correctly in ground-truth tests | ✅ |
 | 3 | Physiological and multimodal adapters operate reliably | ✅ 30-min soak, zero loss |
-| 4 | Models predict selected states on held-out real data | next: public neural and physiological corpora |
+| 4 | Models predict selected states on held-out real data | 🟡 first step on public implant data (see below) |
 | 5 | H1–H3 supported by preregistered ExperienceBench | open for studies |
 | 6 | Neural interfaces populate TAOSS fields in controlled experiments | open for device partners |
 

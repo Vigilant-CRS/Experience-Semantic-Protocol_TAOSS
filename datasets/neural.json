@@ -478,7 +478,169 @@
    "selection": "all assets",
    "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
    "consent_pointer": "https://dandiarchive.org/dandiset/000019",
-   "status": "pending"
+   "status": "pinned",
+   "version": "0.220126.2148",
+   "version_mutable": false,
+   "license": "CC-BY-4.0",
+   "citation": "Bouchard, Kristofer E.; Chang, Edward F. (2022) Human ECoG speaking consonant-vowel syllables (Version 0.220126.2148) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000019/0.220126.2148",
+   "url": "https://dandiarchive.org/dandiset/000019/0.220126.2148",
+   "files": {
+    "sub-EC2/sub-EC2_ses-EC2-B1.nwb": {
+     "asset_id": "d88ba0bf-5b48-4de9-8695-8e80d740c7af",
+     "size": 1813849118,
+     "sha256": "973816cc5c54e18178d69dff0bcfae60d38fdf29c0435fbc996bafa4730fe0f8"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B105.nwb": {
+     "asset_id": "fb4af6bf-4e25-475b-84b1-e8b69e1c19e4",
+     "size": 1934836859,
+     "sha256": "1c4702ccf621d6db6eecf72103ab87c079942d10fb61cbb91ab5fda4c055a8c7"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B15.nwb": {
+     "asset_id": "5e136b50-659a-474f-963d-f89828782051",
+     "size": 1626463358,
+     "sha256": "640b5de525cc7920e1dfcd2b66fde3cc6a2fa56d203ea6a7adfe89a526d99d7e"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B76.nwb": {
+     "asset_id": "aff7ccb8-fbf9-4441-adbc-582b80d0bd48",
+     "size": 1862205526,
+     "sha256": "e3a79b834d35790e9a593022985cda077867305a68c8fb89f141ba8382cad647"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B8.nwb": {
+     "asset_id": "de11c6d3-f2b5-4ec6-a702-ef8345e4bbee",
+     "size": 1704045744,
+     "sha256": "9e4831644e61de90c828b4d6bcff512a34c7c63b9af394f252bd037b9f62cb83"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B89.nwb": {
+     "asset_id": "a1f4bf41-fd7a-49a6-b72b-5eda211f5872",
+     "size": 1702875869,
+     "sha256": "b6a1a67f2e6e2316e702f0d7e2d96508caccc7a9459e2bba9cec3cb3c5d55dc7"
+    },
+    "sub-EC2/sub-EC2_ses-EC2-B9.nwb": {
+     "asset_id": "1e4989f2-c1ca-460f-9556-f21e0f26ed86",
+     "size": 1598965922,
+     "sha256": "6c749988ecb5d00244ccb773c7bfc61fa9a2d5b6d3a370d7fcbaf739fd1a213e"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B15.nwb": {
+     "asset_id": "4e4287f2-b557-4f30-a2d6-932f18c3e915",
+     "size": 558155445,
+     "sha256": "b72be69796aab064c7a2dd899d3201be9319ad261b0cecd210e26ef60f70d031"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B39.nwb": {
+     "asset_id": "5243922f-e478-40aa-a563-95d6f4c74229",
+     "size": 2635779344,
+     "sha256": "067e29cd8646f431c27938ad9b9b23e790b89a6897491e08640d01de0ae42eac"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B46.nwb": {
+     "asset_id": "7aef6cce-ef33-4490-b51a-905056ebffff",
+     "size": 2686126892,
+     "sha256": "2cc10f9ed1672fde7d7441bb4d871c96a9bd50677760ea794b512b0a6c02da33"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B49.nwb": {
+     "asset_id": "adf7ac5b-580c-4548-984b-5dd553d15c13",
+     "size": 2641011196,
+     "sha256": "d1962a79bdf6baa28a2bf7bc09debed5e7d1197f85e85b15be0ca42d55b00345"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B53.nwb": {
+     "asset_id": "9a6f2ab7-8a29-4981-b2a0-c8f969656565",
+     "size": 2664866917,
+     "sha256": "8d797fa3083c32d6d555e38449bca4b7a00997c67a9be5c64dcf1914d04642cb"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B60.nwb": {
+     "asset_id": "55c6bddc-fb7e-4d5c-a886-a5c9bbbe9047",
+     "size": 2683839133,
+     "sha256": "cee8751193f1205205c7db9e604126c812f059eda8f8e9dfb5039960dfe858ca"
+    },
+    "sub-EC9/sub-EC9_ses-EC9-B63.nwb": {
+     "asset_id": "d84c9c17-7c1d-4f0c-800c-7bbb4448ad4b",
+     "size": 2761687601,
+     "sha256": "83a395618e41d2b99834bf5ccf40c0c5b0f25c3458bf428eac8f48259b80e86c"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B1.nwb": {
+     "asset_id": "b4c0421e-6eff-4594-a963-83ba39029145",
+     "size": 1142418126,
+     "sha256": "003ed254a5459105b4ee5e83b2b76f23f7f952bccff27470561feddda33ac9b5"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B2.nwb": {
+     "asset_id": "38afbbbb-414d-42c5-87dd-44101ac43eca",
+     "size": 1501507922,
+     "sha256": "bd55a76cdb5d0fb8d36a3176034be47da64f05946b24157935909655933947f3"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B21.nwb": {
+     "asset_id": "ce617b31-1755-49b3-8e8c-df6ba958844d",
+     "size": 1235074103,
+     "sha256": "f2c4b8ac98a8e7d33a16e3b5974378ce4a4e21a7682103a60eba91726dafeebe"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B4.nwb": {
+     "asset_id": "6b1f8998-9b40-4b36-9fda-4fd923fbc735",
+     "size": 1325638278,
+     "sha256": "276abc2c381a7479d3b04e00a0d4aecd84bf5b5aad1e7738fa294218cac09dd9"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B6.nwb": {
+     "asset_id": "0ac586c3-876f-4881-8e2d-345fa50d0d69",
+     "size": 1753416099,
+     "sha256": "81facbe96068973b69f317c07cf575fb1e0b62846c0c0f53c3856d28577f34cb"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B63.nwb": {
+     "asset_id": "d1ac69d3-70f1-4918-9e7e-f962a5b2e0b8",
+     "size": 1250064948,
+     "sha256": "095dc360a7cb3c6f33e79d9de741e21411680be1d69f6860a6d97686b15be5fc"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B65.nwb": {
+     "asset_id": "fbd3bc15-d716-495f-814d-1aa14f8d3b45",
+     "size": 1099888379,
+     "sha256": "cc52e074d6f0044f41e8dff41f6762bce4479aa50dec66eab9c85d072db99dcb"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B67.nwb": {
+     "asset_id": "dae73d3f-502c-47ee-800f-2091a13c6a0a",
+     "size": 1352986207,
+     "sha256": "1af0ac3f70dddc49b0dab5a86c586bf5afc6dd95b659f0178e39e1df193cd33e"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B69.nwb": {
+     "asset_id": "9b7094af-3212-4156-a887-233eabc6fe01",
+     "size": 1513506428,
+     "sha256": "0ed545e149fb0a4fc3e7b0a2311f52325fb9cdf4cad2fb13d647279e878e15e5"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B71.nwb": {
+     "asset_id": "44a6d83b-4984-401b-97e7-2fc0e7cd123a",
+     "size": 1852978587,
+     "sha256": "cc2cd88ee8b3d6dca0abf8a180e4e22f71b9590be9da6513ffe2750c692ff02e"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B78.nwb": {
+     "asset_id": "c94a55a0-67c3-49a0-a349-eb29802446f4",
+     "size": 1744803249,
+     "sha256": "a5111dca2ef64d9eceab8e2771874c3bd7778416bf87a8f6c3bfb668050307f8"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B82.nwb": {
+     "asset_id": "0244283b-e625-46ff-a534-a25461541a21",
+     "size": 1970742003,
+     "sha256": "2ff00b00c56e4e6c890b10a07cfa255740e54e7eb22c991641415f307fb7830c"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B83.nwb": {
+     "asset_id": "2253eb03-089e-4c50-9907-b8dedc917a6c",
+     "size": 2010481380,
+     "sha256": "742c00cd5b0fbc4fcd3240c6134f96532077a4616a6803959837ee9c2ec0e5f3"
+    },
+    "sub-GP31/sub-GP31_ses-GP31-B9.nwb": {
+     "asset_id": "8629cd5c-cf4c-4ec7-a9a9-d02d56aa8a5f",
+     "size": 1629196026,
+     "sha256": "e43126ffd003106e0b47ca632f1169b847c93a2575581d0bf6cb387b0e34234a"
+    },
+    "sub-GP33/sub-GP33_ses-GP33-B1.nwb": {
+     "asset_id": "911776e7-aebc-4206-b8f3-01f66c7bf747",
+     "size": 1551056946,
+     "sha256": "4d1651e3b34fcf0e7071d33195dec9326fac03cb082dbf0bd5b344a0ffa62e35"
+    },
+    "sub-GP33/sub-GP33_ses-GP33-B30.nwb": {
+     "asset_id": "1112bbbb-221d-48d7-94b2-9708bf077e84",
+     "size": 1828389678,
+     "sha256": "e2c33a5803d72f4f5bec598e0272d1b9498d381b44b6c6263ba662c8a62add01"
+    },
+    "sub-GP33/sub-GP33_ses-GP33-B5.nwb": {
+     "asset_id": "a5586d93-b705-462a-a2d2-e30ede57d176",
+     "size": 1949001673,
+     "sha256": "f5a66e9a310bbe72132b0acb74c9c832bcdab91e808643df7fc5b3ca1c5c4d6d"
+    }
+   }
   },
   {
    "id": "ajile12",
@@ -488,7 +650,39 @@
    "selection": "sub-01 (all sessions) and sub-02 ses-3",
    "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
    "consent_pointer": "https://dandiarchive.org/dandiset/000055",
-   "status": "pending"
+   "status": "pinned",
+   "version": "0.220127.0436",
+   "version_mutable": false,
+   "license": "CC-BY-4.0",
+   "citation": "Peterson, Steven M.; Singh, Satpreet H.; Dichter, Benjamin; Scheid, Micheal; Rao, Rajesh P. N.; Brunton, Bingni W. (2022) AJILE12: Long-term naturalistic human intracranial neural recordings and pose (Version 0.220127.0436) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000055/0.220127.0436",
+   "url": "https://dandiarchive.org/dandiset/000055/0.220127.0436",
+   "files": {
+    "sub-01/sub-01_ses-3_behavior+ecephys.nwb": {
+     "asset_id": "7b9e2ca1-9097-488a-b4e9-ac407fb31457",
+     "size": 15903762527,
+     "sha256": "943f57a0d417445158cee76eb7147cc97d562848aa6993593ee8f3930c55be7e"
+    },
+    "sub-01/sub-01_ses-4_behavior+ecephys.nwb": {
+     "asset_id": "f47baec3-984b-419c-998e-b47414f9aa4c",
+     "size": 15925970691,
+     "sha256": "df177cd813519e8f0175986a3482f355623630d15bba2f827ff7cc50a193b749"
+    },
+    "sub-01/sub-01_ses-5_behavior+ecephys.nwb": {
+     "asset_id": "7a8fe889-58bc-4b33-a39b-58c32f607723",
+     "size": 15909602501,
+     "sha256": "06c497598c17096db60c90a3687e5f46fa0df29235839dc75d2f174fd1d0bfe2"
+    },
+    "sub-01/sub-01_ses-7_behavior+ecephys.nwb": {
+     "asset_id": "ccdc3ae1-e98d-4a17-93d8-5b7386689fe0",
+     "size": 10273614013,
+     "sha256": "2417921a5a646628c673582cef265a5f8e14f479bb1dd8dc73121060a8677ba5"
+    },
+    "sub-02/sub-02_ses-3_behavior+ecephys.nwb": {
+     "asset_id": "42f73251-88be-4407-a7bf-4ea671bbb448",
+     "size": 13932801912,
+     "sha256": "dabb49c09a13e0888928dc4a21b9531c05da37f18fad3e6bbaddc5a1e1cdf387"
+    }
+   }
   }
  ]
 }
