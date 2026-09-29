@@ -1,0 +1,25 @@
+{
+  "milestone": "M18",
+  "git_commit": "25e6c78bbeb47797f8a376f23cc84c5f1b7138d7",
+  "working_tree_dirty": false,
+  "timestamp": "2026-09-29T20:39:17+00:00",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+    "machine": "x86_64"
+  },
+  "command_line": "scripts/run_milestone.py M18",
+  "tests": {
+    "gate": {
+      "passed": 206,
+      "failed": 0,
+      "skipped": 2
+    },
+    "full_suite": {
+      "passed": 1309,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "verdict": "PASS"
+}

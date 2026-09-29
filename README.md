@@ -7,7 +7,7 @@
   <a href="docs/LICENSING.md"><img alt="Docs: CC BY-SA 4.0" src="https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey"></a>
   <a href="docs/LICENSING.md"><img alt="Vectors: CC BY 4.0" src="https://img.shields.io/badge/vectors-CC%20BY%204.0-lightgrey"></a>
   <img alt="Python 3.12 + Rust" src="https://img.shields.io/badge/python%203.12%20%2B%20rust-interoperable-3776ab">
-  <img alt="Milestones M0–M11, M13–M16 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M11%2C%20M13%E2%80%93M16%20PASS-2e8b57">
+  <img alt="Milestones M0–M11, M13–M16, M18 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M11%2C%20M13%E2%80%93M16%2C%20M18%20PASS-2e8b57">
   <img alt="1300+ tests" src="https://img.shields.io/badge/tests-1300%2B-2e8b57">
   <img alt="Spec ESP V13" src="https://img.shields.io/badge/spec-ESP%20V13-8250df">
 </p>
@@ -307,7 +307,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation | ✅ PASS |
 | M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ PASS |
 | M17 | Every V13 section maps to finished work; errata E-01…E-28 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
-| M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust) and neural conformance | ✅ implemented · gate running |
+| M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust) and neural conformance | ✅ PASS |
 
 ---
 
