@@ -106,9 +106,21 @@ def run(cmd: list[str], env: dict[str, str] | None = None, cwd: Path = ROOT) -> 
 def dependency_audit(offline: bool) -> dict[str, object]:
     if offline:
         return {"status": "skipped (offline)"}
-    rc, req = run(["uv", "export", "--frozen", "--no-hashes", "--all-groups", "--no-emit-project"])
-    if rc != 0:
-        return {"status": "error", "detail": req}
+    # Never truncate the export: run() keeps only the tail of an output for reports, which
+    # silently audited just the last part of the dependency list (found by the M18 gate).
+    export = subprocess.run(
+        ["uv", "export", "--frozen", "--no-hashes", "--all-groups", "--no-emit-project"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if export.returncode != 0:
+        return {"status": "error", "detail": export.stderr[-4000:]}
+    req = export.stdout
+    pinned = [ln for ln in req.splitlines() if re.match(r"^[A-Za-z0-9_.\-]+==", ln)]
+    if len(pinned) < 20 or not req.lstrip().startswith("#"):
+        return {"status": "error", "detail": "dependency export looks incomplete"}
     req_file = ROOT / ".security-requirements.txt"
     # local builds such as torch==2.x+cpu are audited under their public version
     req = re.sub(r"^([A-Za-z0-9_.\-]+==[^+\s]+)\+[A-Za-z0-9.]+", r"\1", req, flags=re.MULTILINE)
@@ -129,7 +141,9 @@ def dependency_audit(offline: bool) -> dict[str, object]:
         )
     finally:
         req_file.unlink(missing_ok=True)
-    result: dict[str, object] = {"python": {"rc": rc, "output": out}}
+    result: dict[str, object] = {
+        "python": {"rc": rc, "output": out, "requirements_audited": len(pinned)}
+    }
     deny = shutil.which("cargo-deny") or str(Path.home() / ".cargo" / "bin" / "cargo-deny")
     if Path(deny).exists():
         cargo_bin = Path.home() / ".cargo" / "bin"

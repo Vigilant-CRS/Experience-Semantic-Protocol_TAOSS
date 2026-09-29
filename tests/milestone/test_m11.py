@@ -59,6 +59,19 @@ def test_security_review_has_no_findings(tmp_path: Path) -> None:
     assert proc.returncode == 0, json.dumps(
         {k: v for k, v in result.items() if k != "allowlisted"}
     )[:3000]
+    if not os.environ.get("ESP_OFFLINE"):
+        # the audit must cover the whole locked dependency set, never a truncated export
+        audited = result["dependency_audit"]["python"]["requirements_audited"]
+        locked = subprocess.run(
+            ["uv", "export", "--frozen", "--no-hashes", "--all-groups", "--no-emit-project"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        assert audited == sum(
+            1 for ln in locked.splitlines() if "==" in ln and not ln.startswith("#")
+        )
     assert result["secrets"] == []
     assert result["unsafe_patterns"] == []
 

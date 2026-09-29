@@ -299,7 +299,9 @@ class ImplantStreamEmulator:
     def _perturb_time(self, t_rel: I64, idx: NDArray[np.uint64]) -> tuple[I64, NDArray[np.bool_]]:
         """Clock drift, reconnects (gap + new offset), jitter. Returns timestamps and kept rows."""
         cfg = self.config
-        assert self._t0 is not None  # noqa: S101 - set by the first block
+        if self._t0 is None:  # set by the first block; never reachable before it
+            msg = "time perturbation before the first source block"
+            raise RuntimeError(msg)
         ts = self._t0 + np.round(t_rel * (1.0 + cfg.clock_drift_ppm * 1e-6)).astype(np.int64)
         keep = np.ones(t_rel.size, dtype=bool)
         offset = np.zeros(t_rel.size, dtype=np.int64)

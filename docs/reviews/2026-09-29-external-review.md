@@ -27,6 +27,16 @@ reproduced** on `main` before the fix. Each one is now a regression test. Decisi
 | F14 | Rust peer did not enforce full consent | scoped and hardened | 8 Rust unit tests in `session.rs` (segments, expiry, profile, types, rights, norm, payload); live interop matrix green |
 | — | Receiver consent state only in RAM (cross-session limit) | fixed | `tests/integration/test_consent_store.py` (sessions, restart, concurrency, monotonic counters, rollback) |
 
+## Found afterwards by the M18 gate
+
+- **Dependency audit covered only part of the dependencies.** `security_review.py` built the
+  requirements for `pip-audit` from an output helper that keeps only the last 4000
+  characters. Earlier "no known vulnerabilities" results therefore covered only the tail of
+  the dependency list.
+- **Fixed:** the export is now passed on in full, and an incomplete export is an error. The M11
+  test asserts that every locked requirement is audited.
+- **Result:** the full audit (105 packages) finds no known vulnerabilities.
+
 ## Still open from the review (documented, not bugs)
 
 - **Guardian quorum.** The reference gate keeps all Shamir shares in one process. Separate
