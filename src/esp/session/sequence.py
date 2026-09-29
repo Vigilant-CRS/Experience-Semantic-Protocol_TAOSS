@@ -119,11 +119,14 @@ class SenderSequencer:
     """
 
     store: SequenceStore
+    max_cached_packets: int = 8192
     _next: int = field(init=False)
     _plaintext_digest: dict[int, bytes] = field(default_factory=dict, init=False)
     _sent: dict[int, bytes] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
+        if self.max_cached_packets < 1:
+            raise ValueError("max_cached_packets must be positive")
         self._next = self.store.load()
 
     @property
@@ -139,17 +142,22 @@ class SenderSequencer:
         self.store.store(seq + 1)  # fail closed: persist first
         self._next = seq + 1
         self._plaintext_digest[seq] = hashlib.blake2b(plaintext, digest_size=32).digest()
+        while len(self._plaintext_digest) > self.max_cached_packets:
+            self._plaintext_digest.pop(next(iter(self._plaintext_digest)))
         return seq
 
     def record_sent(self, seq: int, plaintext: bytes, packet: bytes) -> None:
+        if seq in self._sent:
+            msg = f"segment_seq {seq} already sent"
+            raise NonceReuseError(msg)
         digest = hashlib.blake2b(plaintext, digest_size=32).digest()
         if self._plaintext_digest.get(seq) != digest:
             msg = f"segment_seq {seq} was reserved for a different plaintext"
             raise NonceReuseError(msg)
-        if seq in self._sent:
-            msg = f"segment_seq {seq} already sent"
-            raise NonceReuseError(msg)
         self._sent[seq] = packet
+        del self._plaintext_digest[seq]
+        while len(self._sent) > self.max_cached_packets:
+            self.forget(next(iter(self._sent)))
 
     def retransmit(self, seq: int) -> bytes:
         """The identical bytes of an earlier packet (never re-encrypted)."""
@@ -162,6 +170,7 @@ class SenderSequencer:
     def forget(self, seq: int) -> None:
         """Drop a retransmission buffer entry once acknowledged."""
         self._sent.pop(seq, None)
+        self._plaintext_digest.pop(seq, None)
 
 
 @dataclass(slots=True)

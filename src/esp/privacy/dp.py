@@ -29,10 +29,12 @@ import json
 import math
 import os
 import secrets
+import sqlite3
 import struct
 import tempfile
 import uuid
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import IntEnum, IntFlag, unique
 from pathlib import Path
@@ -253,31 +255,86 @@ class PrivacyLedger:
     c_total: float = field(default=0.0, init=False)
 
     def __post_init__(self) -> None:
-        if self.path.exists():
+        if not math.isfinite(self.ceiling) or self.ceiling < 0 or not 0 < self.delta_target < 1:
+            msg = "ledger ceiling and delta_target must be finite and in range"
+            raise PrivacyBudgetError(msg)
+        with self._locked():
+            if self.path.exists():
+                self._load()
+            else:
+                self._persist(0, 0.0)
+
+    @contextmanager
+    def _locked(self) -> Iterator[None]:
+        # SQLite supplies OS-backed, process-safe locks on Unix and Windows;
+        # the JSON file remains the durable accounting record. A stable sidecar
+        # is necessary because atomic replacement changes the JSON file's inode.
+        conn = sqlite3.connect(str(self.path) + ".lock", timeout=30)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            yield
+        finally:
+            conn.rollback()
+            conn.close()
+
+    def _load(self) -> None:
+        try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("not an object")
             if data.get("capability_id") != str(self.capability_id):
                 msg = "ledger belongs to another capability"
                 raise PrivacyBudgetError(msg)
-            self.k, self.c_total = int(data["k"]), float(data["c_total"])
+            k, total = data["k"], data["c_total"]
+            if (
+                type(k) is not int
+                or not 0 <= k < 2**32
+                or type(total) not in (int, float)
+                or not math.isfinite(total)
+                or total < 0
+                or (k == 0) != (total == 0)
+            ):
+                raise ValueError("invalid counters")
+            # Legacy ledgers used the reference delta; never reinterpret their
+            # accumulated RDP under a different delta or a larger persisted cap.
+            if data.get("delta_target", REFERENCE_DELTA_TOTAL) != self.delta_target:
+                raise ValueError("delta_target changed")
+            if self.ceiling > data.get("ceiling", self.ceiling):
+                raise ValueError("ceiling increased")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            msg = "privacy ledger lost, corrupt or policy changed"
+            raise PrivacyBudgetError(msg) from exc
+        self.k, self.c_total = k, float(total)
 
     @property
     def epsilon_spent(self) -> float:
         return epsilon_rdp(self.c_total, self.delta_target)[0]
 
     def charge(self, release_coefficient: float) -> tuple[int, float]:
-        """Account one release; refuse (and change nothing) if it would exceed the ceiling."""
-        c_after = self.c_total + release_coefficient
-        eps_after = epsilon_rdp(c_after, self.delta_target)[0]
-        if eps_after > self.ceiling:
-            msg = f"release would exceed the DP ceiling ({eps_after:.3f} > {self.ceiling})"
+        """Serialize read/check/write across instances; fsync before releasing data."""
+        if not math.isfinite(release_coefficient) or release_coefficient <= 0:
+            msg = "release coefficient must be finite and positive"
             raise PrivacyBudgetError(msg)
-        self._persist(self.k + 1, c_after)
-        self.k, self.c_total = self.k + 1, c_after
-        return self.k, eps_after
+        with self._locked():
+            self._load()  # never account against a stale in-memory snapshot
+            c_after = self.c_total + release_coefficient
+            eps_after = epsilon_rdp(c_after, self.delta_target)[0]
+            if not math.isfinite(eps_after) or eps_after > self.ceiling or self.k >= 2**32 - 1:
+                msg = f"release would exceed the DP ceiling ({eps_after:.3f} > {self.ceiling})"
+                raise PrivacyBudgetError(msg)
+            self._persist(self.k + 1, c_after)
+            self.k, self.c_total = self.k + 1, c_after
+            return self.k, eps_after
 
     def _persist(self, k: int, c_total: float) -> None:
         payload = json.dumps(
-            {"capability_id": str(self.capability_id), "k": k, "c_total": c_total}
+            {
+                "capability_id": str(self.capability_id),
+                "k": k,
+                "c_total": c_total,
+                "ceiling": self.ceiling,
+                "delta_target": self.delta_target,
+            }
         ).encode()
         fd, tmp = tempfile.mkstemp(dir=self.path.parent, prefix=".ledger-")
         try:
@@ -286,6 +343,12 @@ class PrivacyLedger:
                 fh.flush()
                 os.fsync(fh.fileno())
             Path(tmp).replace(self.path)
+            if os.name == "posix":
+                directory_fd = os.open(self.path.parent, os.O_RDONLY)
+                try:
+                    os.fsync(directory_fd)
+                finally:
+                    os.close(directory_fd)
         finally:
             Path(tmp).unlink(missing_ok=True)
 
@@ -301,9 +364,17 @@ class DpAuditor:
     tolerance: float = 1e-4
     last_epsilon: dict[bytes, float] = field(default_factory=dict)
     last_k: dict[bytes, int] = field(default_factory=dict)
+    last_delta: dict[bytes, float] = field(default_factory=dict)
+    releases: dict[bytes, tuple[DpLevel, DpParams]] = field(default_factory=dict)
+    max_cached_releases: int = 8192
 
-    def audit(
-        self, level: DpLevel, params: DpParams | None, present: frozenset[TaossType]
+    def audit(  # noqa: PLR0912 - one branch per audited invariant, kept flat on purpose
+        self,
+        level: DpLevel,
+        params: DpParams | None,
+        present: frozenset[TaossType],
+        *,
+        release_id: bytes | None = None,
     ) -> float:
         """Return the declared cumulative epsilon if consistent; raise otherwise."""
         if level is DpLevel.NONE:
@@ -326,25 +397,45 @@ class DpAuditor:
         if params.accountant is not Accountant.RDP_OPTIMAL_ALPHA:
             msg = "v1 receivers audit only the mandated RDP optimal-alpha accountant"
             raise PrivacyBudgetError(msg)
-        implied = epsilon_rdp(
-            params.composition_k * params.release_coefficient, params.delta_target
-        )[0]
+        if params.epsilon_spent > self.ceiling:
+            msg = "declared epsilon exceeds the capability ceiling"
+            raise PrivacyBudgetError(msg)
+        if release_id is not None and release_id in self.releases:
+            if self.releases[release_id] != (level, params):
+                msg = "release identity reused with different DP parameters"
+                raise PrivacyBudgetError(msg)
+            return params.epsilon_spent  # an identical authenticated sample costs nothing new
+        key = params.capability_id.bytes
+        if params.composition_k <= self.last_k.get(
+            key, 0
+        ) or params.epsilon_spent + self.tolerance < self.last_epsilon.get(key, 0.0):
+            msg = "privacy ledger rollback detected"
+            raise PrivacyBudgetError(msg)
+        if key in self.last_delta and not math.isclose(
+            params.delta_target, self.last_delta[key], rel_tol=1e-6
+        ):
+            msg = "privacy ledger delta_target changed"
+            raise PrivacyBudgetError(msg)
+        # k counts releases, not types. Their costs may differ. Reconstruct
+        # the previously declared cumulative RDP coefficient and add this
+        # observed release. Missing history cannot be proved from the v1 TLV;
+        # never pretend that all k releases had today's cost (ADR-0033).
+        previous_eps = self.last_epsilon.get(key, 0.0)
+        log_inv = math.log(1.0 / params.delta_target)
+        prior_c = (previous_eps / (math.sqrt(log_inv + previous_eps) + math.sqrt(log_inv))) ** 2
+        implied = epsilon_rdp(prior_c + params.release_coefficient, params.delta_target)[0]
         if params.epsilon_spent < implied * (1 - self.tolerance) - self.tolerance:
             msg = (
                 f"declared epsilon {params.epsilon_spent} below the accountant value {implied:.4f}"
             )
             raise PrivacyBudgetError(msg)
-        if params.epsilon_spent > self.ceiling:
-            msg = "declared epsilon exceeds the capability ceiling"
-            raise PrivacyBudgetError(msg)
-        key = params.capability_id.bytes
-        if params.composition_k <= self.last_k.get(
-            key, 0
-        ) or params.epsilon_spent + self.tolerance < (self.last_epsilon.get(key, 0.0)):
-            msg = "privacy ledger rollback detected"
-            raise PrivacyBudgetError(msg)
         self.last_k[key] = params.composition_k
         self.last_epsilon[key] = params.epsilon_spent
+        self.last_delta[key] = params.delta_target
+        if release_id is not None:
+            self.releases[release_id] = (level, params)
+            while len(self.releases) > self.max_cached_releases:
+                self.releases.pop(next(iter(self.releases)))
         return params.epsilon_spent
 
 
@@ -374,8 +465,8 @@ class DpConfig:
         if self.level is DpLevel.NONE:
             msg = "DpConfig is only for non-NONE DP levels"
             raise ValueError(msg)
-        if self.clip_norm <= 0.0 or self.sigma <= 0.0:
-            msg = "clip norm and sigma must be positive"
+        if not all(math.isfinite(x) and x > 0 for x in (self.clip_norm, self.sigma)):
+            msg = "clip norm and sigma must be finite and positive"
             raise ValueError(msg)
         if self.level in REFERENCE_PROFILES:
             sigma_ref = REFERENCE_PROFILES[self.level][1] * self.clip_norm

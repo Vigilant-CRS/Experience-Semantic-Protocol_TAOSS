@@ -137,10 +137,18 @@ def _features(x: F64, degree: int) -> F64:
 
 
 def v_information_ladder(
-    visible: F64, masked: F64, *, degrees: Sequence[int] = (1, 2, 3), seed: int = 0
+    visible: F64,
+    masked: F64,
+    *,
+    degrees: Sequence[int] = (1, 2, 3),
+    seed: int = 0,
+    split: Split | None = None,
 ) -> list[float]:
     """``L = H0(Z_M) - H_V(Z_M | Z_V)`` in bits for growing probe families (monotone)."""
-    split = Split.fixed(visible.shape[0], seed=seed)
+    split = split if split is not None else Split.fixed(visible.shape[0], seed=seed)
+    if not split.train.size or not split.test.size or np.intersect1d(split.train, split.test).size:
+        msg = "probe split must have nonempty, disjoint train and test indices"
+        raise ValueError(msg)
     ytr, yte = masked[split.train], masked[split.test]
     h0 = _gaussian_entropy_bits(yte - ytr.mean(0))  # null model: fixed once per target and split
     out, best = [], 0.0

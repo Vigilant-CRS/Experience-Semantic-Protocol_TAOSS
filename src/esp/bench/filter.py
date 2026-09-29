@@ -23,17 +23,22 @@ def learned_filter(
     task_labels: NDArray[np.int64],
     protected: NDArray[np.float64],
     *,
+    train: NDArray[np.bool_] | None = None,
     steps: int = 400,
     lam: float = 1.0,
     seed: int = 0,
 ) -> NDArray[np.float64]:
     torch.manual_seed(seed)
-    x = torch.tensor(z, dtype=torch.float32)
-    y = torch.tensor(task_labels, dtype=torch.long)
-    p = torch.tensor(protected, dtype=torch.float32)
+    fit = np.ones(z.shape[0], dtype=np.bool_) if train is None else train
+    if not fit.any():
+        msg = "learned filter needs training rows"
+        raise ValueError(msg)
+    x = torch.tensor(z[fit], dtype=torch.float32)
+    y = torch.tensor(task_labels[fit], dtype=torch.long)
+    p = torch.tensor(protected[fit], dtype=torch.float32)
     d = x.shape[1]
     filt = nn.Sequential(nn.Linear(d, 64), nn.GELU(), nn.Linear(64, d))
-    head = nn.Linear(d, int(task_labels.max()) + 1)
+    head = nn.Linear(d, int(task_labels[fit].max()) + 1)
     adv = nn.Sequential(nn.Linear(d, 64), nn.GELU(), nn.Linear(64, p.shape[1]))
     params = [*filt.parameters(), *head.parameters(), *adv.parameters()]
     opt = torch.optim.Adam(params, lr=3e-3)
@@ -45,5 +50,7 @@ def learned_filter(
         (task + leak).backward()  # type: ignore[no-untyped-call]  # adversary minimizes leak; the filter maximizes it via GRL
         opt.step()
     with torch.no_grad():
-        out: NDArray[np.float64] = filt(x).numpy().astype(np.float64)
+        out: NDArray[np.float64] = (
+            filt(torch.tensor(z, dtype=torch.float32)).numpy().astype(np.float64)
+        )
     return out

@@ -283,8 +283,9 @@ def test_descriptor_change_inside_a_session_aborts(tmp_path: Path) -> None:
     s, r = pair(tmp_path)
     establish(s, r)
     sneaky = s.send_control(encode_tlv(0x80, descriptor(sf_level=6).encode()), now_ns=NOW)
-    with pytest.raises(SessionStateError, match="new handshake"):
-        r.receive(sneaky, now_ns=NOW)
+    res = r.receive(sneaky, now_ns=NOW)  # a defined refusal, never an exception into the pump
+    assert not res.accepted
+    assert "new handshake" in res.violations[0]
     assert r.state is SessionState.CLOSED
 
 

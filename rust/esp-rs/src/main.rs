@@ -23,7 +23,7 @@ use ed25519_dalek::SigningKey;
 use esp_rs::crypto::{open, seal, DirectionKeys};
 use esp_rs::header::Header;
 use esp_rs::session::*;
-use esp_rs::tlv::{self, decode_latent, encode_latent, split, Encoding, Tlv};
+use esp_rs::tlv::{self, encode_latent, split, Encoding, Tlv};
 use rand_core::OsRng;
 
 type Res<T> = Result<T, Box<dyn std::error::Error>>;
@@ -104,6 +104,7 @@ fn sender(m: &HashMap<String, String>) -> Res<()> {
     let mut payload = vec![0u8; 65535];
     let n = hs.read_message(&hs2, &mut payload)?;
     let peer_desc = tlv_with(&split(&payload[..n])?, 0x80)?;
+    let negotiated = Descriptor::default().negotiated(&Descriptor::decode(&peer_desc)?);
     let nh = noise_h(hs.get_handshake_hash());
     let (k_i2r, _) = hs.dangerously_get_raw_split();
     let mut transport = hs.into_transport_mode()?;
@@ -111,7 +112,10 @@ fn sender(m: &HashMap<String, String>) -> Res<()> {
     let n = transport.read_message(&t1, &mut payload)?;
     let t1_tlvs = split(&payload[..n])?;
     let receiver_session = verify_session_binding(&tlv_with(&t1_tlvs, 0x85)?, &nh)?;
-    let receiver_cap = t1_tlvs.iter().any(|t| t.code == 0x21);
+    let receiver_cap = verify_receiver_capability(&tlv_with(&t1_tlvs, 0x21)?, &receiver_id, &nh)?;
+    if receiver_cap.types & 1 == 0 || receiver_cap.rate_limit_hz == 0 {
+        return Err("receiver has not consented to KNO data".into());
+    }
     let session = SigningKey::generate(&mut OsRng); // fresh per session
     let cap = SenderCapability {
         capability_id: uuid4(&nh),
@@ -167,6 +171,19 @@ fn sender(m: &HashMap<String, String>) -> Res<()> {
             .map(|i| ((i as f64 + seq as f64) * 0.37).sin())
             .collect();
         let body = tlv::encode(&encode_latent(0, &values, Encoding::F32Be)?);
+        let now = now_ns();
+        if now < receiver_cap.valid_from_ns
+            || now > receiver_cap.valid_until_ns
+            || now > cap.valid_until_ns
+            || u64::from(sent) >= cap.max_segments
+            || values.iter().map(|x| x * x).sum::<f64>().sqrt() > f64::from(receiver_cap.kno_norm)
+            || body.len() > negotiated.max_payload_len as usize
+        {
+            return Err("frame exceeds consent or negotiated limits".into());
+        }
+        std::thread::sleep(std::time::Duration::from_secs_f64(
+            1.0 / f64::from(receiver_cap.rate_limit_hz),
+        ));
         send_frame(
             &mut stream,
             1,
@@ -178,7 +195,7 @@ fn sender(m: &HashMap<String, String>) -> Res<()> {
     println!(
         "{}",
         serde_json::json!({"event": "sent", "frames": sent, "revoked": revoked, "noise_h": hex::encode(nh),
-            "receiver_session": hex::encode(receiver_session), "receiver_capability": receiver_cap,
+            "receiver_session": hex::encode(receiver_session), "receiver_capability": true,
             "peer_descriptor_len": peer_desc.value.len()})
     );
     Ok(())
@@ -203,7 +220,10 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
     let mut buf = vec![0u8; 65535];
     let (_, hs1) = recv_frame(&mut stream)?;
     let n = hs.read_message(&hs1, &mut payload)?;
-    tlv_with(&split(&payload[..n])?, 0x80)?;
+    let negotiated = Descriptor::default().negotiated(&Descriptor::decode(&tlv_with(
+        &split(&payload[..n])?,
+        0x80,
+    )?)?);
     let n = hs.write_message(&Descriptor::default().tlv(), &mut buf)?;
     send_frame(&mut stream, 0, &buf[..n])?;
     let nh = noise_h(hs.get_handshake_hash());
@@ -241,14 +261,27 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
     let _ = frames;
     let mut accepted = 0u32;
     let mut revoked = false;
-    let mut replay = std::collections::HashSet::new();
+    let mut replay = std::collections::BTreeSet::new();
+    let mut highest = 0u32;
+    let mut timeline = None;
+    let mut recent = std::collections::VecDeque::new();
     loop {
         let (channel, packet) = match recv_frame(&mut stream) {
             Ok(f) => f,
             Err(_) => break, // peer closed
         };
-        let (h, pt) = open(&packet, &keys, &peer, 1 << 20)?;
-        if !replay.insert(h.segment_seq) {
+        let (h, pt) = open(&packet, &keys, &peer, negotiated.max_payload_len as usize)?;
+        if h.profile != negotiated.profile
+            || h.sf_level != negotiated.sf_level
+            || h.privacy_flags & 0x0f != 0
+            || timeline.is_some_and(|t| t != h.timeline_id)
+        {
+            return Err("packet does not match the negotiated session".into());
+        }
+        if replay.contains(&h.segment_seq)
+            || h.segment_seq < highest.saturating_sub(negotiated.w_back as u32)
+            || h.segment_seq > highest.saturating_add(negotiated.w_fwd as u32)
+        {
             println!(
                 "{}",
                 serde_json::json!({"event": "rejected", "seq": h.segment_seq, "reason": "replay"})
@@ -256,7 +289,11 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
             continue;
         }
         if h.types_bitmap == 0 {
-            for t in split(&pt)? {
+            let controls = split(&pt)?;
+            for t in &controls {
+                verify_revocation(t, &cap)?;
+            }
+            for t in controls {
                 if t.code == 0x23 {
                     verify_revocation(&t, &cap)?;
                     revoked = true;
@@ -266,6 +303,10 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
                     );
                 }
             }
+            replay.insert(h.segment_seq);
+            highest = highest.max(h.segment_seq);
+            replay.retain(|seq| *seq >= highest.saturating_sub(negotiated.w_back as u32));
+            timeline = Some(h.timeline_id);
             continue;
         }
         if revoked {
@@ -275,27 +316,33 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
             );
             continue;
         }
-        let mut types = 0u16;
-        let mut norms = Vec::new();
-        for t in split(&pt)? {
-            if (0x60..=0x65).contains(&t.code) {
-                let lat = decode_latent(&t)?;
-                types |= 1 << lat.type_index;
-                norms.push(lat.values.iter().map(|x| x * x).sum::<f64>().sqrt());
+        let received_at = now_ns();
+        while recent
+            .front()
+            .is_some_and(|at| *at <= received_at.saturating_sub(1_000_000_000))
+        {
+            recent.pop_front();
+        }
+        let checked = check_kno_packet(&cap, &negotiated, &h, &pt, received_at, accepted.into());
+        let norm = match checked {
+            Ok(norm) if recent.len() < 1000 && received_at <= now + 3_600_000_000_000 => norm,
+            _ => {
+                println!(
+                    "{}",
+                    serde_json::json!({"event":"rejected", "seq":h.segment_seq, "reason":"consent"})
+                );
+                continue;
             }
-        }
-        // minimal consent enforcement: declared types == latents present, within the capability
-        if types != h.types_bitmap || types & !cap.types_allowed != 0 || types & !0x01 != 0 {
-            println!(
-                "{}",
-                serde_json::json!({"event": "rejected", "seq": h.segment_seq})
-            );
-            continue;
-        }
+        };
+        replay.insert(h.segment_seq);
+        highest = highest.max(h.segment_seq);
+        replay.retain(|seq| *seq >= highest.saturating_sub(negotiated.w_back as u32));
+        timeline = Some(h.timeline_id);
+        recent.push_back(received_at);
         accepted += 1;
         println!(
             "{}",
-            serde_json::json!({"event": "frame", "channel": channel, "seq": h.segment_seq, "types": types, "norms": norms})
+            serde_json::json!({"event": "frame", "channel": channel, "seq": h.segment_seq, "types": 1, "norms": [norm]})
         );
     }
     println!(

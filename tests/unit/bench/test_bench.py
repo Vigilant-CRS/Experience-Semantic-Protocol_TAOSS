@@ -157,3 +157,24 @@ def test_confirmatory_only_with_a_matching_prior_preregistration() -> None:
 
 def test_types_constant() -> None:
     assert TYPES == ("KNO", "INT", "EMO", "CTX", "SEN", "TEM")
+
+
+def test_transforms_are_fitted_on_training_rows_only() -> None:
+    """F13 (review 2026-09-29): changing only held-out labels must not change the fitted maps."""
+    from esp.bench.filter import learned_filter  # noqa: PLC0415 - torch import kept local
+    from esp.bench.smoke import leace_erase  # noqa: PLC0415
+
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=(200, 6))
+    concept = x[:, :2] @ rng.normal(size=(2, 1)) + 0.1 * rng.normal(size=(200, 1))
+    labels = (x[:, 0] > 0).astype(np.int64)
+    train = np.arange(200) < 120
+    moved_concept, moved_labels = concept.copy(), labels.copy()
+    moved_concept[~train] = rng.normal(size=((~train).sum(), 1)) * 50
+    moved_labels[~train] = 1 - moved_labels[~train]
+    assert np.allclose(
+        leace_erase(x, concept, train=train), leace_erase(x, moved_concept, train=train)
+    )
+    a = learned_filter(x, labels, concept, train=train, steps=20, seed=1)
+    b = learned_filter(x, moved_labels, moved_concept, train=train, steps=20, seed=1)
+    assert np.allclose(a, b)

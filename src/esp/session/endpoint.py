@@ -22,12 +22,14 @@ never stripped by ``python -O``.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import math
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
 import numpy as np
 
@@ -58,6 +60,7 @@ from esp.consent.revocation import (
     RevocationIntent,
     RevocationRegistry,
 )
+from esp.consent.store import ConsentStateStore
 from esp.core.errors import EspError
 from esp.core.taoss_types import TaossType
 from esp.crypto.envelope import open_packet, seal_packet
@@ -89,8 +92,14 @@ from esp.regulatory.guard import (
     require_permitted,
 )
 from esp.session.control import CloseReason, SessionClose
-from esp.session.descriptor import NegotiatedSession, SessionDescriptor, negotiate, transcript_hash
-from esp.session.floor import is_sos, sos_tlv
+from esp.session.descriptor import (
+    NegotiatedSession,
+    NonceMode,
+    SessionDescriptor,
+    negotiate,
+    transcript_hash,
+)
+from esp.session.floor import TURN_TOKEN_CODE, TurnToken, is_sos, sos_tlv
 from esp.session.profiles import TypeSetProfile, profile_for
 from esp.session.replay import ReplayError, ReplayWindow
 from esp.session.sequence import SenderSequencer, SequenceStore, session_fingerprint
@@ -188,8 +197,17 @@ class SenderEndpoint:
         self._metadata = metadata
         self._rng = secure_rng()
         self.decoys_sent = 0
+        if descriptor.dp_level != 0 and dp is None:
+            msg = "non-NONE DP descriptor requires a DP configuration"
+            raise PrivacyBudgetError(msg)
         if dp is not None and dp.level != descriptor.dp_level:
             msg = "DP configuration must match the session descriptor dp_level"
+            raise PrivacyBudgetError(msg)
+        if dp is not None and (
+            dp.ledger.capability_id != capability.capability_id
+            or dp.ledger.ceiling > capability.dp_epsilon_ceiling
+        ):
+            msg = "DP ledger must bind this capability and respect its ceiling"
             raise PrivacyBudgetError(msg)
         self.transcript: bytes | None = None
 
@@ -224,6 +242,7 @@ class SenderEndpoint:
             self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
             self._machine.advance(SessionState.PROFILE_NEGOTIATION)
             self._negotiated = negotiate(self._descriptor, peer)
+            _check_wire_options(self._wire, self._negotiated)
             self._profile = _session_profile(self._negotiated)
             _metadata_active(self._metadata, self._negotiated, self._profile)
             self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
@@ -486,6 +505,9 @@ class SenderEndpoint:
             types_bitmap = self._metadata.bitmap
             consent_flags &= ~int(ConsentFlags.EMO_MASKED)
             timestamp, privacy = self._metadata.header_fields(now_ns, privacy)
+        if len(payload) > negotiated.max_payload_len:
+            msg = "payload exceeds the negotiated maximum"
+            raise WireError(msg)
         seq = sequencer.reserve(payload)
         header = Header(
             profile=negotiated.profile,
@@ -559,6 +581,7 @@ class ReceiverEndpoint:
         lineage: KeyLineage | None = None,
         accept_state: AcceptState | None = None,
         revocations: RevocationRegistry | None = None,
+        consent_store: ConsentStateStore | None = None,
         metadata: MetadataProtection | None = None,
         inspector: Callable[[Header, ParsedPayload], None] | None = None,
         hardening: ReceiverHardening | None = None,
@@ -579,6 +602,7 @@ class ReceiverEndpoint:
         self._lineage = lineage
         self.accept_state = accept_state if accept_state is not None else AcceptState()
         self.revocations = revocations if revocations is not None else RevocationRegistry()
+        self._consent_store = consent_store
         self._session_key = SigningKey.generate()
         self._noise: NoiseIK | None = None
         self._negotiated: NegotiatedSession | None = None
@@ -616,6 +640,7 @@ class ReceiverEndpoint:
             self._machine.advance(SessionState.CRYPTO_ESTABLISHED)
             self._machine.advance(SessionState.PROFILE_NEGOTIATION)
             self._negotiated = negotiate(peer, self._descriptor)
+            _check_wire_options(self._wire, self._negotiated)
             _metadata_active(self._metadata, self._negotiated, _session_profile(self._negotiated))
             self._machine.advance(SessionState.CAPABILITY_NEGOTIATION)
             payload = session_binding(self._session_key, noise.noise_h).encode()
@@ -635,6 +660,14 @@ class ReceiverEndpoint:
             raise
 
     def on_transport2(self, message: bytes) -> None:
+        """Consent establishment; with a consent store it is one cross-process transaction."""
+        if self._consent_store is None:
+            self._on_transport2(message)
+            return
+        with self._consent_store.transaction(self.accept_state, self.revocations):
+            self._on_transport2(message)
+
+    def _on_transport2(self, message: bytes) -> None:
         try:
             noise = _need(self._noise, "noise")
             negotiated = _need(self._negotiated, "negotiated profile")
@@ -672,6 +705,7 @@ class ReceiverEndpoint:
             )
             self._machine.advance(SessionState.CONSENT_ESTABLISHED)
             self._machine.advance(SessionState.ACTIVE)
+            self.accept_state.accepted_grants.add(hashlib.sha256(cap.body()).digest())
         except EspError:
             self._machine.close()
             raise
@@ -690,7 +724,10 @@ class ReceiverEndpoint:
     def _check_issuer(self, cap: SenderCapability) -> None:
         trusted = cap.issuer_pk in self._trusted
         lineage_ok = self._lineage is None or self._lineage.admit_grant(
-            cap.issuer_pk, previously_accepted=True, logged_before_cutoff=False
+            cap.issuer_pk,
+            previously_accepted=hashlib.sha256(cap.body()).digest()
+            in self.accept_state.accepted_grants,
+            logged_before_cutoff=False,
         )
         if not (trusted and lineage_ok):
             msg = "sender capability issuer is not trusted"
@@ -699,6 +736,13 @@ class ReceiverEndpoint:
     # --- receiving ------------------------------------------------------------------
 
     def receive(self, packet: bytes, *, now_ns: int) -> ReceiveResult:
+        """Quarantined receive; with a consent store, decide and commit atomically."""
+        if self._consent_store is None:
+            return self._receive(packet, now_ns=now_ns)
+        with self._consent_store.transaction(self.accept_state, self.revocations):
+            return self._receive(packet, now_ns=now_ns)
+
+    def _receive(self, packet: bytes, *, now_ns: int) -> ReceiveResult:  # noqa: PLR0911 - one exit per quarantine stage
         if self._machine.state is not SessionState.ACTIVE or self._active is None:
             return self._reject(("0:no active session (data before consent or after close)",))
         act = self._active
@@ -707,14 +751,18 @@ class ReceiverEndpoint:
                 packet,
                 act.keys,
                 expected_sender=act.peer_session_pk,
-                max_payload_len=act.negotiated.initiator.max_payload_len,
+                max_payload_len=act.negotiated.max_payload_len,
             )
         except (WireError, CryptoError) as exc:
             return self._reject((f"1:{type(exc).__name__}",))
         header = opened.header
-        if self._timeline is None:
-            self._timeline = header.timeline_id  # the first authenticated packet pins it
-        if header.timeline_id != self._timeline:
+        if (header.profile, header.sf_level, header.dp_level) != (
+            act.negotiated.profile,
+            act.negotiated.sf_level,
+            act.negotiated.dp_level,
+        ):
+            return self._reject(("0:packet profile differs from the negotiated descriptor",))
+        if self._timeline is not None and header.timeline_id != self._timeline:
             return self._reject(("0:unexpected timeline",))
         try:
             act.replay.check(header.segment_seq)
@@ -730,9 +778,16 @@ class ReceiverEndpoint:
         if self._inspector is not None:
             self._inspector(header, parsed)  # authenticated, real view; before any decision
         if header.types_bitmap == 0:
+            try:
+                result = self._handle_control(parsed, act)
+            except EspError as exc:
+                return self._reject((f"control:{exc}",))
             act.replay.accept(header.segment_seq)
-            return self._handle_control(parsed, act)
-        return self._accept_data(header, plaintext, parsed, now_ns, act)
+        else:
+            result = self._accept_data(header, plaintext, parsed, now_ns, act)
+        if result.accepted and self._timeline is None:
+            self._timeline = header.timeline_id
+        return result
 
     def _accept_data(
         self, header: Header, plaintext: bytes, parsed: ParsedPayload, now_ns: int, act: _Active
@@ -742,7 +797,7 @@ class ReceiverEndpoint:
             masked = frozenset({TaossType.EMO}) if header.emo_masked else frozenset()
             act.profile.check(facts.types, masked)  # MEB: EMO bit / missing EMO_MASKED refused
             act.profile.check_flags(header.consent_flags)
-            facts = self._audit_dp(header, parsed, facts, act)
+            facts = self._audit_dp(header, parsed, facts, act, plaintext)
         except (WireError, PrivacyBudgetError) as exc:
             return self._reject((f"8:{exc}",))
         threat = self._screen_threats(parsed)
@@ -832,7 +887,12 @@ class ReceiverEndpoint:
         return None
 
     def _audit_dp(
-        self, header: Header, parsed: ParsedPayload, facts: PacketFacts, act: _Active
+        self,
+        header: Header,
+        parsed: ParsedPayload,
+        facts: PacketFacts,
+        act: _Active,
+        plaintext: bytes,
     ) -> PacketFacts:
         """Receiver-auditable DP accounting (V13 section 12.4) inside the quarantine."""
         level = header.dp_level
@@ -851,7 +911,10 @@ class ReceiverEndpoint:
         if params is None or params.capability_id != act.sender_cap.capability_id:
             msg = "TLV_DP_PARAMS missing or bound to another capability"
             raise WireError(msg)
-        eps = auditor.audit(level, params, latent_types)
+        release_id = hashlib.sha256(
+            header.encode() + plaintext
+        ).digest()  # includes authenticated timeline, sequence, flags and every payload byte
+        eps = auditor.audit(level, params, latent_types, release_id=release_id)
         spent = self.accept_state.epsilon_spent.get(act.sender_cap.capability_id.bytes, 0.0)
         return dataclasses.replace(
             facts, creates_dp_release=True, epsilon_increment=max(0.0, eps - spent)
@@ -861,29 +924,64 @@ class ReceiverEndpoint:
         if self._metadata is not None and not parsed.known:
             self.decoys_discarded += 1  # decoy: authenticated, carries nothing
             return ReceiveResult(accepted=True)
+        # Validate a whole control packet before applying any of its effects.
+        pending = dataclasses.replace(
+            self.revocations,
+            revoked_capabilities=set(self.revocations.revoked_capabilities),
+            revoked_timelines=dict(self.revocations.revoked_timelines),
+            deletion_requests=list(self.revocations.deletion_requests),
+        )
+        close = False
+        signals = 0
         for tlv in parsed.known:
             if tlv.code == REVOCATION_CODE:
-                intent = self.revocations.apply(
-                    tlv, capability=act.sender_cap, lineage=self._lineage
-                )
-                if intent.effects & Effects.TERMINATE_SESSIONS:
-                    self._machine.advance(SessionState.CLOSING)
-                    self._machine.advance(SessionState.CLOSED)
+                intent = pending.apply(tlv, capability=act.sender_cap, lineage=self._lineage)
+                close |= bool(intent.effects & Effects.TERMINATE_SESSIONS)
             elif is_sos(tlv):
-                self.sos_signals += 1
+                signals += 1
             elif tlv.code == SESSION_CLOSE_CODE:
                 SessionClose.decode(tlv)
-                self._machine.advance(SessionState.CLOSING)
-                self._machine.advance(SessionState.CLOSED)
+                close = True
             elif tlv.code == DESCRIPTOR_CODE:
-                self._machine.close()  # no silent profile change inside a session
+                self._machine.close()  # changing descriptors ends the current session
                 msg = "session descriptor change requires a new handshake"
                 raise SessionStateError(msg)
+            elif tlv.code == TURN_TOKEN_CODE:
+                TurnToken.decode(tlv)  # the application owns the moderator/floor policy
+            elif tlv.code in APPLICATION_CONTROL_CODES:
+                pass  # signed application objects, verified by their profile (ADR-0028)
+            else:
+                msg = f"unsupported object on the control channel: 0x{tlv.code:02x}"
+                raise WireError(msg)
+        self.revocations.revoked_capabilities.update(pending.revoked_capabilities)
+        self.revocations.revoked_timelines.update(pending.revoked_timelines)
+        self.revocations.deletion_requests[:] = pending.deletion_requests
+        self.sos_signals += signals
+        if close:
+            self._machine.close()
         return ReceiveResult(accepted=True, control=parsed.known)
 
     def _reject(self, violations: tuple[str, ...]) -> ReceiveResult:
         self.rejections.append(violations)
         return ReceiveResult(accepted=False, violations=violations)
+
+
+#: Control objects owned by a registered application profile and verified there
+#: (ESP-Agent opaque-latent descriptor 0x98 and agent event 0x99, ADR-0028). Any other
+#: object on the control channel is refused before any control effect is applied.
+APPLICATION_CONTROL_CODES: Final = frozenset({0x98, 0x99})
+
+
+def _check_wire_options(wire: WireOptions, negotiated: NegotiatedSession) -> None:
+    required = set(wire.anchor_sets)
+    if wire.addendum:
+        required.add("esp-addendum-v1")
+    if not required <= set(negotiated.registries):
+        msg = "wire configuration requires registries pinned by both peers"
+        raise WireError(msg)
+    if negotiated.nonce_mode is not NonceMode.DETERMINISTIC:
+        msg = "these endpoints support only deterministic nonces"
+        raise WireError(msg)
 
 
 def _session_profile(negotiated: NegotiatedSession) -> TypeSetProfile:
@@ -940,17 +1038,14 @@ def _quarantine_facts(header: Header, parsed: ParsedPayload) -> PacketFacts:
     types = frozenset(t for t in TaossType if header.types_bitmap & t.bit)
     for t in types - set(norms):
         norms[t] = 0.0  # anchor-only / descriptor-only blocks carry no latent energy
-    valence: float | None = None
-    for tlv in parsed.all(AFFECT_DESCRIPTOR_CODE):
-        v = _declared_valence(tlv)
-        if v is not None and (valence is None or abs(v) > abs(valence)):
-            valence = v
+    valences = tuple(_declared_valence(tlv) for tlv in parsed.all(AFFECT_DESCRIPTOR_CODE))
     return PacketFacts(
         authenticated=True,
         types=types,
         consent_flags=header.consent_flags,
         norms=norms,
-        valence=valence,
+        valence=valences[0] if valences else None,
+        valences=valences,
         timeline_id=header.timeline_id,
         segment_seq=header.segment_seq,
     )

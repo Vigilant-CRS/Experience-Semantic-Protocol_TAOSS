@@ -95,18 +95,20 @@ def encode(
     raise ValueError(msg)
 
 
-def leace_erase(x: F64, concept: F64) -> F64:
+def leace_erase(x: F64, concept: F64, *, train: NDArray[np.bool_] | None = None) -> F64:
     """LEACE (Belrose et al. 2023): least-squares linear concept erasure of ``concept`` from ``x``.
 
     ``r(x) = x - W^+ P W (x - mu)`` with whitening ``W = Sigma_xx^{-1/2}`` and ``P`` the
     orthogonal projection onto ``span(W Sigma_xz)``. After erasure no linear
     predictor of ``concept`` beats a constant.
     """
-    mu = x.mean(0)
-    xc = x - mu
-    zc = concept - concept.mean(0)
-    sxx = xc.T @ xc / (x.shape[0] - 1)
-    sxz = xc.T @ zc / (x.shape[0] - 1)
+    fitted_x = x if train is None else x[train]
+    fitted_concept = concept if train is None else concept[train]
+    mu = fitted_x.mean(0)
+    xc = fitted_x - mu
+    zc = fitted_concept - fitted_concept.mean(0)
+    sxx = xc.T @ xc / (fitted_x.shape[0] - 1)
+    sxz = xc.T @ zc / (fitted_x.shape[0] - 1)
     evals, evecs = np.linalg.eigh(sxx)
     keep = evals > 1e-10 * evals.max()
     w = evecs[:, keep] @ np.diag(evals[keep] ** -0.5) @ evecs[:, keep].T
@@ -114,5 +116,5 @@ def leace_erase(x: F64, concept: F64) -> F64:
     u, s, _ = np.linalg.svd(w @ sxz, full_matrices=False)
     u = u[:, s > 1e-10 * s.max()] if s.size else u[:, :0]
     p = u @ u.T
-    erased: F64 = x - (xc @ (w_pinv @ p @ w).T)
+    erased: F64 = x - ((x - mu) @ (w_pinv @ p @ w).T)
     return erased

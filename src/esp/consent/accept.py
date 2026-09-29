@@ -31,6 +31,7 @@ parsed facts from the quarantine buffer.
 from __future__ import annotations
 
 import collections
+import math
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -58,6 +59,7 @@ class PacketFacts:
     epsilon_increment: float = 0.0
     timeline_id: uuid.UUID | None = None
     segment_seq: int | None = None
+    valences: tuple[float | None, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +75,7 @@ class AcceptState:
     segments: dict[tuple[bytes, bytes], int] = field(default_factory=dict)
     epsilon_spent: dict[bytes, float] = field(default_factory=dict)
     recent: collections.deque[int] = field(default_factory=collections.deque)
+    accepted_grants: set[bytes] = field(default_factory=set)
 
     def packets_in_last_second(self, now_ns: int) -> int:
         while self.recent and self.recent[0] <= now_ns - NS_PER_S:
@@ -169,12 +172,13 @@ def evaluate(  # noqa: PLR0912 - one branch per V13 condition, kept flat on purp
     for t in sorted(p.types):
         cap = policy.norm_caps.get(t)
         norm = p.norms.get(t)
-        if cap is not None and (norm is None or norm > cap):
+        if cap is not None and (norm is None or not math.isfinite(norm) or norm > cap):
             v.append(f"10:{t.name} norm exceeds cap")
     if TaossType.EMO in p.types and policy.valence_bounds is not None:
         lo, hi = policy.valence_bounds
         unconstrained = lo <= -1.0 and hi >= 1.0
-        if not unconstrained and (p.valence is None or not lo <= p.valence <= hi):
+        values = p.valences or (p.valence,)
+        if not unconstrained and any(value is None or not lo <= value <= hi for value in values):
             v.append("11:valence outside receiver bounds")
     if state.packets_in_last_second(now_ns) + 1 > policy.rate_limit_hz:
         v.append("12:rate limit exceeded")

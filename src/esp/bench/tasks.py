@@ -24,6 +24,7 @@ from esp.audit.suite import v_information_ladder
 from esp.bench.filter import learned_filter
 from esp.bench.prereg import Label
 from esp.bench.smoke import TYPES, SmokeCorpus, encode, leace_erase
+from esp.training.leakage import Split
 
 F64 = NDArray[np.float64]
 Latents = Mapping[str, F64]
@@ -58,6 +59,11 @@ def unit_split(
     test = np.isin(corpus.units, test_units) & ~corpus.ood
     train = ~np.isin(corpus.units, test_units) & ~corpus.ood
     return train, test
+
+
+def _probe_split(corpus: SmokeCorpus, seed: int) -> Split:
+    train, test = unit_split(corpus, seed=seed)
+    return Split(np.flatnonzero(train), np.flatnonzero(test))
 
 
 def _cos(a: F64, b: F64) -> F64:
@@ -143,7 +149,7 @@ def leakage_probe(c: SmokeCorpus, z: Latents, seed: int = 0) -> TaskResult:
     pred = _ridge(visible[train], z["EMO"][train], visible[test])
     y = z["EMO"][test]
     r2 = 1 - np.sum((y - pred) ** 2) / np.sum((y - z["EMO"][train].mean(0)) ** 2)
-    bits = v_information_ladder(visible[~c.ood], z["EMO"][~c.ood], degrees=(1,), seed=seed)[-1]
+    bits = v_information_ladder(visible, z["EMO"], degrees=(1,), split=_probe_split(c, seed))[-1]
     return TaskResult("leakage_probe", 5, {"r2": float(r2), "v_info_bits": float(bits)})
 
 
@@ -161,12 +167,13 @@ def ood_anchor_shift(c: SmokeCorpus, z: Latents, seed: int = 0) -> TaskResult:
 
 def encoder_drift(c: SmokeCorpus, z: Latents, seed: int = 0) -> TaskResult:
     """7. Two encoder versions (different seeds): per-type alignment after orthogonal Procrustes."""
+    train, test = unit_split(c, seed=seed)
     other = encode(c, "taoss", seed=seed + 7)
     out = {}
     for t in TYPES:
-        u, _, vt = np.linalg.svd(other[t].T @ z[t], full_matrices=False)
-        aligned = other[t] @ (u @ vt)
-        out[f"compat_{t}"] = float(np.mean(_cos(aligned, z[t])))
+        u, _, vt = np.linalg.svd(other[t][train].T @ z[t][train], full_matrices=False)
+        aligned = other[t][test] @ (u @ vt)
+        out[f"compat_{t}"] = float(np.mean(_cos(aligned, z[t][test])))
     return TaskResult("encoder_drift", 7, out)
 
 
@@ -209,7 +216,9 @@ def consent_granularity(
             masked = [t for t in TYPES if t not in s]
             leak = max(
                 (
-                    v_information_ladder(visible[~c.ood], z[m][~c.ood], degrees=(1,), seed=seed)[-1]
+                    v_information_ladder(visible, z[m], degrees=(1,), split=_probe_split(c, seed))[
+                        -1
+                    ]
                     for m in masked
                 ),
                 default=0.0,
@@ -288,9 +297,9 @@ def h1(c: SmokeCorpus, label: Label, seed: int = 0) -> HypothesisResult:
 def pairwise_leakage_bits(
     c: SmokeCorpus, z: Latents, seed: int = 0
 ) -> dict[tuple[str, str], float]:
-    keep = ~c.ood
+    split = _probe_split(c, seed)
     return {
-        (s, t): v_information_ladder(z[t][keep], z[s][keep], degrees=(1, 2), seed=seed)[-1]
+        (s, t): v_information_ladder(z[t], z[s], degrees=(1, 2), split=split)[-1]
         for s in TYPES
         for t in TYPES
         if s != t
@@ -305,19 +314,21 @@ def h2(c: SmokeCorpus, label: Label, seed: int = 0) -> HypothesisResult:
         vals[f"{variant}_mean_bits"] = float(np.mean(list(pl.values())))
         vals[f"{variant}_worst_bits"] = float(max(pl.values()))
         ran.add(variant)
+    train, _ = unit_split(c, seed=seed)
     mono = encode(c, "mono", seed=seed)
     erased = {
-        t: leace_erase(mono[t], np.concatenate([mono[u] for u in TYPES if u != t], axis=1))
+        t: leace_erase(
+            mono[t], np.concatenate([mono[u] for u in TYPES if u != t], axis=1), train=train
+        )
         for t in TYPES
     }
     pl = pairwise_leakage_bits(c, erased, seed)
     vals["mono_leace_mean_bits"] = float(np.mean(list(pl.values())))
     ran.add("mono_leace")
     full = np.concatenate([mono[t] for t in TYPES], axis=1)
-    filtered = learned_filter(full, c.actions, c.factors["EMO"], seed=seed)
-    keep = ~c.ood
+    filtered = learned_filter(full, c.actions, c.factors["EMO"], seed=seed, train=train)
     vals["mono_learned_filter_emo_bits"] = v_information_ladder(
-        filtered[keep], c.factors["EMO"][keep], degrees=(1, 2), seed=seed
+        filtered, c.factors["EMO"], degrees=(1, 2), split=_probe_split(c, seed)
     )[-1]
     ran.add("mono_learned_filter")
     vals["factor_vs_mono"] = vals["mono_mean_bits"] / max(1e-3, vals["taoss_mean_bits"])
@@ -341,7 +352,7 @@ def causal_controls(
     controls = {
         "zero": np.zeros_like(x),
         "shuffled": x[rng.permutation(x.shape[0])],
-        "moment": rng.normal(size=x.shape) * x.std(0) + x.mean(0),
+        "moment": rng.normal(size=x.shape) * x[train].std(0) + x[train].mean(0),
     }
 
     def correct(features: F64) -> NDArray[np.bool_]:

@@ -139,7 +139,8 @@ def test_sender_stops_at_the_ceiling(tmp_path: Path) -> None:
 
 
 def test_receiver_rejects_missing_dp_params(tmp_path: Path) -> None:
-    s, r, _ = dp_pair(tmp_path, dp=False)  # header says L1_BALANCED_REF, no TLV_DP_PARAMS
+    s, r, _ = dp_pair(tmp_path)
+    s._dp = None  # deliberately corrupt an established sender to exercise receiver quarantine
     res = r.receive(s.send_frame(latent_only(), KNO_CTX, now_ns=NOW), now_ns=NOW)
     assert not res.accepted
     assert "TLV_DP_PARAMS missing" in res.violations[0]

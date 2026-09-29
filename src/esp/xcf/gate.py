@@ -25,6 +25,8 @@ anywhere in the lineage; the ``RECALL_FRAME`` TLV (0x51) points to
 
 from __future__ import annotations
 
+import hashlib
+import math
 import os
 import struct
 import uuid
@@ -36,7 +38,8 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from esp.codec.tlv import Tlv
-from esp.consent.capability import SenderCapability
+from esp.consent.accept import audience_proof_ok
+from esp.consent.capability import AudienceMode, Rights, SenderCapability
 from esp.consent.revocation import RevocationRegistry
 from esp.core.taoss_types import bitmap_to_types
 from esp.crypto.primitives import CryptoError, SigningKey, ed25519_verify
@@ -83,18 +86,85 @@ class Tombstone:
         ed25519_verify(self.signer_pk, b"esp/xcf/v1/tombstone" + self.cid, self.signature)
 
 
+@dataclass(frozen=True, slots=True)
+class ReleaseRequest:
+    """Recipient proof binding a signed grant, CID and HPKE key (local gate API)."""
+
+    recipient_pk: bytes
+    valid_until_ns: int
+    signature: bytes
+
+    @staticmethod
+    def _message(capsule: Capsule, grant: Tlv, key: X25519PublicKey, until: int) -> bytes:
+        return (
+            b"esp/xcf/v1/release-request"
+            + capsule.cid
+            + hashlib.sha256(grant.encode()).digest()
+            + key.public_bytes_raw()
+            + struct.pack(">Q", until)
+        )
+
+    @classmethod
+    def create(
+        cls,
+        capsule: Capsule,
+        grant: Tlv,
+        recipient: X25519PublicKey,
+        identity: SigningKey,
+        *,
+        valid_until_ns: int,
+    ) -> ReleaseRequest:
+        return cls(
+            identity.public_bytes,
+            valid_until_ns,
+            identity.sign(cls._message(capsule, grant, recipient, valid_until_ns)),
+        )
+
+    def verify(self, capsule: Capsule, grant: Tlv, key: X25519PublicKey, now_ns: int) -> None:
+        if now_ns > self.valid_until_ns:
+            msg = "recipient release request expired"
+            raise GateRefused(msg)
+        ed25519_verify(
+            self.recipient_pk,
+            self._message(capsule, grant, key, self.valid_until_ns),
+            self.signature,
+        )
+
+
+def _check_audience(
+    cap: SenderCapability,
+    recipient_pk: bytes,
+    proof: Sequence[tuple[bytes, bool]] | None,
+) -> None:
+    ok = (
+        cap.audience_value == recipient_pk
+        if cap.audience_mode is AudienceMode.RECIPIENT_PUBKEY
+        else proof is not None and audience_proof_ok(cap.audience_value, recipient_pk, proof)
+    )
+    if not ok:
+        msg = "recipient not in capability audience"
+        raise GateRefused(msg)
+
+
 @dataclass
 class Gate:
     """Reference gate service holding gate secrets (single operator or guardian quorum)."""
 
+    owners: dict[bytes, bytes] = field(default_factory=dict)
     secrets: dict[bytes, bytes] = field(default_factory=dict)
     quorum: dict[bytes, tuple[int, list[Share]]] = field(default_factory=dict)
     tombstones: dict[bytes, Tombstone] = field(default_factory=dict)
     released: list[bytes] = field(default_factory=list)
 
-    def new_gate(self, *, guardians: int = 0, threshold: int = 0) -> tuple[bytes, bytes]:
+    def new_gate(
+        self, owner_pk: bytes, *, guardians: int = 0, threshold: int = 0
+    ) -> tuple[bytes, bytes]:
         """Create a gate; with guardians, only Shamir shares are kept (no single secret)."""
+        if len(owner_pk) != 32:
+            msg = "gate owner must be an Ed25519 public key"
+            raise GateRefused(msg)
         gate_id, secret = os.urandom(16), os.urandom(32)
+        self.owners[gate_id] = owner_pk
         if guardians:
             self.quorum[gate_id] = (threshold, split_secret(secret, threshold, guardians))
         else:
@@ -107,8 +177,10 @@ class Gate:
         self.quorum.pop(gate_id, None)
 
     def tombstone(self, capsule: Capsule, ts: Tombstone, lineage_master: bytes) -> None:
+        capsule.verify_signature()
+        owner = self.owners.get(capsule.envelope[PREFIX_LEN : PREFIX_LEN + 16])
         ts.verify()
-        if ts.cid != capsule.cid or ts.signer_pk != lineage_master:
+        if ts.cid != capsule.cid or ts.signer_pk != lineage_master or lineage_master != owner:
             msg = "tombstone must be signed by the capsule's lineage master"
             raise GateRefused(msg)
         self.tombstones[ts.cid] = ts
@@ -128,14 +200,20 @@ class Gate:
     def release(
         self,
         capsule: Capsule,
-        capability: SenderCapability,
+        capability: Tlv,
         recipient: X25519PublicKey,
         *,
         now_ns: int,
         revocations: RevocationRegistry,
+        request: ReleaseRequest,
+        audience_proof: Sequence[tuple[bytes, bool]] | None = None,
         guardian_shares: Sequence[Share] | None = None,
     ) -> bytes:
         """Validate, then re-wrap the CEK to ``recipient`` (HPKE). Returns the wrapped CEK."""
+        grant = capability
+        cap = SenderCapability.verify(grant)
+        request.verify(capsule, grant, recipient, now_ns)
+        _check_audience(cap, request.recipient_pk, audience_proof)
         capsule.verify_signature()
         h = capsule.header
         if h.key_envelope_alg is not EnvelopeAlg.GATED_CEK:
@@ -144,12 +222,10 @@ class Gate:
         if capsule.cid in self.tombstones:
             msg = "capsule is tombstoned"
             raise GateRefused(msg)
-        if capability.valid_until_ns < now_ns or revocations.is_revoked(
-            capability.capability_id, _ZERO, 0
-        ):
+        if cap.valid_until_ns < now_ns or revocations.is_revoked(cap.capability_id, _ZERO, 0):
             msg = "capability expired or revoked"
             raise GateRefused(msg)
-        if not set(bitmap_to_types(h.types_bitmap)) <= set(capability.types):
+        if not set(bitmap_to_types(h.types_bitmap)) <= set(cap.types):
             msg = "capability does not cover the capsule types"
             raise GateRefused(msg)
         env = capsule.envelope
@@ -158,6 +234,9 @@ class Gate:
             env[PREFIX_LEN + 16 : PREFIX_LEN + 28],
             env[PREFIX_LEN + 28 :],
         )
+        if self.owners.get(gate_id) != cap.issuer_pk:
+            msg = "capability issuer is not the registered gate owner"
+            raise GateRefused(msg)
         secret = self._secret(gate_id, guardian_shares)
         try:
             cek = ChaCha20Poly1305(secret).decrypt(
@@ -207,14 +286,18 @@ class RecallFrame:
 @dataclass(frozen=True, slots=True)
 class RecallPolicy:
     no_replay: Mapping[bytes, bool]
+    issuers: Mapping[bytes, bytes]
     """CID -> whether the capsule's policy carries NO_REPLAY."""
 
 
 def recall(
     store: Mapping[bytes, Capsule],
     cid: bytes,
-    capability: SenderCapability,
+    capability: Tlv,
     *,
+    recipient_pk: bytes,
+    revocations: RevocationRegistry,
+    audience_proof: Sequence[tuple[bytes, bool]] | None = None,
     now_ns: int,
     policy: RecallPolicy,
     epsilon_budget: float,
@@ -222,18 +305,28 @@ def recall(
     span_ns: int = 0,
 ) -> RecallFrame:
     """V13 recall path: fetch by CID, check capability/types/DP budget/expiry, walk the lineage."""
+    cap = SenderCapability.verify(capability)
+    _check_audience(cap, recipient_pk, audience_proof)
+    if not cap.rights & Rights.ALLOW_REPLAY:
+        msg = "recall requires ALLOW_REPLAY consent"
+        raise GateRefused(msg)
+    if revocations.is_revoked(cap.capability_id, _ZERO, 0):
+        msg = "capability revoked"
+        raise GateRefused(msg)
     capsule = store.get(cid)
     if capsule is None:
         msg = "unknown CID"
         raise GateRefused(msg)
     h = capsule.header
-    if capability.valid_until_ns < now_ns:
+    if cap.valid_until_ns < now_ns:
         msg = "capability expired"
         raise GateRefused(msg)
-    if not set(bitmap_to_types(h.types_bitmap)) <= set(capability.types):
+    if not set(bitmap_to_types(h.types_bitmap)) <= set(cap.types):
         msg = "capability does not cover the capsule types"
         raise GateRefused(msg)
-    if h.dp_eps_spent > epsilon_budget:
+    if not math.isfinite(epsilon_budget) or h.dp_eps_spent > min(
+        epsilon_budget, cap.dp_epsilon_ceiling
+    ):
         msg = "DP budget exceeded"
         raise GateRefused(msg)
     node: bytes | None = cid
@@ -243,9 +336,16 @@ def recall(
             msg = "lineage cycle"
             raise GateRefused(msg)
         seen.add(node)
-        if policy.no_replay.get(node, False):
+        if policy.no_replay.get(node, True):
             msg = "NO_REPLAY is set in the lineage"
             raise GateRefused(msg)
         parent = store.get(node)
-        node = parent.header.parent_cid if parent is not None else None
+        if parent is None or parent.cid != node:
+            msg = "incomplete or mismatched capsule lineage"
+            raise GateRefused(msg)
+        parent.verify_signature()
+        if policy.issuers.get(node) != cap.issuer_pk:
+            msg = "capability issuer is not authorized for this lineage"
+            raise GateRefused(msg)
+        node = parent.header.parent_cid
     return RecallFrame(cid, offset_ns, span_ns)

@@ -112,6 +112,41 @@ impl Default for Descriptor {
 }
 
 impl Descriptor {
+    /// The interop peer implements only classical SF0 without optional registries or DP.
+    /// Unsupported descriptors fail closed instead of being silently ignored.
+    pub fn decode(tlv: &Tlv) -> Result<Self> {
+        let b = &tlv.value;
+        if tlv.code != 0x80 || b.len() != 41 || b[..6] != [1, 1, 0, 0, 0, 0] || b[34..] != [0; 7] {
+            return Err(Malformed("unsupported session descriptor"));
+        }
+        let d = Descriptor {
+            profile: b[1],
+            sf_level: b[2],
+            dp_level: b[5],
+            w_back: u16::from_be_bytes(b[6..8].try_into().unwrap()),
+            w_fwd: u16::from_be_bytes(b[8..10].try_into().unwrap()),
+            max_payload_len: u32::from_be_bytes(b[26..30].try_into().unwrap()),
+            clock_tolerance_ms: u32::from_be_bytes(b[30..34].try_into().unwrap()),
+        };
+        if !(1024..=8192).contains(&d.w_back)
+            || !(128..=8192).contains(&d.w_fwd)
+            || d.max_payload_len == 0
+        {
+            return Err(Malformed("invalid descriptor limits"));
+        }
+        Ok(d)
+    }
+
+    pub fn negotiated(&self, peer: &Self) -> Self {
+        Descriptor {
+            max_payload_len: self.max_payload_len.min(peer.max_payload_len),
+            clock_tolerance_ms: self.clock_tolerance_ms.min(peer.clock_tolerance_ms),
+            w_back: self.w_back.min(peer.w_back),
+            w_fwd: self.w_fwd.min(peer.w_fwd),
+            ..self.clone()
+        }
+    }
+
     pub fn encode(&self) -> Vec<u8> {
         let mut v = vec![
             1u8,
@@ -205,6 +240,9 @@ pub struct VerifiedSenderCap {
     pub audience: [u8; 32],
     pub issuer: [u8; 32],
     pub valid_until_ns: u64,
+    pub max_segments: u64,
+    pub rights: u8,
+    pub dp_epsilon_ceiling: f32,
 }
 
 pub fn verify_sender_capability(tlv: &Tlv) -> Result<VerifiedSenderCap> {
@@ -215,11 +253,22 @@ pub fn verify_sender_capability(tlv: &Tlv) -> Result<VerifiedSenderCap> {
     // valid_until(32..40) audience_mode(40) audience(41..73) issuer(73..105) nonce(105..121)
     let issuer: [u8; 32] = tlv.value[73..105].try_into().unwrap();
     let b = verify_signed(tlv, &issuer)?;
-    if b[0] != 1 || b[19] & !0x03 != 0 || b[40] != 0 {
+    let types = u16::from_be_bytes([b[17], b[18]]);
+    let ceiling = f32::from_be_bytes(b[28..32].try_into().unwrap());
+    if b[0] != 1
+        || b[19] & !0x03 != 0
+        || b[40] != 0
+        || types & !0x3f != 0
+        || !ceiling.is_finite()
+        || ceiling < 0.0
+    {
         return Err(Malformed("unsupported capability fields"));
     }
     Ok(VerifiedSenderCap {
         capability_id: b[1..17].try_into().unwrap(),
+        max_segments: u64::from_be_bytes(b[20..28].try_into().unwrap()),
+        rights: b[19],
+        dp_epsilon_ceiling: ceiling,
         types_allowed: u16::from_be_bytes([b[17], b[18]]),
         valid_until_ns: u64::from_be_bytes(b[32..40].try_into().unwrap()),
         audience: b[41..73].try_into().unwrap(),
@@ -257,4 +306,213 @@ pub fn verify_revocation(tlv: &Tlv, cap: &VerifiedSenderCap) -> Result<[u8; 16]>
         ));
     }
     Ok(cid)
+}
+
+/// Verified recipient consent used by the sender before sending any KNO data.
+pub struct VerifiedReceiverCap {
+    pub types: u16,
+    pub kno_norm: f32,
+    pub rate_limit_hz: u16,
+    pub valid_from_ns: u64,
+    pub valid_until_ns: u64,
+}
+
+pub fn verify_receiver_capability(
+    tlv: &Tlv,
+    identity: &[u8; 32],
+    nh: &[u8; 32],
+) -> Result<VerifiedReceiverCap> {
+    if tlv.code != 0x21 || tlv.value.len() < 166 {
+        return Err(Malformed("malformed receiver capability"));
+    }
+    let b = verify_signed(tlv, identity)?;
+    let types = u16::from_be_bytes([b[1], b[2]]);
+    let n = b[3] as usize;
+    let end_norms = 4 + n * 4;
+    let off = end_norms + if types & 4 != 0 { 8 } else { 0 };
+    if b[0] != 1 || types & !0x3f != 0 || n != types.count_ones() as usize || b.len() != off + 98 {
+        return Err(Malformed("invalid receiver capability fields"));
+    }
+    for chunk in b[4..end_norms].as_chunks::<4>().0 {
+        let norm = f32::from_be_bytes(*chunk);
+        if !norm.is_finite() || norm < 0.0 {
+            return Err(Malformed("invalid norm cap"));
+        }
+    }
+    if types & 4 != 0 {
+        let lo = f32::from_be_bytes(b[end_norms..end_norms + 4].try_into().unwrap());
+        let hi = f32::from_be_bytes(b[end_norms + 4..off].try_into().unwrap());
+        if !lo.is_finite() || !hi.is_finite() || lo < -1.0 || hi > 1.0 || lo > hi {
+            return Err(Malformed("invalid valence bounds"));
+        }
+    }
+    if &b[off + 34..off + 66] != identity || &b[off + 66..off + 98] != nh {
+        return Err(Crypto("receiver consent identity/transcript mismatch"));
+    }
+    let result = VerifiedReceiverCap {
+        types,
+        kno_norm: if types & 1 != 0 {
+            f32::from_be_bytes(b[4..8].try_into().unwrap())
+        } else {
+            0.0
+        },
+        rate_limit_hz: u16::from_be_bytes(b[off..off + 2].try_into().unwrap()),
+        valid_from_ns: u64::from_be_bytes(b[off + 2..off + 10].try_into().unwrap()),
+        valid_until_ns: u64::from_be_bytes(b[off + 10..off + 18].try_into().unwrap()),
+    };
+    if result.valid_from_ns > result.valid_until_ns {
+        return Err(Malformed("invalid consent interval"));
+    }
+    Ok(result)
+}
+
+/// Fail-closed data predicate for the deliberately limited KNO / DP-NONE interop profile.
+pub fn check_kno_packet(
+    cap: &VerifiedSenderCap,
+    desc: &Descriptor,
+    h: &crate::header::Header,
+    payload: &[u8],
+    now_ns: u64,
+    accepted: u64,
+) -> Result<f64> {
+    if h.profile != desc.profile
+        || h.sf_level != desc.sf_level
+        || h.privacy_flags & 0x0f != 0
+        || h.types_bitmap != 1
+        || cap.types_allowed & 1 == 0
+        || cap
+            .valid_until_ns
+            .saturating_add(desc.clock_tolerance_ms as u64 * 1_000_000)
+            < now_ns
+        || accepted >= cap.max_segments
+    {
+        return Err(Malformed("packet outside negotiated consent"));
+    }
+    if (cap.rights & 1 == 0 && h.consent_flags & 2 == 0)
+        || (cap.rights & 2 == 0 && h.consent_flags & 4 == 0)
+    {
+        return Err(Malformed("packet requests rights not granted"));
+    }
+    let tlvs = crate::tlv::split(payload)?;
+    // This peer cannot interpret optional semantics; no unknown payload can be accepted as KNO.
+    if tlvs.len() != 1 || tlvs[0].code != 0x60 {
+        return Err(Malformed("unsupported KNO payload"));
+    }
+    let latent = crate::tlv::decode_latent(&tlvs[0])?;
+    if (latent.encoding == crate::tlv::Encoding::Int8Sym) != (h.privacy_flags & 0x10 != 0) {
+        return Err(Malformed("quantization flag mismatch"));
+    }
+    let norm = latent.values.iter().map(|x| x * x).sum::<f64>().sqrt();
+    if !norm.is_finite() || norm > 1000.0 {
+        return Err(Malformed("receiver norm cap exceeded"));
+    }
+    Ok(norm)
+}
+
+#[cfg(test)]
+mod tests {
+    //! Negative consent cases of the limited interop profile (2026-09-29 review, F14).
+    use super::*;
+    use crate::header::Header;
+    use crate::tlv::{encode, encode_latent, Encoding};
+
+    const NOW: u64 = 1_000_000_000_000;
+
+    fn cap() -> VerifiedSenderCap {
+        VerifiedSenderCap {
+            capability_id: [7; 16],
+            types_allowed: 0x3f,
+            audience: [1; 32],
+            issuer: [2; 32],
+            valid_until_ns: NOW + 1_000_000_000,
+            max_segments: 3,
+            rights: 0,
+            dp_epsilon_ceiling: 0.0,
+        }
+    }
+
+    fn header() -> Header {
+        Header {
+            version_minor: 0,
+            profile: 1,
+            sf_level: 0,
+            types_bitmap: 1,
+            consent_flags: 0x06, // NO_REPLAY | NO_STORAGE: nothing beyond the grant
+            privacy_flags: 0,
+            capabilities: 0,
+            timestamp_ns: NOW,
+            timeline_id: [3; 16],
+            segment_seq: 0,
+            dt_ms: 20,
+            phase: 0.0,
+            sender_id: [4; 32],
+            payload_len: 0,
+            nonce: [0; 12],
+        }
+    }
+
+    fn kno(scale: f64) -> Vec<u8> {
+        let values: Vec<f64> = (0..240).map(|i| scale * ((i % 7) as f64 - 3.0)).collect();
+        encode(&encode_latent(0, &values, Encoding::F32Be).unwrap())
+    }
+
+    fn check(cap: &VerifiedSenderCap, h: &Header, payload: &[u8], accepted: u64) -> bool {
+        check_kno_packet(cap, &Descriptor::default(), h, payload, NOW, accepted).is_ok()
+    }
+
+    #[test]
+    fn valid_kno_packet_is_accepted() {
+        assert!(check(&cap(), &header(), &kno(0.01), 0));
+    }
+
+    #[test]
+    fn max_segments_is_enforced() {
+        assert!(check(&cap(), &header(), &kno(0.01), 2));
+        assert!(!check(&cap(), &header(), &kno(0.01), 3));
+    }
+
+    #[test]
+    fn expired_capability_is_refused_per_packet() {
+        let mut c = cap();
+        c.valid_until_ns = NOW - 3_000_000_000; // beyond the 2 s clock tolerance
+        assert!(!check(&c, &header(), &kno(0.01), 0));
+    }
+
+    #[test]
+    fn profile_and_sf_level_must_match_the_session() {
+        let mut h = header();
+        h.profile = 2;
+        assert!(!check(&cap(), &h, &kno(0.01), 0));
+        let mut h = header();
+        h.sf_level = 7;
+        assert!(!check(&cap(), &h, &kno(0.01), 0));
+    }
+
+    #[test]
+    fn types_outside_the_grant_are_refused() {
+        let mut c = cap();
+        c.types_allowed = 0x3e; // no KNO
+        assert!(!check(&c, &header(), &kno(0.01), 0));
+        let mut h = header();
+        h.types_bitmap = 0x05; // KNO + EMO: this peer only accepts KNO
+        assert!(!check(&cap(), &h, &kno(0.01), 0));
+    }
+
+    #[test]
+    fn rights_not_granted_are_refused() {
+        let mut h = header();
+        h.consent_flags = 0; // packet would allow replay and storage
+        assert!(!check(&cap(), &h, &kno(0.01), 0));
+    }
+
+    #[test]
+    fn norm_cap_is_enforced() {
+        assert!(!check(&cap(), &header(), &kno(1000.0), 0));
+    }
+
+    #[test]
+    fn foreign_payload_is_refused() {
+        let other = encode(&encode_latent(2, &[0.1; 64], Encoding::F32Be).unwrap());
+        assert!(!check(&cap(), &header(), &other, 0));
+    }
 }

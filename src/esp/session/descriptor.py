@@ -201,6 +201,10 @@ class NegotiatedSession:
     initiator: SessionDescriptor
     responder: SessionDescriptor
 
+    @property
+    def max_payload_len(self) -> int:
+        return min(self.initiator.max_payload_len, self.responder.max_payload_len)
+
 
 def negotiate(initiator: SessionDescriptor, responder: SessionDescriptor) -> NegotiatedSession:
     """Agree or abort. There is no silent upgrade or downgrade."""

@@ -8,6 +8,7 @@ import uuid
 import pytest
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 
+from esp.codec.tlv import Tlv
 from esp.consent.capability import AudienceMode, Rights, SenderCapability
 from esp.consent.revocation import RevocationRegistry
 from esp.crypto.primitives import CryptoError, SigningKey
@@ -32,6 +33,7 @@ from esp.xcf.gate import (
     GateRefused,
     RecallFrame,
     RecallPolicy,
+    ReleaseRequest,
     Tombstone,
     gated_access,
     recall,
@@ -50,6 +52,7 @@ from esp.xcf.trust import (
 
 NOW = time.time_ns()
 MASTER = SigningKey.generate()
+RECIPIENT = SigningKey.generate()
 ENC, ANC = (
     uuid.UUID("11111111-1111-4111-8111-111111111111"),
     uuid.UUID("22222222-2222-4222-8222-222222222222"),
@@ -78,19 +81,44 @@ def body(policy: uuid.UUID | None = None, timeline: uuid.UUID | None = None) -> 
     )
 
 
-def cap(types: int = 0x3F, until: int = NOW + 10**12) -> SenderCapability:
-    rid = SigningKey.generate().public_bytes
+def cap(types: int = 0x3F, until: int = NOW + 10**12) -> Tlv:
+    rid = RECIPIENT.public_bytes
     return SenderCapability(
         uuid.uuid4(),
         types,
-        Rights(0),
+        Rights.ALLOW_REPLAY,
         10,
-        0.0,
+        1.0,
         until,
         AudienceMode.RECIPIENT_PUBKEY,
         rid,
         MASTER.public_bytes,
         b"\x00" * 16,
+    ).sign(MASTER)
+
+
+def release(gate, capsule, grant, recipient, **kwargs):
+    request = ReleaseRequest.create(
+        capsule, grant, recipient, RECIPIENT, valid_until_ns=NOW + 10**12
+    )
+    return gate.release(capsule, grant, recipient, request=request, **kwargs)
+
+
+def recall_policy(store, no_replay=None):
+    return RecallPolicy(
+        dict.fromkeys(store, False) | (no_replay or {}),
+        dict.fromkeys(store, MASTER.public_bytes),
+    )
+
+
+def request_recall(store, cid, grant, **kwargs):
+    return recall(
+        store,
+        cid,
+        grant,
+        recipient_pk=RECIPIENT.public_bytes,
+        revocations=RevocationRegistry(),
+        **kwargs,
     )
 
 
@@ -182,25 +210,31 @@ def test_sender_binding_proves_provenance_privately() -> None:
 
 def test_gated_cek_release_tombstone_and_destroyed_gate() -> None:
     gate = Gate()
-    gate_id, secret = gate.new_gate()
+    gate_id, secret = gate.new_gate(MASTER.public_bytes)
     b = PrivateBody(uuid.uuid4(), uuid.uuid4(), b"x", sender_binding=MASTER.public_bytes)
     c, cek = seal(
         spec(), b, envelope_alg=EnvelopeAlg.GATED_CEK, access_material=gated_access(gate_id, secret)
     )
     assert secret not in c.raw  # the gate secret is never in the capsule
     recipient = X25519PrivateKey.generate()
-    released = gate.release(
-        c, cap(), recipient.public_key(), now_ns=NOW, revocations=RevocationRegistry()
+    released = release(
+        gate, c, cap(), recipient.public_key(), now_ns=NOW, revocations=RevocationRegistry()
     )
     assert unwrap_release(c, released, recipient) == cek
     with pytest.raises(GateRefused, match="does not cover"):
-        gate.release(
-            c, cap(types=0x01), recipient.public_key(), now_ns=NOW, revocations=RevocationRegistry()
+        release(
+            gate,
+            c,
+            cap(types=0x01),
+            recipient.public_key(),
+            now_ns=NOW,
+            revocations=RevocationRegistry(),
         )
     # a new recipient after the gate secret is destroyed: no first-time access
     gate.destroy(gate_id)
     with pytest.raises(GateRefused, match="destroyed"):
-        gate.release(
+        release(
+            gate,
             c,
             cap(),
             X25519PrivateKey.generate().public_key(),
@@ -209,14 +243,14 @@ def test_gated_cek_release_tombstone_and_destroyed_gate() -> None:
         )
     # tombstones stop protocol-compliant access
     gate2 = Gate()
-    gid, sec = gate2.new_gate()
+    gid, sec = gate2.new_gate(MASTER.public_bytes)
     c2, _ = seal(
         spec(), b, envelope_alg=EnvelopeAlg.GATED_CEK, access_material=gated_access(gid, sec)
     )
     gate2.tombstone(c2, Tombstone.create(c2.cid, MASTER), MASTER.public_bytes)
     with pytest.raises(GateRefused, match="tombstoned"):
-        gate2.release(
-            c2, cap(), recipient.public_key(), now_ns=NOW, revocations=RevocationRegistry()
+        release(
+            gate2, c2, cap(), recipient.public_key(), now_ns=NOW, revocations=RevocationRegistry()
         )
     with pytest.raises(GateRefused, match="lineage master"):
         gate2.tombstone(c2, Tombstone.create(c2.cid, SigningKey.generate()), MASTER.public_bytes)
@@ -224,7 +258,7 @@ def test_gated_cek_release_tombstone_and_destroyed_gate() -> None:
 
 def test_guardian_quorum_gate() -> None:
     gate = Gate()
-    gate_id, secret = gate.new_gate(guardians=5, threshold=3)
+    gate_id, secret = gate.new_gate(MASTER.public_bytes, guardians=5, threshold=3)
     c, cek = seal(
         spec(),
         body(),
@@ -234,7 +268,8 @@ def test_guardian_quorum_gate() -> None:
     shares = gate.quorum[gate_id][1]
     r = X25519PrivateKey.generate()
     with pytest.raises(GateRefused, match="quorum"):
-        gate.release(
+        release(
+            gate,
             c,
             cap(),
             r.public_key(),
@@ -242,7 +277,8 @@ def test_guardian_quorum_gate() -> None:
             revocations=RevocationRegistry(),
             guardian_shares=shares[:2],
         )
-    released = gate.release(
+    released = release(
+        gate,
         c,
         cap(),
         r.public_key(),
@@ -273,12 +309,12 @@ def test_recall_respects_no_replay_across_the_lineage() -> None:
     chain = lineage(3)
     store = {c.cid: c for c in chain}
     leaf = chain[-1].cid
-    frame = recall(
+    frame = request_recall(
         store,
         leaf,
         cap(),
         now_ns=NOW,
-        policy=RecallPolicy({}),
+        policy=recall_policy(store),
         epsilon_budget=1.0,
         offset_ns=5,
         span_ns=10,
@@ -286,19 +322,26 @@ def test_recall_respects_no_replay_across_the_lineage() -> None:
     assert RecallFrame.decode(frame.encode()) == frame
     assert len(frame.encode().value) == 32 + 8 + 8 + 4
     with pytest.raises(GateRefused, match="NO_REPLAY"):
-        recall(
+        request_recall(
             store,
             leaf,
             cap(),
             now_ns=NOW,
-            policy=RecallPolicy({chain[0].cid: True}),
+            policy=recall_policy(store, {chain[0].cid: True}),
             epsilon_budget=1.0,
         )
     with pytest.raises(GateRefused, match="DP budget"):
-        recall(store, leaf, cap(), now_ns=NOW, policy=RecallPolicy({}), epsilon_budget=0.1)
+        request_recall(
+            store, leaf, cap(), now_ns=NOW, policy=recall_policy(store), epsilon_budget=0.1
+        )
     with pytest.raises(GateRefused, match="expired"):
-        recall(
-            store, leaf, cap(until=NOW - 1), now_ns=NOW, policy=RecallPolicy({}), epsilon_budget=1.0
+        request_recall(
+            store,
+            leaf,
+            cap(until=NOW - 1),
+            now_ns=NOW,
+            policy=recall_policy(store),
+            epsilon_budget=1.0,
         )
 
 

@@ -46,6 +46,7 @@ from esp.codec.tlv import ParsedPayload
 from esp.consent.accept import AcceptState
 from esp.consent.capability import AudienceMode, ReceiverCapability, Rights, SenderCapability
 from esp.consent.revocation import RevocationRegistry
+from esp.consent.store import ConsentStateStore
 from esp.core.errors import EspError
 from esp.core.provenance import AffectScope
 from esp.core.taoss_types import TaossType, bitmap_to_types, types_to_bitmap
@@ -283,6 +284,7 @@ async def receive(directory: Path, port: int, events: TextIO, sessions: int) -> 
     static = StaticKeyPair.from_private_bytes((directory / "receiver" / "static.key").read_bytes())
     trusted = frozenset({bytes.fromhex(public["sender_master_pk"])})
     accept_state, revocations = AcceptState(), RevocationRegistry()  # outlive sessions
+    consent_store = ConsentStateStore(directory / "receiver" / "consent.sqlite")  # and restarts
     decoders = demo_decoders()
     connections: asyncio.Queue[QuicConnection] = asyncio.Queue()
     server = await serve_quic(
@@ -318,6 +320,7 @@ async def receive(directory: Path, port: int, events: TextIO, sessions: int) -> 
                 declaration=DECLARATION,
                 accept_state=accept_state,
                 revocations=revocations,
+                consent_store=consent_store,
                 inspector=inspector,
             )
             await _serve_session(n, conn, receiver, inspected, log, decoders=decoders)

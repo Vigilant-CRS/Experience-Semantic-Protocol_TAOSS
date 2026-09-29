@@ -156,7 +156,9 @@ def test_receiver_audit_accepts_consistent_accounting() -> None:
 def test_receiver_audit_rejects_inconsistencies() -> None:
     a = DpAuditor(ceiling=12.0)
     with pytest.raises(PrivacyBudgetError, match="below the accountant"):
-        a.audit(DpLevel.L1_BALANCED_REF, params(epsilon_spent=5.0), frozenset(FIVE))
+        a.audit(
+            DpLevel.L1_BALANCED_REF, params(composition_k=1, epsilon_spent=0.1), frozenset(FIVE)
+        )
     with pytest.raises(PrivacyBudgetError, match="ceiling"):
         DpAuditor(ceiling=10.0).audit(DpLevel.L1_BALANCED_REF, params(), frozenset(FIVE))
     with pytest.raises(PrivacyBudgetError, match="below the L1_BALANCED_REF reference"):
