@@ -1,0 +1,494 @@
+{
+ "_note": "Public invasive neural datasets for M18 (WP-088). Metadata only: data are downloaded into data/external/<id>/ (git-ignored) by scripts/fetch_dandi.py and are never committed. Draft DANDI versions are mutable; the asset ids and SHA-256 digests below are the pin.",
+ "datasets": [
+  {
+   "id": "falcon-h1",
+   "dandiset": "000954",
+   "title": "FALCON Benchmark H1: Human 7DoF Reach and Grasp Motor BCI",
+   "role": "motor intent: attempted 7-DoF reach and grasp from intracortical arrays (held-in / held-out sessions for day drift)",
+   "selection": "all assets",
+   "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
+   "consent_pointer": "https://dandiarchive.org/dandiset/000954",
+   "status": "pinned",
+   "version": "draft",
+   "version_mutable": true,
+   "license": "CC-BY-4.0",
+   "citation": "Ye, Joel; Jennifer L. Collinger; Robert Gaunt (2024) FALCON Benchmark H1: Human 7DoF Reach and Grasp Motor BCI (Version draft) [Data set]. DANDI archive. https://dandiarchive.org/dandiset/000954/draft",
+   "url": "https://dandiarchive.org/dandiset/000954/draft",
+   "files": {
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250101T111740.nwb": {
+     "asset_id": "dd1bdcf3-5430-4037-ad4a-1727004d38d2",
+     "size": 5158319,
+     "sha256": "f8af652a31228f08b26ff8a7ecfd2a6bd05a345e368da8c98be649229f80adb2"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250101T112404.nwb": {
+     "asset_id": "782b6fad-2679-4174-a88f-ad58589fe283",
+     "size": 3090448,
+     "sha256": "b946c4cf49f00c2ea8f0051481765ed090294e3e1e5a035cc5716ad93aa052b2"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250108T110520.nwb": {
+     "asset_id": "e40a2eca-883d-4c80-81e3-4203a49506b5",
+     "size": 5801669,
+     "sha256": "8a09f6ead8a44776d2cee62850ff489bd16b1323799c986cad070dad784a2b83"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250108T111022.nwb": {
+     "asset_id": "98f1e471-ad68-4006-b090-9a3e347852e6",
+     "size": 3308274,
+     "sha256": "9398f27c6164e84a379c4a0b8d40d8acf642659c175b9411d4573147881c0e68"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250108T111455.nwb": {
+     "asset_id": "31a4259f-a8fa-47fc-bc31-4c88dfdd10e1",
+     "size": 3151141,
+     "sha256": "3a093dd558a7c5b3dbb38eaa1bb1699742a4b865066a336e65c5fe3abdfdd861"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250113T120811.nwb": {
+     "asset_id": "bd4c010b-bf13-4e4b-8149-964b99b51ba4",
+     "size": 5853252,
+     "sha256": "477410e16b8c1ccfcb3caba9403169ec21ab8bee35c4846376bae781003c5f92"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250113T121303.nwb": {
+     "asset_id": "6ffa00d8-b1b0-44b7-98d2-e3ddf3751c13",
+     "size": 5567825,
+     "sha256": "29d01954747e028dc8b91f82ece28ef11b95a1a33ab3a57e55eb5f967706419f"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250115T110633.nwb": {
+     "asset_id": "9a95d428-053c-42ba-afae-da03791b7127",
+     "size": 5944811,
+     "sha256": "ed0760aaa946e42f8ad812d3aef7f5faf66b21b5f2804aa77574c7f7ee853451"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250115T111328.nwb": {
+     "asset_id": "46938dff-771b-4b57-b0f7-cedb6cf2fdc6",
+     "size": 6858862,
+     "sha256": "022956ab01c8cb645e19327ba3457f2a065b30dd402bb4541e51c684d6a46e20"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250119T113543.nwb": {
+     "asset_id": "c389e73f-f5cf-4cc8-93bf-6972d4333a97",
+     "size": 6153697,
+     "sha256": "f176ad4e1221843a94b67f87e0676bbcb83b7b1f5e49a58b2ae1d85b30e445d6"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250119T114045.nwb": {
+     "asset_id": "02f569e8-7a26-4101-9eda-2b54b47bfab8",
+     "size": 5997093,
+     "sha256": "a9548924522750f6217409a9797b37389d22c9a0fe3ef145b87343192ff7d6ac"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250120T115044.nwb": {
+     "asset_id": "18389588-85a6-4df8-a99b-48e3cfc9c9d8",
+     "size": 6725140,
+     "sha256": "34e0f0d229942516aec6148d2deaf0bbeabda3d10b86cd889fedf0563366c084"
+    },
+    "sub-HumanPitt-held-in-calib/sub-HumanPitt-held-in-calib_ses-19250120T115537.nwb": {
+     "asset_id": "04e815ce-b86e-43f2-891f-9bba135857ca",
+     "size": 6144273,
+     "sha256": "df0ba7830d01e82b716d7a1eaac0b0400ebc84e8cbf0c9e2e047437a31c43e70"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250101T111740.nwb": {
+     "asset_id": "6e45be2c-12b9-43ee-b945-9426f7349eb2",
+     "size": 925980,
+     "sha256": "a95585515b1a12a61603fb3170843351d2fb6551ba6e0456c483570b085e68f3"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250101T112404.nwb": {
+     "asset_id": "3ccec807-0955-453d-a982-54c1beb8bf69",
+     "size": 1015480,
+     "sha256": "e3177a65ffad2d5472c05737e6ff71ef98879bfb744c55608bda18afb11efe60"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250108T110520.nwb": {
+     "asset_id": "1f52eef5-de31-444c-bd30-10ce9b1143dd",
+     "size": 1024284,
+     "sha256": "99fb1997035c4f9b0dd0a97be093042f9b7cf10af55cb2a3dc83eea7e35b4d0e"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250108T111022.nwb": {
+     "asset_id": "cafc683b-91d3-46e1-b981-352361907a11",
+     "size": 1067820,
+     "sha256": "0831e7fb7f262faabc1520237bf8dfeea47dd02211642fac75c5257a24d5bc3f"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250108T111455.nwb": {
+     "asset_id": "f860bec0-c9ad-460c-8e9d-9b1f008c1dcc",
+     "size": 1019604,
+     "sha256": "052423d5963899ebfc669d56ada6bc7ab4c060f023616a870c804c1b24f1418e"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250113T120811.nwb": {
+     "asset_id": "145b08bd-460c-4e35-adfd-393ae4da898b",
+     "size": 984848,
+     "sha256": "8fcaf8bf0030556ccccd1ff8133b45728409b4972ab8fcf0f554b9ad8befc41e"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250113T121303.nwb": {
+     "asset_id": "8a67178b-b652-47f1-82e1-e23d76fad874",
+     "size": 922184,
+     "sha256": "8842d94cda42a92e71fb6d611cb97534263887441458086261110f9c3f363b5a"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250115T110633.nwb": {
+     "asset_id": "fe6a8fe2-2f88-43aa-9f72-e703346e179d",
+     "size": 1106836,
+     "sha256": "d4616e5bca7d1b4581bfca0796e7a6b2c0fc1d2f2b0f1b24171d63818922fec7"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250115T111328.nwb": {
+     "asset_id": "a1c3a7d5-07d1-4c24-9f92-bf316e507687",
+     "size": 1111248,
+     "sha256": "dd320a6352e312cdbd89eed3a0a8f0729b49c5c6f24101fd00d3fc334d91671c"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250119T113543.nwb": {
+     "asset_id": "06c7a3c7-ea46-4083-a146-2b96f0b22629",
+     "size": 1067268,
+     "sha256": "5c5ce0f17fdacfb89d0361eec46bc00ef8472fb8bd1018a124fe28ae8ab8fb54"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250119T114045.nwb": {
+     "asset_id": "2136f538-f47e-4c73-9505-46ca77cd1a62",
+     "size": 1021356,
+     "sha256": "da99134321f3fbd0702791cc76deb46e468260fa24568bc297fb7ba7b7c7ee2e"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250120T115044.nwb": {
+     "asset_id": "3698950f-dec6-4f97-9c3f-f34987c0f15e",
+     "size": 1109660,
+     "sha256": "9b4420f19793bcbe8ed2bb242e1fdc55e223dc20ad6c8c5ed49a4a61fbb11dc4"
+    },
+    "sub-HumanPitt-held-in-minival/sub-HumanPitt-held-in-minival_ses-19250120T115537.nwb": {
+     "asset_id": "22fa4b8e-75f0-4449-a2b3-cbdc36f5d574",
+     "size": 1044752,
+     "sha256": "666047a942c82919bbb6b7bb6dda6c7222091c2051cbe12213b1a493610ae179"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250126T113454.nwb": {
+     "asset_id": "dbec5a3f-46a3-4c8d-bb88-6e8546b0c729",
+     "size": 1472872,
+     "sha256": "6fcdb0441ee732bf0b7ac633312b8feac426e5d461218b30b99ac8de6477d553"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250126T114029.nwb": {
+     "asset_id": "bf00d112-80aa-475c-80bd-4ba1e510708a",
+     "size": 1431320,
+     "sha256": "82a75e51605598fbb81997c2f0c2847ee22c0b578c8a4029401bbc02422e5946"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250127T120333.nwb": {
+     "asset_id": "95beef44-4bab-496e-bbbf-e1375127d6b1",
+     "size": 1505958,
+     "sha256": "c0f2c2bf9589ef138e3cb5aa96b123d7146db6ab994d9a228f17824a9a900068"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250127T120826.nwb": {
+     "asset_id": "a28ab2e2-f7ac-4da5-ad8a-2ce287565fec",
+     "size": 1415291,
+     "sha256": "e6f5c4763776eca2a8a807cbfa45219e1492915151d54f531cc13d1884ceff92"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250129T112555.nwb": {
+     "asset_id": "7b3de668-4f40-4af0-bf1f-4e9a2282e4ea",
+     "size": 1351985,
+     "sha256": "e8b7c769b6b5296273cece03b1a2ad57d1ff166f5b9875acce46345912838109"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250129T113059.nwb": {
+     "asset_id": "54420259-4d3e-4e57-828e-a3e7f51ab76f",
+     "size": 1254631,
+     "sha256": "f8eb0cdcd5105448411028b348de89c899e9598898667161356a5fd3103600a5"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250202T113958.nwb": {
+     "asset_id": "1105af5f-f06d-4b03-b03d-e843dc7277cd",
+     "size": 1381886,
+     "sha256": "eb76704aa5828f91e500879e912b4a22f65ec80a1a1fa6eea2ab0af0260f9560"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250202T114452.nwb": {
+     "asset_id": "875e087c-3d29-4802-a5a7-02638a10af4e",
+     "size": 1271944,
+     "sha256": "07aec96a8acdb6e9c89e724f9a9ed7ffb9fafec4bc8d331be59dc7770e6c27b0"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250203T113515.nwb": {
+     "asset_id": "2a503f2f-834c-43eb-b7ae-237f83f88aa2",
+     "size": 1206269,
+     "sha256": "354813371b8d6d8ea933a15895570646c62406ee31e705a881b57758da0d2d51"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250203T114018.nwb": {
+     "asset_id": "1fb172b5-f508-44a3-9b3d-875f1502797d",
+     "size": 1172811,
+     "sha256": "745d0b9ec3487f6f68d85e826215574cf7f133314c54e3a7485e0022492fd4ef"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250206T112219.nwb": {
+     "asset_id": "7fe0bd9e-f20f-4f03-8e53-e503a1bcbd39",
+     "size": 1363294,
+     "sha256": "ab254456922d99b54237f9634c1985e8f59900f94befc6c8f31f426cbba9e3ea"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250206T112712.nwb": {
+     "asset_id": "9bdc2778-3598-47a9-99d9-39900245c5f4",
+     "size": 1360362,
+     "sha256": "94b2341973c2bdfacdd8e791883ceb0914600ccb4d7e280758a358072b4018ef"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250209T111826.nwb": {
+     "asset_id": "f2407a64-cde7-4bf5-92df-31837ecf3a5e",
+     "size": 1509485,
+     "sha256": "301d6bd105c3e86f25d95557693dd38bbb39a8341e358087cdcfb4d3342eb761"
+    },
+    "sub-HumanPitt-held-out-calib/sub-HumanPitt-held-out-calib_ses-19250209T112327.nwb": {
+     "asset_id": "de27f0a5-3f49-4faa-970f-c8a5b59d6dc7",
+     "size": 1384702,
+     "sha256": "48acb759e00a07615b4a7929d58637e625af6b5cefd423a7f6be5e179d4ac937"
+    }
+   }
+  },
+  {
+   "id": "falcon-h2",
+   "dandiset": "000950",
+   "title": "FALCON Benchmark H2: Human Handwriting iBCI",
+   "role": "communication intent: attempted handwriting from intracortical arrays",
+   "selection": "all assets",
+   "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
+   "consent_pointer": "https://dandiarchive.org/dandiset/000950",
+   "status": "pinned",
+   "version": "0.241029.1403",
+   "version_mutable": false,
+   "license": "CC-BY-4.0",
+   "citation": "Fan, Chaofei; Hahn, Nick; Kamdar, Foram; Avansino, Donald; Wilson, Guy; Hochberg, Leigh; Shenoy, Krishna V; Henderson, Jaime; Willett, Frank (2024) FALCON Benchmark H2: Human Handwriting iBCI (Version 0.241029.1403) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000950/0.241029.1403",
+   "url": "https://dandiarchive.org/dandiset/000950/0.241029.1403",
+   "files": {
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220518.nwb": {
+     "asset_id": "755f691d-34ba-4272-ad53-9fbbc7f0c175",
+     "size": 49922021,
+     "sha256": "c9346c5e31de1fd48e6fb9997ac898481d2845ca11ecef1a51a9f897b0891b4f"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220523.nwb": {
+     "asset_id": "523d5192-a866-476b-81e9-631b09a62ec3",
+     "size": 84807875,
+     "sha256": "de5846396e51ed369a67f202c28c78691010460d2a6ccf9413bff057c88fa254"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220525.nwb": {
+     "asset_id": "a80527a6-7d54-45b9-b13f-30358d1b51b2",
+     "size": 91034941,
+     "sha256": "4129284c4e688f8013cf9345bc5b49f9a6d62dfccd301c047bd33e4fa729086f"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220601.nwb": {
+     "asset_id": "4c8d7a86-343e-49a9-9400-c6ab9e513891",
+     "size": 85840150,
+     "sha256": "9ba0539fdb7f0c3a9a0ba97ea83a4933e192f61d2da80802f14365ac7fcce336"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220603.nwb": {
+     "asset_id": "68d4d5d3-f5f7-4da4-8eed-0f6a973199fc",
+     "size": 58897380,
+     "sha256": "e4ea3aad4d5996457acbbb226aab646d801d425284bde7743912db716cf7d55a"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220606.nwb": {
+     "asset_id": "bbeebfd6-15bc-4f01-8b31-32ce0f3bfd8a",
+     "size": 105989592,
+     "sha256": "591676e3a0eee3ea18e700fd895f1ba01b7edf16f59af1e945adf9873406c80b"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220608.nwb": {
+     "asset_id": "1e20d88b-1935-44cf-8c66-a3930dca9169",
+     "size": 66344109,
+     "sha256": "b8cf69260facc7789ad75a16b8034824ac0824fbb57435568dbcbdb5dc1aa60e"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220613.nwb": {
+     "asset_id": "c9a4dd65-bf73-4ea2-b87c-337f676fb47c",
+     "size": 84965145,
+     "sha256": "be2931d49d1ac17bd9ad226405b4fbddf47f1162c2830954b0ca171d6b6c81e5"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220615.nwb": {
+     "asset_id": "730a333c-a701-4eb2-80e2-d37fcc778650",
+     "size": 65648065,
+     "sha256": "5a88c6b12ea5e39453d46dde42d1b1ad746c4f477e6b8425ca941c07fa5afb84"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220622.nwb": {
+     "asset_id": "258f4eb7-5502-47dd-b315-ba688edac762",
+     "size": 73296905,
+     "sha256": "1ac337f1faeb9790f6baa0f236cb533f1576c612577cfd6c8b2bbfbc5c816ee7"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220901.nwb": {
+     "asset_id": "6dfe726f-92db-4cfb-b614-00ab1de60adc",
+     "size": 43713344,
+     "sha256": "cf6e150a3e641af00f4054467b1b02f17e35bc999cf5c5d403f645ee11c8ba42"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20220929.nwb": {
+     "asset_id": "93172c10-dc88-4b6f-9301-222d869fdbc1",
+     "size": 39452476,
+     "sha256": "5ecc24bbccfbaccf2212ca7521b1ada0bb9c1605b5fddeb335dfe973ce153665"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221006.nwb": {
+     "asset_id": "356e722a-c96c-4fdf-9e51-7c7613d31e3d",
+     "size": 38858231,
+     "sha256": "fdf164808426e41771acff9830fb3c298c05c40e5e3425a5226bb8397eefd620"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221018.nwb": {
+     "asset_id": "52336501-32ad-4fd4-903f-1a70e05425ab",
+     "size": 32711681,
+     "sha256": "d22def1f0b30ca6dd68b31ed1d3efe22e7e66ca28d35c5051419ed3ce521b02e"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221025.nwb": {
+     "asset_id": "37fd7ff0-5b00-49d5-a57d-744d9f0d21f2",
+     "size": 29314201,
+     "sha256": "945943015c1ec50ccd10c0960565470d6e2090c335b4c1cd348b63a7bad248f6"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221027.nwb": {
+     "asset_id": "6dfe1925-0f81-47c3-ab86-f55f39289b3f",
+     "size": 29486116,
+     "sha256": "2c9bc0f8cc293f8784e8fff3e02be1c1e9e4052822554303ba0bdc830e02910a"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221101.nwb": {
+     "asset_id": "50158689-23a5-4767-bbac-fa5aa9c60d03",
+     "size": 31772036,
+     "sha256": "365154fe9e000186c857e4e592b05db1c7cff082e1b5dd487e8ada92a0e86107"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221103.nwb": {
+     "asset_id": "2a7480fd-5332-4efb-b104-358951951962",
+     "size": 35419931,
+     "sha256": "84e3befcae291617ea0fcba9e4b95a03c4385e38398755688c8ae0f214342a3c"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221208.nwb": {
+     "asset_id": "3144248f-a543-4ef5-877b-c30eed8e38ea",
+     "size": 36141346,
+     "sha256": "fa1dfc8dd869ad5a75df5d79105d5dadc3268afd22bc2fb30c143544a3f259ec"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20221215.nwb": {
+     "asset_id": "98778751-0b42-41f0-b82a-42ed48f7795d",
+     "size": 17448705,
+     "sha256": "24d0507c1fcd9451d502a6a883f80ed9be66834029e5e485b3921f2d40f39323"
+    },
+    "sub-T5-held-in-calib/sub-T5-held-in-calib_ses-20230228.nwb": {
+     "asset_id": "09a76d0f-7396-4b1a-b1f6-fa64d145df0a",
+     "size": 34683601,
+     "sha256": "9e66432c8e9b26dc2ae5d43e329b6ffff0296a8bb243699da16fb23df6c367f7"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220518.nwb": {
+     "asset_id": "36fdb0cb-86aa-4181-b258-3262178fdfb4",
+     "size": 4296815,
+     "sha256": "d0f7b60e60c7d35432e85e2c726d103ad595418adeff8487c778c3e45359edba"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220523.nwb": {
+     "asset_id": "19f3d5d4-4ba2-43d6-bcd1-8705006d43bd",
+     "size": 1226680,
+     "sha256": "ee4c05afdf27aac047c09930dc8e4ffb4169eafaf4aa221090cfab76f14389d7"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220525.nwb": {
+     "asset_id": "bcb7c5b8-e4d4-434f-9593-643a348c5cf3",
+     "size": 3552635,
+     "sha256": "a2eab830cf01b0e49aa96ea98de09050a7d6f43528d20b636f29abd2c847c308"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220601.nwb": {
+     "asset_id": "68df84e0-3fe4-4bfc-90b4-3d55f88342e9",
+     "size": 2580020,
+     "sha256": "8710e117b559c3888ce439cf1b3fd27026fee926d41092da199eb3be3e5ba0ed"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220603.nwb": {
+     "asset_id": "2a880993-9ffc-4e87-bd2c-d6826045484b",
+     "size": 2997640,
+     "sha256": "58b53bb6975df32d1a686f7f8a9c13c0acad0fde299c27fbd601f9843322d66e"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220606.nwb": {
+     "asset_id": "ed3e9bb0-427a-464d-bffa-fa93d5a36061",
+     "size": 4295245,
+     "sha256": "49e5ea86833c1ab9e0fd6271af67a8ba2554a5c6bd939b78626664ac2fd7e201"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220608.nwb": {
+     "asset_id": "f4c676c8-0808-4aed-b5b2-c054fce48ea0",
+     "size": 6060710,
+     "sha256": "917feaf8a163db1119bd688a61239101ce0242f0004e0e720d4d72f8da15f470"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220613.nwb": {
+     "asset_id": "4cdccc2e-46e9-4a0b-94ba-de8e412f45a3",
+     "size": 4168860,
+     "sha256": "aae60018d0b6fef818a40fab3a99df9b2e0dfd9259754d362e54105cd3822e9e"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220615.nwb": {
+     "asset_id": "ab59d565-2179-4db0-9f36-5f0591888a2e",
+     "size": 4131180,
+     "sha256": "978baab8d489c37c86836d2ca6f99878b449a46b2b7c9ffb142fad1215a0da35"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220622.nwb": {
+     "asset_id": "142e8bcb-d8e1-4846-bab0-9a464a36616d",
+     "size": 2959960,
+     "sha256": "fca7b02cdd848a2df6dd3956c5742e5bbeb579273ea50418c8b56903185c333f"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220901.nwb": {
+     "asset_id": "80346cc3-2b1d-460a-af27-a5a1daae7a55",
+     "size": 3014910,
+     "sha256": "48ec9c3de77fb0cfa2c1fbf589ed7dd5531d6ea13a9042402cf22e23db84d8a8"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20220929.nwb": {
+     "asset_id": "1738ac2f-13e8-48d2-a929-b246fcb59e3e",
+     "size": 3982815,
+     "sha256": "830d807afdd2d8b7bd2aa1b725c0cbf96872140126778a47d9a99812c7f1b38f"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221006.nwb": {
+     "asset_id": "1a398a45-1d4c-4e26-8c42-6492d5227fdd",
+     "size": 2600430,
+     "sha256": "9c795104f1b0de9ec4d632d299f80a913bcf930ebd0524f0b282a6178c70b187"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221018.nwb": {
+     "asset_id": "6cf3c2c7-fb57-4058-8924-4d674443dc07",
+     "size": 2762925,
+     "sha256": "3814d938a464dc1739bc5dfdbd9be264e50b817b606b290afa73e2706f667bc1"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221025.nwb": {
+     "asset_id": "9eac47ba-8a7b-4095-acbf-3b3e3daebc22",
+     "size": 2751150,
+     "sha256": "a3f9f7af27062b34b88f8641f98dcd164a81a10781cc2b1cc5fd2e47d835f92f"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221027.nwb": {
+     "asset_id": "0f29fff8-6de0-4e19-84b8-0be17504775e",
+     "size": 2842995,
+     "sha256": "6d96da646a6a190c79c34f3ec24bfb81418b196667ca92b06c05ba1432a0e630"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221101.nwb": {
+     "asset_id": "97fdc4dd-ea99-4374-b11d-e000572a041d",
+     "size": 2848490,
+     "sha256": "9542354408d73beac653b92da6598fd734d79e19d914364c9fbe1fe5a5864cfb"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221103.nwb": {
+     "asset_id": "901191f1-2968-4b5f-81a7-17bd061452fb",
+     "size": 2317045,
+     "sha256": "b58506c4ca372476de70f620f30ca660e8a66c831a7f8f019a8dfc8285248c68"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221208.nwb": {
+     "asset_id": "c1b5104f-3c1e-4fb2-bb53-163a87490bae",
+     "size": 3760660,
+     "sha256": "40eefe1dbf435215bcc887b6c98d2668620c84b128b309185cd7cf67c148d8ea"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20221215.nwb": {
+     "asset_id": "74b97376-7d9a-4642-9b9a-cd16cde85903",
+     "size": 2993715,
+     "sha256": "f7401df801c8ee4bebad1251c51b29292bfe6af2f377e2dddff74f9c24018912"
+    },
+    "sub-T5-held-in-minival/sub-T5-held-in-minival_ses-20230228.nwb": {
+     "asset_id": "360d7e11-6f26-40af-b1e3-947405ba9786",
+     "size": 4251285,
+     "sha256": "30f195dd7fba2a0eff2a9b34afe9ba6213bcc68d48a757b0d51c0b5109601490"
+    },
+    "sub-T5-held-out-calib/sub-T5-held-out-calib_ses-20230417.nwb": {
+     "asset_id": "e114bc42-dcb5-4c02-b663-545b49d04664",
+     "size": 3312425,
+     "sha256": "0de25c2b32e2ea02b571c0c649d6d692546bb766d2425893662b2b8201cc9b19"
+    },
+    "sub-T5-held-out-calib/sub-T5-held-out-calib_ses-20230531.nwb": {
+     "asset_id": "5ecea150-9e44-4038-abd3-88db032c3f9a",
+     "size": 3499255,
+     "sha256": "bc604bbbad9e1cbe733a8585af08b54912f98801e76de48dce6d09cbae8dfc58"
+    },
+    "sub-T5-held-out-calib/sub-T5-held-out-calib_ses-20230628.nwb": {
+     "asset_id": "8977a08d-e80d-4b20-854b-8a3858543a7f",
+     "size": 3684515,
+     "sha256": "5bce73e437eb74c6dcaf0d1aa94b97be3dd0f405bfd6a5b98f40a429b6855df6"
+    },
+    "sub-T5-held-out-calib/sub-T5-held-out-calib_ses-20230816.nwb": {
+     "asset_id": "93ae2e77-0f81-4cd0-8e21-940e37c3dbea",
+     "size": 3525945,
+     "sha256": "b5518f4f90e1327ff5adc8803df57ebfbb99b898475be1121bcd8b230576f294"
+    },
+    "sub-T5-held-out-calib/sub-T5-held-out-calib_ses-20231009.nwb": {
+     "asset_id": "f0491291-0d91-44a9-8037-3fc2aec1be85",
+     "size": 4790580,
+     "sha256": "3d0c469b2d716922056b644923281911b9d721691524ca794098ab9a613f54c4"
+    }
+   }
+  },
+  {
+   "id": "dandi-000019",
+   "dandiset": "000019",
+   "title": "Human ECoG speaking consonant-vowel syllables",
+   "role": "speech articulation: high-density ECoG during syllable production",
+   "selection": "all assets",
+   "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
+   "consent_pointer": "https://dandiarchive.org/dandiset/000019",
+   "status": "pending"
+  },
+  {
+   "id": "ajile12",
+   "dandiset": "000055",
+   "title": "AJILE12: Long-term naturalistic human intracranial neural recordings and pose",
+   "role": "naturalistic robustness: long unstructured ECoG sessions with pose",
+   "selection": "sub-01 (all sessions) and sub-02 ses-3",
+   "consent_basis": "de-identified recordings shared by the data owners under the informed consent and ethics approval of the originating study; see the dandiset description and the associated publication",
+   "consent_pointer": "https://dandiarchive.org/dandiset/000055",
+   "status": "pending"
+  }
+ ]
+}
