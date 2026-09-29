@@ -164,7 +164,14 @@
         "video",
         "text",
         "behavior",
-        "event"
+        "event",
+        "ecog",
+        "seeg",
+        "lfp",
+        "mua",
+        "spikes",
+        "spike_counts",
+        "neural_features"
       ],
       "title": "Modality",
       "type": "string"

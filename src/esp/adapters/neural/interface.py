@@ -18,8 +18,9 @@ V13 (section "L2-L3 — With Sensor Integration") separates:
 
 Class ``FUTURE``: this module defines interfaces and a conformance contract
 that a simulator passes. It claims nothing about real neural devices.
-Invasive sources (V13 L4) are refused by the v1 contract: no v1 profile covers
-them.
+Live invasive sources (V13 L4) are refused by the v1 contract. Recorded
+invasive datasets are admitted only under the ``L4-REPLAY`` research profile
+with a :class:`~esp.adapters.neural.model.ReplayDeclaration` (M18, WP-086).
 """
 
 from __future__ import annotations
@@ -33,6 +34,14 @@ from typing import Final, Protocol, runtime_checkable
 import numpy as np
 from numpy.typing import NDArray
 
+from esp.adapters.neural.model import (
+    AUXILIARY,
+    INVASIVE,
+    NeuralDeviceDescriptor,
+    NeuralProfile,
+    ReplayDeclaration,
+    check_profile,
+)
 from esp.adapters.physio.stream import ChannelSpec, SampleBlock
 from esp.core.provenance import Provenance
 from esp.core.taoss_types import L1_DIMS, TaossType
@@ -68,6 +77,16 @@ class NeuralAdapterInfo:
     nominal_rate_hz: float
     level: NeuralLevel
     clock_domain: str
+    descriptor: NeuralDeviceDescriptor | None = None
+    """Full device description (required for L4-REPLAY)."""
+    replay: ReplayDeclaration | None = None
+    """Set only for recorded invasive datasets (L4-REPLAY)."""
+
+    @property
+    def profile(self) -> NeuralProfile:
+        if self.level is NeuralLevel.L3_NON_INVASIVE:
+            return NeuralProfile.L3_LIVE
+        return NeuralProfile.L4_REPLAY if self.replay is not None else NeuralProfile.L4_LIVE
 
 
 @runtime_checkable
@@ -149,16 +168,27 @@ def _interpretive(name: str) -> bool:
 
 def _check_info(info: NeuralAdapterInfo) -> list[ContractViolation]:
     v: list[ContractViolation] = []
+    allowed = NEURAL_MODALITIES
     if info.level is not NeuralLevel.L3_NON_INVASIVE:
-        v.append(
-            ContractViolation("level", "invasive (L4) sources have no v1 profile and are refused")
-        )
+        if info.replay is None or info.descriptor is None:
+            v.append(
+                ContractViolation(
+                    "level", "live invasive (L4) sources have no v1 profile and are refused"
+                )
+            )
+        else:
+            check = check_profile(info.descriptor, NeuralProfile.L4_REPLAY, info.replay)
+            v += [ContractViolation(f"replay:{i.rule}", i.detail) for i in check.issues]
+            allowed = NEURAL_MODALITIES | INVASIVE | AUXILIARY
+    elif info.descriptor is not None:
+        check = check_profile(info.descriptor, NeuralProfile.L3_LIVE, info.replay)
+        v += [ContractViolation(f"descriptor:{i.rule}", i.detail) for i in check.issues]
     if not info.channels:
         v.append(ContractViolation("channels", "no channels declared"))
     if not info.nominal_rate_hz > 0:
         v.append(ContractViolation("rate", "nominal rate must be positive"))
     for c in info.channels:
-        if c.modality not in NEURAL_MODALITIES:
+        if c.modality not in allowed:
             v.append(
                 ContractViolation("modality", f"{c.name}: {c.modality} is not a neural signal")
             )

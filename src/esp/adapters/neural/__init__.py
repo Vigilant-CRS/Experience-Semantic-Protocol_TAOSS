@@ -19,21 +19,37 @@ from esp.adapters.neural.interface import (
     check_decoder_contract,
     decode_boundary,
 )
+from esp.adapters.neural.model import (
+    ElectrodeSpec,
+    NeuralDeviceDescriptor,
+    NeuralProfile,
+    ProcessingStep,
+    ReplayDeclaration,
+    check_descriptor,
+    check_profile,
+)
 from esp.adapters.neural.simulator import SimulatedNeuralAdapter, SimulatorDecoder, band_features
 
 __all__ = [
     "CLAIM_CLASS",
     "ContractReport",
     "ContractViolation",
+    "ElectrodeSpec",
     "NeuralAdapter",
     "NeuralAdapterInfo",
     "NeuralDecoder",
+    "NeuralDeviceDescriptor",
     "NeuralFeatures",
     "NeuralLevel",
+    "NeuralProfile",
+    "ProcessingStep",
+    "ReplayDeclaration",
     "SimulatedNeuralAdapter",
     "SimulatorDecoder",
     "band_features",
     "check_adapter_contract",
     "check_decoder_contract",
+    "check_descriptor",
+    "check_profile",
     "decode_boundary",
 ]

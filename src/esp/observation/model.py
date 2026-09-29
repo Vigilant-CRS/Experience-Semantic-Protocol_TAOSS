@@ -42,6 +42,14 @@ class Modality(StrEnum):
     TEXT = "text"
     BEHAVIOR = "behavior"
     EVENT = "event"
+    # invasive / intracranial neural recordings (M18, WP-086); neutral signal names only
+    ECOG = "ecog"
+    SEEG = "seeg"
+    LFP = "lfp"
+    MUA = "mua"
+    SPIKES = "spikes"
+    SPIKE_COUNTS = "spike_counts"
+    NEURAL_FEATURES = "neural_features"
 
 
 def _known_unit(symbol: str) -> str:
