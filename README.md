@@ -6,113 +6,171 @@
   <a href="LICENSE"><img alt="Code: AGPL-3.0-or-later" src="https://img.shields.io/badge/code-AGPL--3.0--or--later-blue"></a>
   <a href="docs/LICENSING.md"><img alt="Docs: CC BY-SA 4.0" src="https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey"></a>
   <a href="docs/LICENSING.md"><img alt="Vectors: CC BY 4.0" src="https://img.shields.io/badge/vectors-CC%20BY%204.0-lightgrey"></a>
-  <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
-  <img alt="Milestones M0–M5 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M5%20PASS-2e8b57">
+  <img alt="Python 3.12 + Rust" src="https://img.shields.io/badge/python%203.12%20%2B%20rust-interoperable-3776ab">
+  <img alt="Milestones M0–M11, M13–M16 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M11%2C%20M13%E2%80%93M16%20PASS-2e8b57">
+  <img alt="1100+ tests" src="https://img.shields.io/badge/tests-1100%2B-2e8b57">
   <img alt="Spec ESP V13" src="https://img.shields.io/badge/spec-ESP%20V13-8250df">
 </p>
 
-# Experience Semantic Protocol (ESP) — Reference Implementation
+# Experience Semantic Protocol (ESP)
 
-**ESP moves _typed_, _consent-bound_ representations of experience between people and machines,
-instead of forcing everything through words.** This repository is the open reference
-implementation of the ESP V13 specification and its six-part representation, **TAOSS**. It
-covers the wire format, cryptography, consent, sessions, transports, privacy,
-sensor adapters and benchmarks.
+### A North Star for post-linguistic communication, and the open reference implementation that makes it real.
 
-> *Even imperfect experience transfer changes what communication can be.*
-> — ESP V13, Damir Đulović, 2026
+**ESP lets people and machines exchange the _structure_ of an experience, not just the words
+about it.** Knowledge, intention, emotion, context, sensation and time travel as six typed parts
+(**TAOSS**). You decide, part by part, who may receive what. Language stays, but it becomes one
+renderer of meaning among many instead of the only pipe it has to squeeze through.
+
+This repository is the reference implementation of the ESP V13 specification. It covers the
+wire format, cryptography and consent, transports, physiology adapters, trainable encoders,
+leakage audits, an independent Rust implementation, persistent experience capsules, a Typed Hive
+for collective cognition, and interfaces for machines, agents and neural devices.
+
+> *This is not a finished system. It is a coordinate. It fixes a point in idea-space precise
+> enough for others to orient toward it.*
+> — The Experience Semantic Protocol, V13 (Damir Đulović, 2026)
 
 **Contents:**
-[For everyone](#1-for-everyone-what-is-this) ·
-[Try it](#2-try-it-in-five-minutes) ·
-[How it works](#3-how-it-works-step-by-step) ·
-[What works today](#4-what-works-today) ·
-[Test results](#5-test-results) ·
-[Technical deep dive](#6-technical-deep-dive) ·
-[Honesty](#7-what-esp-does-not-do) ·
-[Repository map](#8-repository-map) ·
-[License & citation](#9-license-attribution-citation) ·
-[Deutsch](#10-kurz-auf-deutsch)
+[The Adriatic Moment](#1-the-adriatic-moment) ·
+[The idea](#2-the-idea-send-the-experience-not-a-pointer-to-it) ·
+[What ESP is for](#3-what-esp-is-for) ·
+[Try it](#4-try-it-in-five-minutes) ·
+[How it works](#5-how-it-works-step-by-step) ·
+[Built today](#6-built-today) ·
+[Test results](#7-test-results) ·
+[Deep dive](#8-technical-deep-dive) ·
+[Invitation](#9-an-invitation) ·
+[Evidence](#10-how-we-keep-it-honest) ·
+[Repository](#11-repository-map) ·
+[License & citation](#12-license-attribution-citation) ·
+[Deutsch](#13-kurz-auf-deutsch)
 
 ---
 
-## 1. For everyone: what is this?
+## 1. The Adriatic Moment
 
-### The problem with words
+> Stand on a limestone cliff above the Adriatic at evening. Pine resin and salt in the air. The
+> sea has gone gold. You feel something specific: a cohabitation of serenity and melancholy
+> that has a distinct shape, with edges, textures, a temporal contour.
+>
+> You text a friend: *"The sunset was beautiful."*
+>
+> Six words. They will never feel what you felt.
 
-When you say *"I'm worried about my job"*, the listener has to rebuild what you mean from their
-own experience. Language carries only a few dozen bits per second. It works because every word
-points into a huge *shared prior*: culture, vocabulary, common history. When two people share
-that prior, a few words are enough. When they don't (different cultures, professions, ages, or a
-person and a machine), much of the meaning is lost.
+The six words do not contain the experience. They are **pointers** into a codebook the receiver
+already carries: language, culture, memory, a body that has stood on cliffs. If your friend has
+stood on a similar cliff, a lot arrives. If not, no amount of eloquence brings the missing prior
+into their head.
 
-The ESP paper puts it like this:
+So the bottleneck of human communication is not really speed. Language carries roughly 50 bits
+per second and works brilliantly when the priors align: within a culture, a profession, a
+friendship. It breaks down when they do not: across cultures, generations and disciplines, and
+between people and machines.
 
-> Human communication is not bandwidth-limited in the way we usually say it is. Language
-> transmits roughly 50 bits per second, but each token is a pointer into a shared semantic prior
-> — culture, lexicon, common ground. […] This makes language efficient when priors align […]
-> and catastrophically lossy when they do not.
+**ESP's wager is to make part of that codebook explicit, trainable, interoperable and
+consent-governed.**
 
-### The idea: send the structure of an experience, in labelled parts
+---
 
-ESP describes a moment of experience with **six separate, labelled parts** instead of sentences:
+## 2. The idea: send the experience, not a pointer to it
+
+Instead of a sentence, ESP sends a moment of experience as **six labelled parts**. Each part is
+a vector of numbers from a shared, auditable encoder, with optional human-readable anchors
+("fear", "wants to avoid it", "at work") and relations between the parts.
 
 <p align="center"><img src="docs/assets/taoss-types.svg" alt="One experience split into six typed parts: knowledge 240, intention 64, emotion 64 (withheld in this example), context 64, sensory 64, temporal 16." width="100%"></p>
 
-| Part | Short | Plain meaning | Example for "I'm worried about my job" |
+| Part | Short | Carries | In the Adriatic Moment |
 |---|---|---|---|
-| Knowledge | **KNO** | what it is about | "possible dismissal" |
-| Intention | **INT** | what the person wants or is ready to do | "avoid the topic", "ask for a meeting" |
-| Emotion | **EMO** | how it feels | fear 0.75, sadness 0.4, valence −0.6 |
-| Context | **CTX** | the situation | at work, in a meeting |
-| Sensory | **SEN** | sensory qualities | the noise of the office |
-| Temporal | **TEM** | timing and rhythm | building up over weeks |
+| Knowledge | **KNO** | what it is about | coast, sunset, a specific place |
+| Intention | **INT** | what the person wants or is ready to do | to share it, to stay a little longer |
+| Emotion | **EMO** | how it feels | serenity with melancholy, valence and arousal |
+| Context | **CTX** | the situation | alone, evening, end of a journey |
+| Sensory | **SEN** | sensory qualities | gold light, pine resin, salt, wave rhythm |
+| Temporal | **TEM** | timing and rhythm | slow, fading, a closing arc |
 
-Each part is a list of numbers (a *latent vector*) produced by an encoder. Together they have 512
-numbers. Human-readable descriptions can travel with them: anchors like "fear", self-reports,
-and relations like "emotion → *elicited by* → knowledge".
+This shifts communication from a *linguistic-prior-bound* regime (sparse, brittle, culturally
+specific) to a *parametric-prior-bound* regime: the shared prior is an encoder that can be
+**probed, retrained, compared and improved**.
 
-### Why the parts matter: consent per part
+### Consent is part of the grammar
 
-Because the parts are separate, **you can share some and keep others**. It works much like app
-permissions on a phone:
+Because the parts are separate, sharing becomes precise:
 
-- Share *what* and *why* (KNO, INT, CTX) with a colleague, but **not how you feel** (EMO).
-- Share how you feel with a therapist, but not the context.
-- Change your mind later: **revoke**, and the receiver must reject anything more.
+- Share **what and why** (KNO, INT, CTX) with a colleague, and **how it felt** only with the
+  people you choose.
+- Consent is a **signed, time-limited capability**. The receiver must consent to *receive*, and
+  you can **revoke** at any time.
+- A part you withhold is **not in the message at all**. It is not hidden or encrypted, it simply
+  is never sent.
+- Everything carries **provenance**: who or what produced it, and whether it describes content,
+  the person's own statement, or an inference.
 
-This is enforced by cryptography, not by a checkbox:
-
-- A withheld part is **not in the message at all**. It is not encrypted-and-hidden; the numbers
-  are simply never sent.
-- Consent is a **signed, time-limited, revocable capability**. The receiver must also consent to
-  *receive*. Nothing flows unless both sides agree.
-- Every piece of data carries **provenance**: who or what produced it, and whether it is
-  content-side, self-declared or inferred.
-
-### A tiny story
-
-> Anna uses an ESP app. She describes her day with sliders (worry 4/5, wants to avoid the topic,
-> at work). Her capability for her colleague Ben allows KNO, INT and CTX, but not EMO. Ben's
-> screen shows: *topic: possible dismissal · wants to avoid it · at work*, and a transparency
-> panel: *emotion: withheld by the sender*. Later Anna grants EMO to her coach in a new session.
-> The coach sees "fear, elicited by possible dismissal". When Anna revokes that grant, the coach's
-> software refuses everything that follows.
-
-This exact sequence runs as an automated test with two separate programs talking over the
-network ([M5 gate](tests/milestone/test_m5.py)).
-
-### Is this mind reading? No.
-
-ESP is a **protocol**, like HTTPS is for web pages. It defines how typed, consented
-representations are packaged, protected and checked. It does **not** read minds, transfer
-consciousness or reliably detect emotions. Today's inputs are *structured self-reports*,
-*content* (films, texts) and *measured signals* such as heart rate. Brain interfaces are a
-long-term horizon with interfaces only (see [§7](#7-what-esp-does-not-do)).
+The governance layer arrives *before* human experience becomes payload. That is a design choice
+of the protocol, not a later add-on.
 
 ---
 
-## 2. Try it in five minutes
+## 3. What ESP is for
+
+<p align="center"><img src="docs/assets/horizon.svg" alt="The ESP horizon: L1 content and collaboration and L2 sensors are built today; machines, agents, shared semantic memory and the Typed Hive exist as reference profiles; L3 neural interfaces and L-infinity are the horizon." width="100%"></p>
+
+**Today (L1): content, teams, AI.**
+
+- **Semantic media retrieval.** *"A film with the emotional architecture of Tokyo Story, but
+  sci-fi."* The query is expressible in EMO + CTX + TEM, not in keywords. The first L1
+  application is the Emotional Movie Search Engine (25k films).
+- **Director's cut metadata.** A film ships an explicit intention, emotion and timing track that
+  viewers can opt into.
+- **Knowledge transfer with context.** A lecture transmits concepts (KNO) and the rhythm of the
+  explanation (TEM), and it keeps the speaker's nervousness private.
+- **Collaboration that carries intent.** *"Here is the proposal, here is what I am trying to
+  achieve, here is the situation it lives in"*: INT and CTX layers on top of messages.
+- **Richer input for language models.** Models reason over typed experiential context that plain
+  text loses.
+
+**With the body (L2): senses and physiology.**
+
+- VR/AR and rehabilitation settings that share bodily state (heart rhythm, skin conductance,
+  gaze) under explicit consent.
+- Crews and teams that synchronize timing (TEM) and situation (CTX) instead of narrating them.
+
+**Machines and agents.**
+
+- **Machine Experience Bridge.** A vehicle hands control back to its driver with intention,
+  context and timing, not a beep. Surgical and robotic handovers work the same way.
+- **ESP-Agent.** *Machines are reaching post-linguistic communication before humans do.* AI
+  agents already exchange hidden states. ESP gives that traffic signatures, capabilities, a causal
+  audit trail, and a rule: nothing is called experience until it passes a leakage audit.
+
+**Shared Semantic Memory.**
+
+- **Experience capsules (XCF).** An experience can be kept as an encrypted, signed capsule. It
+  can be recalled later under fresh consent, guarded by a quorum, or tombstoned forever.
+- **Experience Legacy.** Ex-ante policies decide what may be shared after a person's life, with
+  whom, and whether a machine may continue. Posthumous emotion needs its own explicit consent.
+
+**Collective cognition without merger: the Typed Hive.**
+
+- Groups pool typed state (knowledge, context, intention) through consented episodes, secure
+  aggregation and threshold signatures.
+- Emotion is never blended into a group average.
+- A group earns the name *Hive* only when a preregistered audit finds real predictive emergence,
+  while diversity, autonomy and every member's privacy stay within bounds.
+
+**Neural interfaces (L3 and beyond).** ESP defines the *decoder interface boundary*: device
+makers turn neural signals into typed parts, and ESP carries them with the same consent, privacy
+and provenance. A future brain interface should not need to reinvent any of this.
+
+**L∞: the long horizon.** Persistent, interoperable semantic memory, human–machine and eventually
+human–human exchange through substrates that need not be linguistic, and collective alignment on
+typed state instead of messages. ESP does not claim today's technology reaches it. It makes sure
+that if it does, **type identity, consent, provenance, revocation and auditable privacy** are
+already there and do not have to be reinvented.
+
+---
+
+## 4. Try it in five minutes
 
 ```bash
 git clone https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS.git
@@ -145,7 +203,7 @@ uv run esp-demo send $D/keys --port 4433 --capture $D/send.jsonl    # the 11-ste
 uv run esp-demo inspect --events $D/recv.jsonl --capture $D/send.jsonl --out $D/inspector.html
 ```
 
-Full verification (lint, types, licenses, plan sync, schemas, vectors, 600+ tests):
+Full verification (lint, types, licenses, plan sync, schemas, frozen vectors, 1,100+ tests):
 
 ```bash
 make verify
@@ -155,7 +213,7 @@ uv run python scripts/fetch_datasets.py     # optional: open PhysioNet / MNE / X
 
 ---
 
-## 3. How it works, step by step
+## 5. How it works, step by step
 
 ```mermaid
 flowchart TB
@@ -197,9 +255,10 @@ flowchart TB
 
 ---
 
-## 4. What works today
+## 6. Built today
 
-Work is organized in work packages (WP) and milestones (M). A milestone is **PASS** only when its
+**84 of 86 work packages are verified.** The remaining two are human steps: the external legal
+review and the release sign-off. Work is organized in work packages (WP) and milestones (M). A milestone is **PASS** only when its
 gate tests and the full suite pass on a clean, committed tree. The machine-written evidence is
 in [`artifacts/test-reports/`](artifacts/test-reports/) and
 [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
@@ -228,7 +287,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 
 ---
 
-## 5. Test results
+## 7. Test results
 
 The full suite has more than 1,100 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
@@ -373,9 +432,9 @@ Details: `artifacts/research/`, [claims](docs/CLAIMS.md).
 
 ---
 
-## 6. Technical deep dive
+## 8. Technical deep dive
 
-### 6.1 The packet
+### 8.1 The packet
 
 <p align="center"><img src="docs/assets/packet.svg" alt="ESP packet: 100-byte header, encrypted typed TLVs, 16-byte tag, 64-byte Ed25519 signature." width="100%"></p>
 
@@ -394,7 +453,7 @@ Details: `artifacts/research/`, [claims](docs/CLAIMS.md).
   `timeline_tag(8) ‖ seq(4)` derived with BLAKE2b (ADR-0009). Ed25519 over
   header ‖ ciphertext ‖ tag. Retransmissions are byte-identical.
 
-### 6.2 Session establishment
+### 8.2 Session establishment
 
 ```mermaid
 sequenceDiagram
@@ -415,7 +474,7 @@ mode, PQ mode and DP level must match, and pinned registries must carry identica
 Capabilities travel only at establishment. Granting more rights therefore needs a new handshake,
 while withdrawing works at any time.
 
-### 6.3 The acceptance predicate (receiver side)
+### 8.3 The acceptance predicate (receiver side)
 
 A packet is accepted only if **all** hold:
 
@@ -435,7 +494,7 @@ A packet is accepted only if **all** hold:
 
 `evaluate()` reports every violated condition; nothing is decoded before acceptance.
 
-### 6.4 Privacy and security layers
+### 8.4 Privacy and security layers
 
 | Layer | What it does | Where |
 |---|---|---|
@@ -448,7 +507,7 @@ A packet is accepted only if **all** hold:
 | Regulation | mandatory declaration, EU AI Act Art. 5(1)(f) guard, Annex III high-risk, runtime `affect_scope` enforcement | `src/esp/regulatory/`, [REGULATORY.md](docs/REGULATORY.md) |
 | Decoder honesty | absent `⊥` ≠ zero vector, declared per-type policy, audit against silent ⊥→0 | `src/esp/decoder/` |
 
-### 6.5 Affect scope: content is not a person
+### 8.5 Affect scope: content is not a person
 
 Every affect statement says what it is about:
 
@@ -461,7 +520,7 @@ Inferred subject affect requires profile L2, explicit L2 consent, and a regulato
 The pipeline refuses to start for emotion recognition from biometrics at work or school
 (EU AI Act Art. 5(1)(f)). This is not legal advice; see [REGULATORY.md](docs/REGULATORY.md).
 
-### 6.6 Sensors without hardware
+### 8.6 Sensors without hardware
 
 - **BrainFlow:** synthetic, playback-file and multicast streaming boards.
 - **Lab Streaming Layer:** outlets and inlets with explicit clock-correction metadata, a
@@ -476,7 +535,7 @@ The pipeline refuses to start for emotion recognition from biometrics at work or
   - EEG band power.
 - **Personal calibration:** device correction, then robust z-score or a person-specific probit.
 
-### 6.7 Conformance
+### 8.7 Conformance
 
 Golden vectors in [`vectors/`](vectors/) (CC BY 4.0) cover:
 
@@ -489,7 +548,7 @@ Golden vectors in [`vectors/`](vectors/) (CC BY 4.0) cover:
 An independent Rust implementation (`rust/esp-rs`, M10) is checked against the same vectors
 and live against the Python peer.
 
-### 6.8 Decisions and gaps
+### 8.8 Decisions and gaps
 
 Design decisions are recorded as ADRs in [`docs/decisions/`](docs/decisions/). Places where
 V13 is ambiguous are tracked as numbered gaps (GAP-001…) in the
@@ -497,23 +556,58 @@ V13 is ambiguous are tracked as numbered gaps (GAP-001…) in the
 
 ---
 
-## 7. What ESP does not do
+## 9. An invitation
 
-- It does **not** read minds, transfer consciousness or "detect emotions" reliably.
-- It makes **no** claim that the typed parts are semantically independent. Leakage between parts
-  is *measured* (mutual information, probes, predictive V-information), not assumed.
-- H1–H3 (consent granularity, leakage reduction, downstream benefit) are **falsifiable
-  hypotheses**. Smoke benchmarks are labelled *exploratory*. A run only counts as evidence with a
-  preregistration, all required baselines, split discipline and multiplicity correction.
-- Human studies need ethics approval. They are never simulated as evidence.
-- Brain interfaces, the Machine Experience Bridge beyond simulation, and the Typed Hive are
-  research tracks with interfaces and simulators, not product claims.
+The paper ends with a promise: *the work is large enough that no single author can finish it,
+which is why it is structured as an invitation.* This repository is built to be picked up.
+Choose a thread:
 
-Claims are graded on the claims ladder in the master plan (§59).
+- **A second encoder.** Train an independent L1 encoder on different data, speak the same wire
+  format and pass the same audits. *Two implementations are the difference between a protocol and
+  an artifact.* The wire already has two implementations (Python and Rust); the encoder side needs
+  its second one.
+- **Cultures and anchors.** Is KNO/INT/EMO/CTX/SEN/TEM the right decomposition for *mono no aware*
+  or *wabi*? The wire format is type-agnostic so that this question can be answered, and anchor
+  sets are pluggable.
+- **Real corpora.** Bring licensed, consented datasets to ExperienceBench and run the
+  preregistered H1–H3 studies (consent granularity, leakage reduction, downstream benefit).
+- **Neural devices.** Implement the neural adapter contract for your device or open dataset. The
+  decoder boundary is defined; everything above it already works.
+- **Adversaries.** Break the covert-channel defences. Every stego sender you build becomes a
+  regression test.
+- **Collective cognition.** MLS group transport and anonymous credentials for the Typed Hive, and
+  emergence audits on real groups.
+- **A third implementation.** Go, C, TypeScript, Swift: the frozen v1 vectors and the conformance
+  CLI (`esp-conformance`) tell you when you are done.
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [guides](docs/guide/README.md).
+Contributions need a DCO sign-off, and there is no CLA. Or refute the whole frame and propose a
+better one: the architecture is built to absorb that.
 
 ---
 
-## 8. Repository map
+## 10. How we keep it honest
+
+ESP is ambitious on purpose, and disciplined about evidence. Every public statement is tied to a
+level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
+
+| Level | Statement | Status |
+|---|---|---|
+| 1 | Implementation conforms to wire and consent tests | ✅ two interoperable implementations |
+| 2 | Semantic states transfer correctly in ground-truth tests | ✅ |
+| 3 | Physiological and multimodal adapters operate reliably | ✅ 30-min soak, zero loss |
+| 4 | Models predict selected states on held-out real data | next: public neural and physiological corpora |
+| 5 | H1–H3 supported by preregistered ExperienceBench | open for studies |
+| 6 | Neural interfaces populate TAOSS fields in controlled experiments | open for device partners |
+
+Leakage between the parts is *measured*, never assumed to be zero. That is how we found that the
+reference encoder leaks masked emotion into the other parts (see
+[findings](#research-findings-so-far-exploratory-not-evidence)), and why the audit is part of the
+protocol. The precise boundaries are in [Scope](docs/guide/WHAT_ESP_IS_NOT.md).
+
+---
+
+## 11. Repository map
 
 ```text
 src/esp/
@@ -532,7 +626,7 @@ scripts/    milestone runner, plan sync, schema/vector generators, dataset fetch
 
 ---
 
-## 9. License, attribution, citation
+## 12. License, attribution, citation
 
 The core stays free, commercial use is allowed, and attribution is required.
 
@@ -560,14 +654,32 @@ The first L1 application is the
 
 ---
 
-## 10. Kurz auf Deutsch
+## 13. Kurz auf Deutsch
 
-**ESP überträgt Erfahrung in sechs beschrifteten Teilen statt in Sätzen.** Die Teile sind Wissen,
-Absicht, Emotion, Kontext, Sinneseindruck und Zeit. Für jeden Teil entscheidest du einzeln, wer
-ihn bekommt, ähnlich wie bei App-Berechtigungen. Die Zustimmung ist kryptografisch signiert,
-zeitlich begrenzt und widerrufbar. Ein zurückgehaltener Teil ist gar nicht in der Nachricht,
-nicht bloß verschlüsselt. Der Empfänger prüft 13 Bedingungen, bevor er den Inhalt überhaupt deutet.
+**ESP ist ein Nordstern für post-linguistische Kommunikation.** Stell dir vor, du stehst abends
+auf einer Klippe über der Adria und schreibst: „Der Sonnenuntergang war schön.“ Sechs Wörter,
+und doch wird niemand fühlen, was du gefühlt hast. Wörter sind Zeiger in ein gemeinsames
+Vorwissen, und dieses Vorwissen ist oft nicht geteilt.
 
-ESP liest keine Gedanken und erkennt keine Gefühle zuverlässig. Heute arbeitet es mit
-strukturierten Selbstauskünften, Inhalten und Messwerten wie Puls oder Hautleitwert.
+ESP überträgt deshalb die **Struktur einer Erfahrung** in sechs Teilen:
+
+- Wissen, Absicht, Emotion;
+- Kontext, Sinneseindruck, Zeit.
+
+Für jeden Teil entscheidest du, wer ihn bekommt. Die Zustimmung ist signiert, zeitlich begrenzt
+und widerrufbar. Ein zurückgehaltener Teil ist gar nicht in der Nachricht. Sprache bleibt, wird
+aber eine Darstellung von Bedeutung unter vielen.
+
+Dieses Repository ist die offene Referenzimplementierung. Sie umfasst:
+
+- Protokoll, Kryptografie und Einwilligung, dazu eine zweite, unabhängige Implementierung in
+  Rust;
+- Sensorik, trainierbare Encoder und Leck-Audits;
+- Erfahrungskapseln als gemeinsames Gedächtnis;
+- den Typed Hive für kollektives Denken ohne Verschmelzung;
+- Schnittstellen für Maschinen, KI-Agenten und künftige Neuro-Interfaces.
+
+**Mach mit:** Die Arbeit ist als Einladung angelegt. Mögliche Einstiege sind ein zweiter Encoder,
+kulturelle Ankersets, echte Korpora, Neuro-Adapter oder eine dritte Implementierung.
+
 Ausprobieren: `uv run esp-demo ui` und dann http://127.0.0.1:8080 öffnen.

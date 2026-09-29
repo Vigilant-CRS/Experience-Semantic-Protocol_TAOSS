@@ -9,8 +9,8 @@
   </style>
   <rect class="bg" x="0" y="0" width="960" height="300" rx="18"/>
   <text class="fg" x="48" y="92" font-size="44" font-weight="700">Experience Semantic Protocol</text>
-  <text class="mu" x="50" y="130" font-size="20">Typed, consent-bound transport of experience — not of words.</text>
-  <text class="mu" x="50" y="158" font-size="16">Reference implementation of ESP V13 and TAOSS · AGPL-3.0 · CC BY-SA 4.0 · CC BY 4.0</text>
+  <text class="mu" x="50" y="130" font-size="20">A North Star for post-linguistic communication.</text>
+  <text class="mu" x="50" y="158" font-size="16">Typed, consent-bound experience · open reference implementation of ESP V13 and TAOSS</text>
   <line class="ln" x1="48" y1="186" x2="912" y2="186" stroke-width="1.5"/>
   <g class="chip" font-size="18">
     <rect x="48"  y="212" width="132" height="52" rx="10" fill="#2f6fbf"/><text x="114" y="245" text-anchor="middle">KNO</text>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" role="img" aria-labelledby="t d">
+  <title id="t">The ESP horizon: from L1 to L-infinity</title>
+  <desc id="d">A path from today to the long horizon. L1 content and collaboration and L2 sensors are built today; machines and agents, shared semantic memory and the Typed Hive are implemented as reference profiles; L3 neural interfaces and L-infinity are the horizon.</desc>
+  <style>
+    .bg{fill:#f7f8fa}.fg{fill:#1b1f24}.mu{fill:#57606a}.ln{stroke:#8c959f}.card{fill:#ffffff;stroke:#d0d7de}
+    @media (prefers-color-scheme: dark){.bg{fill:#161b22}.fg{fill:#e6edf3}.mu{fill:#9da7b3}.ln{stroke:#6e7681}.card{fill:#0d1117;stroke:#30363d}}
+    text{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+  </style>
+  <rect class="bg" width="960" height="400" rx="18"/>
+  <text class="fg" x="40" y="48" font-size="24" font-weight="700">The horizon: language becomes one renderer of meaning</text>
+  <text class="mu" x="40" y="74" font-size="15">Every stage keeps the same invariants: typed parts, consent, provenance, revocation, auditable privacy.</text>
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#2e8b57"/><stop offset="0.55" stop-color="#2f6fbf"/><stop offset="1" stop-color="#8250df"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 300 C 260 300, 330 170, 520 170 S 800 110, 910 100" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round"/>
+  <g font-size="14">
+    <circle cx="90" cy="300" r="11" fill="#2e8b57"/>
+    <rect class="card" x="40" y="318" width="190" height="62" rx="10"/>
+    <text class="fg" x="52" y="340" font-weight="700">L1 · content &amp; teams</text>
+    <text class="mu" x="52" y="360">media, collaboration, LLMs</text>
+    <text x="52" y="376" font-size="12" fill="#2e8b57" font-weight="600">● built today</text>
+
+    <circle cx="300" cy="232" r="11" fill="#2e8b57"/>
+    <rect class="card" x="250" y="280" width="200" height="62" rx="10"/>
+    <text class="fg" x="262" y="302" font-weight="700">L2 · body &amp; senses</text>
+    <text class="mu" x="262" y="322">physiology, VR, eye tracking</text>
+    <text x="262" y="338" font-size="12" fill="#2e8b57" font-weight="600">● built today</text>
+
+    <circle cx="470" cy="173" r="11" fill="#2f6fbf"/>
+    <rect class="card" x="400" y="196" width="220" height="62" rx="10"/>
+    <text class="fg" x="412" y="218" font-weight="700">Machines &amp; agents</text>
+    <text class="mu" x="412" y="238">handover, agent-to-agent latents</text>
+    <text x="412" y="254" font-size="12" fill="#2f6fbf" font-weight="600">● reference profile</text>
+
+    <circle cx="640" cy="161" r="11" fill="#2f6fbf"/>
+    <rect class="card" x="560" y="92" width="190" height="46" rx="10"/>
+    <text class="fg" x="572" y="112" font-weight="700">Shared memory</text>
+    <text class="mu" x="572" y="130">experience capsules, recall</text>
+
+    <circle cx="775" cy="130" r="11" fill="#6f5bd0"/>
+    <rect class="card" x="690" y="150" width="200" height="62" rx="10"/>
+    <text class="fg" x="702" y="172" font-weight="700">Typed Hive · L3 neural</text>
+    <text class="mu" x="702" y="192">collective cognition, BCI</text>
+    <text x="702" y="208" font-size="12" fill="#6f5bd0" font-weight="600">● reference + interfaces</text>
+
+    <circle cx="910" cy="100" r="13" fill="#8250df"/>
+    <text class="fg" x="895" y="75" font-weight="700" font-size="18">L∞</text>
+  </g>
+</svg>

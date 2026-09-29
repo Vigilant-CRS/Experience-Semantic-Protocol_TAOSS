@@ -22,6 +22,7 @@ EXPECTED = {
     "WHAT_ESP_IS_NOT.md",
     "ADAPTER_GUIDE.md",
     "README.md",
+    "VISION.md",
 }
 
 
