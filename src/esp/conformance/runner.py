@@ -4,7 +4,8 @@
 
 Checks this implementation against the shared vector suite (``vectors/``,
 CC BY 4.0) by category — wire, crypto, consent, revocation, identity,
-session, replay, privacy, ontology, malformed inputs — and, with
+session, replay, privacy, ontology, malformed inputs, neural adapter
+contract (WP-090) — and, with
 ``--peer``, runs live interoperability against another implementation that
 speaks the ``esp-rs`` peer contract (``send`` / ``receive`` over the TCP
 test transport, JSON lines on stdout).
@@ -92,9 +93,17 @@ class Report:
 
 
 class Suite:
-    def __init__(self, vectors: Path) -> None:
+    def __init__(
+        self,
+        vectors: Path,
+        *,
+        neural_adapter: str | None = None,
+        neural_rust: Path | None = None,
+    ) -> None:
         self.vectors = vectors
         self.report = Report()
+        self.neural_adapter = neural_adapter
+        self.neural_rust = neural_rust
 
     def load(self, rel: str) -> list[dict[str, Any]]:
         vs: list[dict[str, Any]] = json.loads((self.vectors / rel).read_text(encoding="utf-8"))[
@@ -227,6 +236,13 @@ class Suite:
             for v in self.load("hive/tlvs.json"):
                 self.check("hive", v["name"], partial(_hive, v))
 
+    def neural(self) -> None:
+        """WP-090: neural adapter/decoder contract, broken sources, optional external and Rust."""
+        from esp.conformance.neural import neural_checks  # noqa: PLC0415 - heavier imports
+
+        for name, fn in neural_checks(self.neural_adapter, self.neural_rust):
+            self.check("neural", name, fn)
+
     def run_all(self) -> Report:
         for category in (
             self.index,
@@ -242,6 +258,7 @@ class Suite:
             self.ontology,
             self.xcf,
             self.hive,
+            self.neural,
         ):
             category()
         return self.report
@@ -474,8 +491,19 @@ def main(argv: list[str] | None = None) -> int:
         "--peer", type=Path, help="external implementation for live interop (esp-rs contract)"
     )
     run.add_argument("--json", type=Path, help="write the report as JSON")
+    run.add_argument(
+        "--neural-adapter",
+        metavar="MODULE:FACTORY",
+        help="check an external neural adapter against the vendor contract (WP-090)",
+    )
+    run.add_argument(
+        "--neural-rust",
+        type=Path,
+        metavar="ESP_RS",
+        help="cross-check the Rust neural contract via `esp-rs neural-sim`",
+    )
     args = parser.parse_args(argv)
-    suite = Suite(args.vectors)
+    suite = Suite(args.vectors, neural_adapter=args.neural_adapter, neural_rust=args.neural_rust)
     report = suite.run_all()
     if args.peer is not None:
         from esp.conformance.interop import run_interop  # noqa: PLC0415 - optional part

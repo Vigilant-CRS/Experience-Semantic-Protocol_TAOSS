@@ -8,7 +8,11 @@
 //! ```text
 //! esp-rs send    --addr H:P --responder-static HEX --receiver-id HEX --master-seed HEX --static-seed HEX --frames N
 //! esp-rs receive --addr H:P --static-seed HEX --identity-seed HEX --trusted HEX --frames N
+//! esp-rs neural-sim [--blocks N] [--samples M] [--seed S] [--break MODE]
 //! ```
+//!
+//! `neural-sim` prints a neural adapter transcript as JSON lines (info, blocks,
+//! verdict of the Rust contract checker) for the conformance cross-check (WP-090).
 
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -301,12 +305,42 @@ fn receiver(m: &HashMap<String, String>) -> Res<()> {
     Ok(())
 }
 
+fn neural_sim(m: &HashMap<String, String>) -> Res<()> {
+    use esp_rs::neural;
+    let num = |k: &str, d: usize| -> Res<usize> {
+        Ok(match m.get(k) {
+            Some(v) => v.parse()?,
+            None => d,
+        })
+    };
+    let blocks = num("blocks", 4)?;
+    let samples = num("samples", 64)?;
+    let seed = num("seed", 1)? as u64;
+    if samples < 6 {
+        return Err("--samples must be at least 6".into());
+    }
+    let mode = m.get("break").map_or("none", String::as_str);
+    let (info, items) = neural::transcript(mode, blocks, samples, seed).ok_or(format!(
+        "unknown --break {mode}; one of {:?}",
+        neural::BREAK_MODES
+    ))?;
+    let report = neural::check_transcript(&info, &items, samples);
+    let mut out = std::io::stdout().lock();
+    writeln!(out, "{}", neural::info_json(&info))?;
+    for item in &items {
+        writeln!(out, "{}", neural::item_json(item))?;
+    }
+    writeln!(out, "{}", neural::verdict_json(&report))?;
+    Ok(())
+}
+
 fn main() {
     let m = args();
     let result = match m["cmd"].as_str() {
         "send" => sender(&m),
         "receive" => receiver(&m),
-        _ => Err("usage: esp-rs send|receive --addr H:P ...".into()),
+        "neural-sim" => neural_sim(&m),
+        _ => Err("usage: esp-rs send|receive|neural-sim ...".into()),
     };
     if let Err(e) = result {
         eprintln!("esp-rs: {e}");

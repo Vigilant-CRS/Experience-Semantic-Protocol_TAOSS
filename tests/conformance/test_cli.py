@@ -30,6 +30,7 @@ def test_runner_passes_every_category(tmp_path: Path) -> None:
         "replay",
         "privacy",
         "ontology",
+        "neural",
     }
 
 

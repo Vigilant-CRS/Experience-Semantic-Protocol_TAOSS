@@ -3,9 +3,11 @@
 //! Independent Rust implementation of the ESP V13 wire codec (WP-040) and a session
 //! client (WP-041). Written from the V13 text and the ADRs, not translated from the
 //! Python reference; interoperability is checked against the shared vectors and live.
+//! `neural` mirrors the neural vendor contract 1.0.0 (WP-090).
 
 pub mod crypto;
 pub mod header;
+pub mod neural;
 pub mod session;
 pub mod tlv;
 
