@@ -32,18 +32,19 @@ for collective cognition, and interfaces for machines, agents and neural devices
 
 **Contents:**
 [The Adriatic Moment](#1-the-adriatic-moment) ·
-[The idea](#2-the-idea-send-the-experience-not-a-pointer-to-it) ·
-[What ESP is for](#3-what-esp-is-for) ·
-[Try it](#4-try-it-in-five-minutes) ·
-[How it works](#5-how-it-works-step-by-step) ·
-[Built today](#6-built-today) ·
-[Test results](#7-test-results) ·
-[Deep dive](#8-technical-deep-dive) ·
-[Invitation](#9-an-invitation) ·
-[Evidence](#10-how-we-keep-it-honest) ·
-[Repository](#11-repository-map) ·
-[License & citation](#12-license-attribution-citation) ·
-[Deutsch](#13-kurz-auf-deutsch)
+[Evolution](#2-why-this-is-the-next-step) ·
+[The idea](#3-the-idea-send-the-experience-not-a-pointer-to-it) ·
+[What ESP is for](#4-what-esp-is-for) ·
+[Try it](#5-try-it-in-five-minutes) ·
+[How it works](#6-how-it-works-step-by-step) ·
+[Built today](#7-built-today) ·
+[Test results](#8-test-results) ·
+[Deep dive](#9-technical-deep-dive) ·
+[Invitation](#10-an-invitation) ·
+[Evidence](#11-how-we-keep-it-honest) ·
+[Repository](#12-repository-map) ·
+[License & citation](#13-license-attribution-citation) ·
+[Deutsch](#14-kurz-auf-deutsch)
 
 ---
 
@@ -72,7 +73,28 @@ consent-governed.**
 
 ---
 
-## 2. The idea: send the experience, not a pointer to it
+## 2. Why this is the next step
+
+<p align="center"><img src="docs/assets/evolution.svg" alt="The evolution of communication: speech, writing, print, internet, language models, ESP, Typed Hive. Each step removed one constraint; words still only point." width="100%"></p>
+
+| Step | What it made possible | What stayed the same |
+|---|---|---|
+| **Speech** | Meaning shared between people, here and now | Bound to the moment and to who is present |
+| **Writing** | Knowledge free of time and place: it outlives its author and travels without the speaker | Experience flattened into symbols |
+| **Print** | The same text for everyone, at scale | One-way, slow |
+| **Internet** | Anyone, anywhere, immediately | A flood of text and media that the reader must interpret |
+| **Language models** | Information made *usable*: summarized, answered, acted on. Machines start to talk beyond words, in hidden states | Between humans, still sentences as pointers into a prior |
+| **ESP · TAOSS** | **Experience itself**: what someone knows, wants, feels, senses and when, as typed parts with consent per part | |
+| **Typed Hive** | **Minds that compose without merging**: shared memory and collective cognition, auditable and revocable | |
+
+Every step removed a constraint. Writing removed time and place, the internet removed distance
+and delay, language models removed the work of making information usable. **What remains is the
+prior itself.** Words still only point, and the receiver has to have what they point at. ESP
+transmits what they point at.
+
+---
+
+## 3. The idea: send the experience, not a pointer to it
 
 Instead of a sentence, ESP sends a moment of experience as **six labelled parts**. Each part is
 a vector of numbers from a shared, auditable encoder, with optional human-readable anchors
@@ -111,7 +133,7 @@ of the protocol, not a later add-on.
 
 ---
 
-## 3. What ESP is for
+## 4. What ESP is for
 
 <p align="center"><img src="docs/assets/horizon.svg" alt="The ESP horizon: L1 content and collaboration and L2 sensors are built today; machines, agents, shared semantic memory and the Typed Hive exist as reference profiles; L3 neural interfaces and L-infinity are the horizon." width="100%"></p>
 
@@ -170,7 +192,7 @@ already there and do not have to be reinvented.
 
 ---
 
-## 4. Try it in five minutes
+## 5. Try it in five minutes
 
 ```bash
 git clone https://github.com/Vigilant-CRS/Experience-Semantic-Protocol_TAOSS.git
@@ -213,7 +235,7 @@ uv run python scripts/fetch_datasets.py     # optional: open PhysioNet / MNE / X
 
 ---
 
-## 5. How it works, step by step
+## 6. How it works, step by step
 
 ```mermaid
 flowchart TB
@@ -255,7 +277,7 @@ flowchart TB
 
 ---
 
-## 6. Built today
+## 7. Built today
 
 **84 of 86 work packages are verified.** The remaining two are human steps: the external legal
 review and the release sign-off. Work is organized in work packages (WP) and milestones (M). A milestone is **PASS** only when its
@@ -287,7 +309,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 
 ---
 
-## 7. Test results
+## 8. Test results
 
 The full suite has more than 1,100 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
@@ -432,9 +454,9 @@ Details: `artifacts/research/`, [claims](docs/CLAIMS.md).
 
 ---
 
-## 8. Technical deep dive
+## 9. Technical deep dive
 
-### 8.1 The packet
+### 9.1 The packet
 
 <p align="center"><img src="docs/assets/packet.svg" alt="ESP packet: 100-byte header, encrypted typed TLVs, 16-byte tag, 64-byte Ed25519 signature." width="100%"></p>
 
@@ -453,7 +475,7 @@ Details: `artifacts/research/`, [claims](docs/CLAIMS.md).
   `timeline_tag(8) ‖ seq(4)` derived with BLAKE2b (ADR-0009). Ed25519 over
   header ‖ ciphertext ‖ tag. Retransmissions are byte-identical.
 
-### 8.2 Session establishment
+### 9.2 Session establishment
 
 ```mermaid
 sequenceDiagram
@@ -474,7 +496,7 @@ mode, PQ mode and DP level must match, and pinned registries must carry identica
 Capabilities travel only at establishment. Granting more rights therefore needs a new handshake,
 while withdrawing works at any time.
 
-### 8.3 The acceptance predicate (receiver side)
+### 9.3 The acceptance predicate (receiver side)
 
 A packet is accepted only if **all** hold:
 
@@ -494,7 +516,7 @@ A packet is accepted only if **all** hold:
 
 `evaluate()` reports every violated condition; nothing is decoded before acceptance.
 
-### 8.4 Privacy and security layers
+### 9.4 Privacy and security layers
 
 | Layer | What it does | Where |
 |---|---|---|
@@ -507,7 +529,7 @@ A packet is accepted only if **all** hold:
 | Regulation | mandatory declaration, EU AI Act Art. 5(1)(f) guard, Annex III high-risk, runtime `affect_scope` enforcement | `src/esp/regulatory/`, [REGULATORY.md](docs/REGULATORY.md) |
 | Decoder honesty | absent `⊥` ≠ zero vector, declared per-type policy, audit against silent ⊥→0 | `src/esp/decoder/` |
 
-### 8.5 Affect scope: content is not a person
+### 9.5 Affect scope: content is not a person
 
 Every affect statement says what it is about:
 
@@ -520,7 +542,7 @@ Inferred subject affect requires profile L2, explicit L2 consent, and a regulato
 The pipeline refuses to start for emotion recognition from biometrics at work or school
 (EU AI Act Art. 5(1)(f)). This is not legal advice; see [REGULATORY.md](docs/REGULATORY.md).
 
-### 8.6 Sensors without hardware
+### 9.6 Sensors without hardware
 
 - **BrainFlow:** synthetic, playback-file and multicast streaming boards.
 - **Lab Streaming Layer:** outlets and inlets with explicit clock-correction metadata, a
@@ -535,7 +557,7 @@ The pipeline refuses to start for emotion recognition from biometrics at work or
   - EEG band power.
 - **Personal calibration:** device correction, then robust z-score or a person-specific probit.
 
-### 8.7 Conformance
+### 9.7 Conformance
 
 Golden vectors in [`vectors/`](vectors/) (CC BY 4.0) cover:
 
@@ -548,7 +570,7 @@ Golden vectors in [`vectors/`](vectors/) (CC BY 4.0) cover:
 An independent Rust implementation (`rust/esp-rs`, M10) is checked against the same vectors
 and live against the Python peer.
 
-### 8.8 Decisions and gaps
+### 9.8 Decisions and gaps
 
 Design decisions are recorded as ADRs in [`docs/decisions/`](docs/decisions/). Places where
 V13 is ambiguous are tracked as numbered gaps (GAP-001…) in the
@@ -556,7 +578,7 @@ V13 is ambiguous are tracked as numbered gaps (GAP-001…) in the
 
 ---
 
-## 9. An invitation
+## 10. An invitation
 
 The paper ends with a promise: *the work is large enough that no single author can finish it,
 which is why it is structured as an invitation.* This repository is built to be picked up.
@@ -586,7 +608,7 @@ better one: the architecture is built to absorb that.
 
 ---
 
-## 10. How we keep it honest
+## 11. How we keep it honest
 
 ESP is ambitious on purpose, and disciplined about evidence. Every public statement is tied to a
 level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
@@ -607,7 +629,7 @@ protocol. The precise boundaries are in [Scope](docs/guide/WHAT_ESP_IS_NOT.md).
 
 ---
 
-## 11. Repository map
+## 12. Repository map
 
 ```text
 src/esp/
@@ -626,7 +648,7 @@ scripts/    milestone runner, plan sync, schema/vector generators, dataset fetch
 
 ---
 
-## 12. License, attribution, citation
+## 13. License, attribution, citation
 
 The core stays free, commercial use is allowed, and attribution is required.
 
@@ -654,12 +676,20 @@ The first L1 application is the
 
 ---
 
-## 13. Kurz auf Deutsch
+## 14. Kurz auf Deutsch
 
 **ESP ist ein Nordstern für post-linguistische Kommunikation.** Stell dir vor, du stehst abends
 auf einer Klippe über der Adria und schreibst: „Der Sonnenuntergang war schön.“ Sechs Wörter,
 und doch wird niemand fühlen, was du gefühlt hast. Wörter sind Zeiger in ein gemeinsames
 Vorwissen, und dieses Vorwissen ist oft nicht geteilt.
+
+Jeder Schritt der Kommunikationsgeschichte hat eine Grenze aufgehoben:
+
+- Die Schrift löste Wissen von Zeit und Ort.
+- Das Internet löste es von Entfernung und Verzögerung.
+- Sprachmodelle machen Information verwertbar.
+
+Übrig bleibt das Vorwissen selbst. Wörter zeigen nur auf etwas.
 
 ESP überträgt deshalb die **Struktur einer Erfahrung** in sechs Teilen:
 

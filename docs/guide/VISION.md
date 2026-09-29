@@ -64,4 +64,4 @@ should not need to be reinvented. That is the point of building them now.
 *This is not a finished system. It is a coordinate.* Pick a thread: a second encoder, cultural
 anchor sets, real corpora for the preregistered hypotheses, neural adapters for devices and open
 datasets, new adversaries, MLS for the Hive, or a third implementation of the wire. See the
-[README](../../README.md#9-an-invitation) and [CONTRIBUTING](../../CONTRIBUTING.md).
+[README](../../README.md#10-an-invitation) and [CONTRIBUTING](../../CONTRIBUTING.md).

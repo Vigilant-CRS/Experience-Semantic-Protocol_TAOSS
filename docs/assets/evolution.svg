@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="t d">
+  <title id="t">The evolution of communication</title>
+  <desc id="d">Speech, writing, print, internet, large language models, ESP, Typed Hive. Each step removes one constraint: writing removes time and place, print removes scarcity, the internet removes distance and delay, language models remove the work of making information usable, ESP removes the dependence on a shared linguistic prior by transmitting typed experience, and the Typed Hive lets experience compose across people.</desc>
+  <style>
+    .bg{fill:#f7f8fa}.fg{fill:#1b1f24}.mu{fill:#57606a}.ln{stroke:#8c959f}.card{fill:#ffffff;stroke:#d0d7de}
+    @media (prefers-color-scheme: dark){.bg{fill:#161b22}.fg{fill:#e6edf3}.mu{fill:#9da7b3}.ln{stroke:#6e7681}.card{fill:#0d1117;stroke:#30363d}}
+    text{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+  </style>
+  <rect class="bg" width="960" height="300" rx="18"/>
+  <text class="fg" x="40" y="46" font-size="22" font-weight="700">Every step removed one constraint. Words still only point.</text>
+  <line x1="60" y1="150" x2="905" y2="150" class="ln" stroke-width="2"/>
+  <path d="M905 150 l-10 -6 v12 z" fill="#8c959f"/>
+  <g font-size="13" text-anchor="middle">
+    <circle cx="90" cy="150" r="10" fill="#8c959f"/>
+    <text class="fg" x="90" y="118" font-weight="700" font-size="15">Speech</text>
+    <text class="mu" x="90" y="182">here &amp; now</text>
+    <text class="mu" x="90" y="198">between people</text>
+    <text class="mu" x="90" y="214">present</text>
+
+    <circle cx="215" cy="150" r="10" fill="#8c959f"/>
+    <text class="fg" x="215" y="118" font-weight="700" font-size="15">Writing</text>
+    <text class="mu" x="215" y="182">knowledge free</text>
+    <text class="mu" x="215" y="198">of time &amp; place</text>
+
+    <circle cx="340" cy="150" r="10" fill="#8c959f"/>
+    <text class="fg" x="340" y="118" font-weight="700" font-size="15">Print</text>
+    <text class="mu" x="340" y="182">copies for</text>
+    <text class="mu" x="340" y="198">everyone</text>
+
+    <circle cx="465" cy="150" r="10" fill="#8c959f"/>
+    <text class="fg" x="465" y="118" font-weight="700" font-size="15">Internet</text>
+    <text class="mu" x="465" y="182">anywhere,</text>
+    <text class="mu" x="465" y="198">immediately</text>
+
+    <circle cx="590" cy="150" r="10" fill="#8c959f"/>
+    <text class="fg" x="590" y="118" font-weight="700" font-size="15">LLMs</text>
+    <text class="mu" x="590" y="182">information</text>
+    <text class="mu" x="590" y="198">made usable</text>
+
+    <circle cx="715" cy="150" r="13" fill="#2f6fbf"/>
+    <text x="715" y="118" font-weight="700" font-size="15" fill="#2f6fbf">ESP · TAOSS</text>
+    <text class="mu" x="715" y="182">experience itself,</text>
+    <text class="mu" x="715" y="198">typed &amp; consented</text>
+
+    <circle cx="840" cy="150" r="13" fill="#8250df"/>
+    <text x="840" y="118" font-weight="700" font-size="15" fill="#8250df">Typed Hive</text>
+    <text class="mu" x="840" y="182">minds that compose,</text>
+    <text class="mu" x="840" y="198">without merging</text>
+  </g>
+  <rect x="660" y="228" width="240" height="44" rx="10" fill="#8250df" opacity="0.10"/>
+  <text x="780" y="255" font-size="14" text-anchor="middle" fill="#8250df" font-weight="600">the next step starts here</text>
+  <text class="mu" x="40" y="262" font-size="13">Language: roughly 50 bit/s of pointers into a shared prior.</text>
+</svg>
