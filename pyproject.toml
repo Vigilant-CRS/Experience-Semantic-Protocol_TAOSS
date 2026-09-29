@@ -49,6 +49,11 @@ physio = [
     "pyxdf>=1.17.5",
     "wfdb>=4.3.1",
 ]
+neural = [
+    "pynwb>=3.0",
+    "h5py>=3.12",
+    "remfile>=0.1.13",
+]
 
 [dependency-groups]
 dev = [
@@ -66,6 +71,9 @@ dev = [
     "wfdb>=4.3.1",
     "pyedflib>=0.1.42",
     "pip-audit>=2.10.1",
+    "pynwb>=3.0",
+    "h5py>=3.12",
+    "remfile>=0.1.13",
 ]
 train = [
     "torch>=2.4",
@@ -123,7 +131,7 @@ mypy_path = "src"
 packages = ["esp"]
 
 [[tool.mypy.overrides]]
-module = ["noise", "noise.*", "wfdb", "wfdb.*", "pyxdf", "pyxdf.*", "brainflow", "brainflow.*", "pylsl", "pylsl.*", "pyedflib", "pyedflib.*"]
+module = ["noise", "noise.*", "wfdb", "wfdb.*", "pyxdf", "pyxdf.*", "brainflow", "brainflow.*", "pylsl", "pylsl.*", "pyedflib", "pyedflib.*", "pynwb", "pynwb.*", "hdmf", "hdmf.*", "h5py", "h5py.*", "remfile", "remfile.*"]
 ignore_missing_imports = true
 
 [[tool.uv.index]]
