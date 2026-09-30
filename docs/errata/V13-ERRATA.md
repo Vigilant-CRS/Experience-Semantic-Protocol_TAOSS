@@ -258,6 +258,17 @@ only once V13.1 adopts them. Each entry records:
   EMO always masked.
 - *Tests:* `tests/milestone/test_m18.py` on FALCON H1 (DANDI 000954).
 
+**E-29 (GAP-019, PROPOSED, ADR-0023): transparency log witnesses**
+
+- *Mechanism implemented (C2SP-compatible).* The log publishes each tree as a
+  c2sp.org/tlog-checkpoint (origin, size, RFC 6962 root). It is signed as a
+  c2sp.org/signed-note by the log key, whose name equals the origin.
+- Independent witnesses add Ed25519 cosignature/v1 lines (c2sp.org/tlog-cosignature).
+- Verifiers require a quorum of distinct known witnesses; the log key never counts.
+- The ESP `esp/v1/tree-head` format stays valid for the same tree.
+- The operator choice is pending a maintainer decision. The recommendation is in ADR-0023.
+- *Tests:* `tests/unit/test_c2sp.py` (signed-note and sumdb/note vectors byte-exact).
+
 ## Repository roles
 
 **E-21 (GAP-020): repositories**
