@@ -23,6 +23,9 @@ candidate is **technically complete but not released**.
 
 ## Human sign-offs
 
+Preparation: [decisions and recommendations](DECISIONS_FOR_MAINTAINER.md) ·
+[legal review brief](LEGAL_REVIEW_BRIEF.md) · [threat-review checklist](THREAT_REVIEW_CHECKLIST.md).
+
 Only the maintainer (or the named reviewer) changes a row, in a signed-off commit.
 Allowed values: `PENDING`, `APPROVED`. A rejected ADR is replaced by a revised one and then
 approved.

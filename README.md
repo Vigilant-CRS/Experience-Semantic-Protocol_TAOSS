@@ -441,10 +441,10 @@ the same contract (CC BY 4.0; downloaded locally with checksums, never committed
 
 | Dataset | Signal | What it shows |
 |---|---|---|
-| FALCON H1 (DANDI 000954) | intracortical arrays, reach and grasp | all 40 sessions byte-identical to the official benchmark loader |
-| FALCON H2 (DANDI 000950) | intracortical, handwriting | 192 channels, identical to direct NWB reads |
-| DANDI 000019 | 256-channel ECoG while speaking syllables | ECoG in µV at 3,052 Hz, identical to direct NWB reads |
-| AJILE12 (DANDI 000055) | long naturalistic intracranial recordings | lazy streaming from 16 GB files |
+| [FALCON H1 (DANDI 000954)](https://dandiarchive.org/dandiset/000954) | intracortical arrays, reach and grasp | all 40 sessions byte-identical to the official benchmark loader |
+| [FALCON H2 (DANDI 000950)](https://dandiarchive.org/dandiset/000950/0.241029.1403) | intracortical, handwriting | 192 channels, identical to direct NWB reads |
+| [DANDI 000019](https://doi.org/10.48324/dandi.000019/0.220126.2148) | 256-channel ECoG while speaking syllables | ECoG in µV at 3,052 Hz, identical to direct NWB reads |
+| [AJILE12 (DANDI 000055)](https://dandiarchive.org/dandiset/000055/0.220127.0436) | long naturalistic intracranial recordings | lazy streaming from 16 GB files |
 
 End to end, a real FALCON recording passes the live-device contract, survives an emulated
 reconnect and gain step, and its decoded *attempted movement* arrives at the receiver as a
@@ -465,6 +465,8 @@ matters:
 
 Neural drift across days is real. Better decoders plug into the same contract; ESP carries
 their output with consent, provenance and recalibration history.
+
+Data credits and full citations: [§ Data used](#data-used-and-credits).
 
 ### Independent code review (2026-09-29)
 
@@ -669,6 +671,38 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | 4 | Models predict selected states on held-out real data | 🟡 first step on public implant data (see below) |
 | 5 | H1–H3 supported by preregistered ExperienceBench | open for studies |
 | 6 | Neural interfaces populate TAOSS fields in controlled experiments | open for device partners |
+
+### What is shown on real data, and what is not
+
+| Claim | Evidence | Real data? |
+|---|---|---|
+| Wire format, cryptography, consent, revocation | golden vectors, two independent implementations (Python, Rust), 1 M fuzz inputs | protocol tests (no human data needed) |
+| File readers are exact | EDF matches `pyedflib` on PhysioNet EEG; FALCON H1 byte-identical to the official loader (40 sessions); FALCON H2 and DANDI 000019 identical to direct NWB reads | ✅ real human recordings |
+| Physiology features work | heart rate from an Empatica wristband agrees with the device (median deviation < 8 bpm) | ✅ real human recordings |
+| Streaming is reliable for 30 min | BrainFlow **synthetic** board → LSL → receiver, 0 samples lost | synthetic signal, real software stack |
+| Implant data can travel as typed, consented ESP | FALCON H1 recording end to end through an encrypted session (M18 gate) | ✅ real human implant data |
+| Attempted movement is decodable | R² 0.21 within a day, ≈ 0 across days (exploratory, one dataset) | ✅ real, exploratory |
+| TAOSS separates types; leakage audits work | encoder training, audits, ExperienceBench smoke runs | ❌ synthetic worlds only |
+| ESP beats language or embeddings (H1–H3) | not tested yet; needs preregistered studies | ❌ open |
+| Human experience transfer | not claimed | ❌ open |
+
+### Data used and credits
+
+All datasets are public, used under their licenses, downloaded with checksums into a
+git-ignored folder, and never redistributed by this repository. Pins:
+[`datasets/neural.json`](datasets/neural.json), [`datasets/registry.json`](datasets/registry.json).
+
+| Dataset | License | Citation |
+|---|---|---|
+| falcon-h1 | CC-BY-4.0 | Ye, Joel; Jennifer L. Collinger; Robert Gaunt (2024) FALCON Benchmark H1: Human 7DoF Reach and Grasp Motor BCI (Version draft) [Data set]. DANDI archive. https://dandiarchive.org/dandiset/000954/draft |
+| falcon-h2 | CC-BY-4.0 | Fan, Chaofei; Hahn, Nick; Kamdar, Foram; Avansino, Donald; Wilson, Guy; Hochberg, Leigh; Shenoy, Krishna V; Henderson, Jaime; Willett, Frank (2024) FALCON Benchmark H2: Human Handwriting iBCI (Version 0.241029.1403) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000950/0.241029.1403 |
+| dandi-000019 | CC-BY-4.0 | Bouchard, Kristofer E.; Chang, Edward F. (2022) Human ECoG speaking consonant-vowel syllables (Version 0.220126.2148) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000019/0.220126.2148 |
+| ajile12 | CC-BY-4.0 | Peterson, Steven M.; Singh, Satpreet H.; Dichter, Benjamin; Scheid, Micheal; Rao, Rajesh P. N.; Brunton, Bingni W. (2022) AJILE12: Long-term naturalistic human intracranial neural recordings and pose (Version 0.220127.0436) [Data set]. DANDI archive. https://doi.org/10.48324/dandi.000055/0.220127.0436 |
+| physionet-wearable-stress-s01 | ODC-By-1.0 | Hongn et al., Wearable Device Dataset from Induced Stress and Structured Exercise Sessions, PhysioNet (2025), v1.0.1; Goldberger et al., PhysioBank, PhysioToolkit, and PhysioNet, Circulation 101(23), 2000. [https://physionet.org/content/wearable-device-dataset/1.0.1/](https://physionet.org/content/wearable-device-dataset/1.0.1/) |
+| physionet-noneeg-subject1 | ODC-By-1.0 | Birjandtalab et al., Non-EEG Dataset for Assessment of Neurological Status, PhysioNet; Goldberger et al., Circulation 101(23), 2000. [https://physionet.org/content/noneeg/1.0.0/](https://physionet.org/content/noneeg/1.0.0/) |
+| physionet-eegmmidb-s001 | ODC-By-1.0 | Schalk et al., BCI2000: A General-Purpose Brain-Computer Interface (BCI) System, IEEE TBME 51(6), 2004; Goldberger et al., Circulation 101(23), 2000. [https://physionet.org/content/eegmmidb/1.0.0/](https://physionet.org/content/eegmmidb/1.0.0/) |
+| mne-test-files | BSD-3-Clause | MNE-Python developers, https://github.com/mne-tools/mne-python (BSD-3-Clause). [https://github.com/mne-tools/mne-python](https://github.com/mne-tools/mne-python) |
+| xdf-example-files | MIT | Copyright (c) 2019 xdf-modules, https://github.com/xdf-modules/example-files (MIT). [https://github.com/xdf-modules/example-files](https://github.com/xdf-modules/example-files) |
 
 Leakage between the parts is *measured*, never assumed to be zero. That is how we found that the
 reference encoder leaks masked emotion into the other parts (see
