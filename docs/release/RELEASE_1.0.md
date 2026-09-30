@@ -27,18 +27,18 @@ Preparation: [decisions and recommendations](DECISIONS_FOR_MAINTAINER.md) ·
 [legal review brief](LEGAL_REVIEW_BRIEF.md) · [threat-review checklist](THREAT_REVIEW_CHECKLIST.md).
 
 Only the maintainer (or the named reviewer) changes a row, in a signed-off commit.
-Allowed values: `PENDING`, `APPROVED`. A rejected ADR is replaced by a revised one and then
+Allowed values: `PENDING`, `APPROVED`, and `WAIVED` (maintainer only, always with the reason in the same row). A rejected ADR is replaced by a revised one and then
 approved.
 
 <!-- signoffs:start -->
 | Item | Blocks 1.0 | Status | By | Date |
 |---|---|---|---|---|
-| WP-084 legal review (license matrix, NOTICE §7(b), trademark policy, patent pledge, regulatory docs) | yes | PENDING | | |
+| WP-084 legal review (license matrix, NOTICE §7(b), trademark policy, patent pledge, regulatory docs) | yes | WAIVED | maintainer: research reference implementation; license disclaimers apply; deployers are responsible for their own compliance ([DISCLAIMER](../DISCLAIMER.md)) | 2026-09-30 |
 | Manual threat-model review (`docs/THREAT_MODEL.md`, T1–T19) | yes | PENDING | | |
-| ADR-0014 anchor coordinates 0x50 layout | yes | PENDING | | |
-| ADR-0023 transparency log: who operates log and witnesses | yes | PENDING | | |
-| ADR-0026 SOS encoding | yes | PENDING | | |
-| ADR-0027 metadata-protection profile | yes | PENDING | | |
+| ADR-0014 anchor coordinates 0x50 layout | yes | APPROVED | maintainer | 2026-09-30 |
+| ADR-0023 transparency log: who operates log and witnesses | yes | APPROVED | maintainer | 2026-09-30 |
+| ADR-0026 SOS encoding | yes | APPROVED | maintainer | 2026-09-30 |
+| ADR-0027 metadata-protection profile | yes | APPROVED | maintainer | 2026-09-30 |
 <!-- signoffs:end -->
 
 Not blocking 1.0; these are decided with their own tracks:

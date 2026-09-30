@@ -57,6 +57,6 @@ Dokument erklärt sie und ist keine Rechtsberatung.
 ## Status
 
 - ADR-0005 (Lizenzmatrix, DCO): ACCEPTED
-- ADR-0006 (Patentzusage, `PATENTS.md`): PROPOSED, noch nicht in Kraft
+- ADR-0006 (Patentzusage): ersetzt durch die Erklärung in `PATENTS.md` (2026-09-30): keine Patente, keine Anmeldungen, keine geplant
 - ADR-0007 (Markenrichtlinie): PROPOSED
 - Rechtsprüfung vor v1.0: WP-084

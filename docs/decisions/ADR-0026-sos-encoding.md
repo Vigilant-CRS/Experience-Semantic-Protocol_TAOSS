@@ -1,6 +1,6 @@
 # ADR-0026 — SOS encoding
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-09-30, maintainer decision)
 - Resolves: GAP-028
 - Work package: WP-064
 

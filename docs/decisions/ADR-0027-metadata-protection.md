@@ -1,6 +1,6 @@
 # ADR-0027 — Metadata protection profile
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-09-30, maintainer decision)
 - Resolves: GAP-029
 - Work package: WP-062
 

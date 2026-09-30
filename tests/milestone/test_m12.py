@@ -75,7 +75,7 @@ def _signoffs() -> list[tuple[str, str]]:
 def test_signoff_table_is_well_formed() -> None:
     rows = _signoffs()
     assert len(rows) >= 6
-    assert all(status in {"PENDING", "APPROVED"} for _, status in rows)
+    assert all(status in {"PENDING", "APPROVED", "WAIVED"} for _, status in rows)
     items = " ".join(i for i, _ in rows)
     for needle in ("WP-084", "threat-model", "ADR-0014", "ADR-0023", "ADR-0026", "ADR-0027"):
         assert needle in items
@@ -83,5 +83,16 @@ def test_signoff_table_is_well_formed() -> None:
 
 @pytest.mark.skipif(os.environ.get("ESP_RELEASE_GATE") != "1", reason="human sign-offs: M12 only")
 def test_all_human_signoffs_approved() -> None:
-    pending = [item for item, status in _signoffs() if status != "APPROVED"]
+    pending = [item for item, status in _signoffs() if status not in {"APPROVED", "WAIVED"}]
     assert pending == [], f"release blocked on human sign-off: {pending}"
+
+
+def test_waivers_carry_a_reason_and_never_cover_the_threat_review() -> None:
+    text = RELEASE.read_text(encoding="utf-8")
+    block = text.split("<!-- signoffs:start -->")[1].split("<!-- signoffs:end -->")[0]
+    for row in block.strip().splitlines()[2:]:
+        cells = [c.strip() for c in row.split("|")]
+        if cells[3] == "WAIVED":
+            assert "threat-model" not in cells[1], "the security review cannot be waived"
+            assert len(cells[4]) > 20, "a waiver needs a reason"
+            assert cells[5], "a waiver needs a date"

@@ -1,6 +1,6 @@
 # ADR-0014 — Layout of `TLV_ANCHOR_COORDS` (0x50)
 
-- Status: PROPOSED (implemented in `esp.codec.frame_wire`, awaiting approval)
+- Status: ACCEPTED (2026-09-30, maintainer decision)
 - Resolves: GAP-007
 - Class: `V13_COMPATIBLE_ADDENDUM`
 - Work packages: WP-050, WP-049

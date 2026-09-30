@@ -1,9 +1,8 @@
 # ADR-0023 — Transparency log profile for rotations and DP ledger checkpoints
 
-- Status: PROPOSED (implemented; awaiting maintainer decision). The mechanism,
-  including C2SP compatibility, is implemented; who operates the log and the
-  witnesses is a maintainer decision.
-- Resolves: GAP-019 (mechanism part)
+- Status: ACCEPTED (2026-09-30, maintainer decision). Mechanism (C2SP-compatible)
+  implemented; operator, witnesses and quorum decided as below.
+- Resolves: GAP-019
 - Work package: WP-053
 
 ## Proposal
@@ -53,9 +52,7 @@ can cosign an ESP log without ESP-specific software (`esp.keys.c2sp`):
 - **Not implemented:** ML-DSA-44 cosignatures (`0x06`), which the C2SP spec recommends for
   new deployments.
 
-## Recommended decision (for the maintainer)
-
-This is a recommendation, not a decision. Formal acceptance is the maintainer's.
+## Decision (maintainer, 2026-09-30)
 
 - **Operator.** The project maintainer (Vigilant e.K.) runs the reference log for the
   public ESP registries (key rotations, registry digests). A deployment that handles

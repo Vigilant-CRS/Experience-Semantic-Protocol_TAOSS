@@ -301,7 +301,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M9 | Audit suite (KSG/MINE/HSIC/dCor, V-information ladder, red-team steganography) and ExperienceBench (9 task families, H1–H3 evaluators, preregistration guard) | ✅ PASS |
 | M10 | **Independent Rust implementation** (`rust/esp-rs`): same vectors, live interop matrix Python⇄Rust, conformance CLI | ✅ PASS |
 | M11 | Performance benchmark, security review (dependency audit, 1 M-input fuzz, threat model T1–T19), failure-mode regressions | ✅ PASS |
-| M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate. Still needs the human legal review, the manual threat review and four ADR decisions ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ waiting for humans |
+| M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate; ADR-0014/0023/0026/0027 accepted. Waits only for the independent threat-model review ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ one human step |
 | M13 | Machine Experience Bridge (machines never author EMO; handover, surgical and drone profiles) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit) | ✅ PASS |
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
 | M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation | ✅ PASS |
@@ -738,6 +738,10 @@ The core stays free, commercial use is allowed, and attribution is required.
 - Specification, docs, ontology: **CC BY-SA 4.0**.
 - Test vectors, schemas: **CC BY 4.0**.
 - Names and the conformance mark: see [TRADEMARKS.md](TRADEMARKS.md).
+- Patents: none held, none applied for, none planned ([PATENTS.md](PATENTS.md)).
+- **Research software:** no warranty, no liability beyond the licenses. Whoever deploys ESP is
+  responsible for their own use and compliance. Not a medical device.
+  [Disclaimer](docs/DISCLAIMER.md).
 
 Details: [docs/LICENSING.md](docs/LICENSING.md) · [NOTICE](NOTICE) ·
 [CONTRIBUTING.md](CONTRIBUTING.md). Contributions need a DCO sign-off; there is no CLA.

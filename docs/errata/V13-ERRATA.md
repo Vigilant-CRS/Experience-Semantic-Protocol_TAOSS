@@ -63,7 +63,7 @@ only once V13.1 adopts them. Each entry records:
 - *Tests:* identical `noise_h` in the Python and Rust implementations
   (`tests/interop/test_rust_python.py`).
 
-**E-06 (GAP-007, PROPOSED, ADR-0014): anchor coordinates 0x50**
+**E-06 (GAP-007, ACCEPTED, ADR-0014): anchor coordinates 0x50**
 
 - *Layout:* `type_code u8 ‖ anchor_set_id[16] ‖ similarity_kind u8 ‖ m u16 ‖ float32_be[m]`.
 - `similarity_kind` values:
@@ -115,11 +115,11 @@ only once V13.1 adopts them. Each entry records:
 - Custom type-set profiles (e.g. MEB-HANDOVER) carry `sf_level = 0` and are validated against
   their pinned set.
 
-**E-14 (GAP-028, PROPOSED, ADR-0026): SOS**
+**E-14 (GAP-028, ACCEPTED, ADR-0026): SOS**
 
 - SOS is addendum TLV `0x86` with body `0x01` on CONTROL. It has no EMO/KNO content.
 
-**E-15 (GAP-029, PROPOSED, ADR-0027): metadata protection profile**
+**E-15 (GAP-029, ACCEPTED, ADR-0027): metadata protection profile**
 
 - The profile is `esp-metadata-protection-v1`, with these parts:
   - a constant header bitmap with dummy latents;
@@ -129,7 +129,7 @@ only once V13.1 adopts them. Each entry records:
   - `TIMING_OBF`, which obfuscates timing only and is not DP.
 - One-sided configuration refuses the session.
 
-**E-22 (GAP-019, PROPOSED, ADR-0023): transparency log profile**
+**E-22 (GAP-019, ACCEPTED, ADR-0023): transparency log profile**
 
 - The key-rotation and DP-ledger transparency log is a Merkle log with RFC 9162 structure
   (leaf and node hashing, inclusion and consistency proofs).
@@ -258,7 +258,7 @@ only once V13.1 adopts them. Each entry records:
   EMO always masked.
 - *Tests:* `tests/milestone/test_m18.py` on FALCON H1 (DANDI 000954).
 
-**E-29 (GAP-019, PROPOSED, ADR-0023): transparency log witnesses**
+**E-29 (GAP-019, ACCEPTED, ADR-0023): transparency log witnesses**
 
 - *Mechanism implemented (C2SP-compatible).* The log publishes each tree as a
   c2sp.org/tlog-checkpoint (origin, size, RFC 6962 root). It is signed as a
@@ -266,7 +266,8 @@ only once V13.1 adopts them. Each entry records:
 - Independent witnesses add Ed25519 cosignature/v1 lines (c2sp.org/tlog-cosignature).
 - Verifiers require a quorum of distinct known witnesses; the log key never counts.
 - The ESP `esp/v1/tree-head` format stays valid for the same tree.
-- The operator choice is pending a maintainer decision. The recommendation is in ADR-0023.
+- Operator: the maintainer runs the reference log; at least 3 independent witnesses;
+  quorum 2-of-3 for L1 and 3-of-5 for L2+ (ADR-0023).
 - *Tests:* `tests/unit/test_c2sp.py` (signed-note and sumdb/note vectors byte-exact).
 
 ## Repository roles

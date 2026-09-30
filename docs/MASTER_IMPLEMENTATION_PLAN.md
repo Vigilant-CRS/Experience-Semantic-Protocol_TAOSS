@@ -1986,7 +1986,7 @@ Experience-Semantic-Protocol_TAOSS/
 ├── REUSE.toml               # Pfad → Lizenz-Zuordnung (maschinenprüfbar)
 ├── NOTICE                   # Pflicht-Namensnennung (AGPL §7(b))
 ├── TRADEMARKS.md            # Namens- und Konformitätssiegel-Richtlinie (AGPL §7(e))
-├── PATENTS.md               # Patent-Nichtangriffszusage (ADR-0006, PROPOSED)
+├── PATENTS.md               # Patent-Erklärung: keine Patente, keine geplant (2026-09-30)
 ├── CITATION.cff
 ├── SECURITY.md
 ├── CONTRIBUTING.md
@@ -2248,7 +2248,7 @@ und wird von CI mit `reuse lint` geprüft.
    Namen. `TRADEMARKS.md` erlaubt die Bezeichnung „ESP-Conformant“ nur für
    Implementierungen, die die öffentliche Conformance-Suite (WP-039) mit
    veröffentlichtem Report bestehen.
-5. **Patent-Nichtangriffszusage (`PATENTS.md`, ADR-0006, PROPOSED):**
+5. **Patente (`PATENTS.md`; ADR-0006 durch Erklärung vom 2026-09-30 ersetzt: keine Patente, keine Anmeldungen, keine geplant). Ursprünglicher Entwurf:**
    Vigilant verpflichtet sich, keine eigenen Patente gegen konforme
    Implementierungen der Spezifikation durchzusetzen (Muster:
    W3C-Royalty-Free-Policy). Zusätzlich greift die Patentlizenz aus
@@ -2280,7 +2280,7 @@ LICENSES/CC-BY-4.0.txt
 REUSE.toml                       Pfad → Lizenz
 NOTICE                           Pflicht-Namensnennung (§7(b))
 TRADEMARKS.md                    Namen, Siegel, Konformitätsbedingungen (§7(e))
-PATENTS.md                       Patent-Nichtangriffszusage (PROPOSED)
+PATENTS.md                       Patent-Erklärung (keine Patente)
 CONTRIBUTING.md                  DCO 1.1, kein CLA
 docs/LICENSING.md                diese Matrix + FAQ „darf ich kommerziell …?“
 ```
@@ -2327,7 +2327,7 @@ bevor die Lücke `RESOLVED` ist.
 | GAP-016 | „Replay-pattern watermarking … vendor-side watermark TLVs“ ohne TLV-Code. | §Covert Channel | niedrig | Addendum-Profil-Code; bis dahin `DEFERRED`. | WP-057 | RESOLVED_IN_IMPLEMENTATION (ADR-0030 PROPOSED: Addendum-TLV 0x89 REPLAY_WATERMARK, vendor-keyed Replay-Schedule; Empfänger ohne Policy verweigern Replay-Segmente) |
 | GAP-017 | Secure-Aggregation, MLS-Profil, anonyme Credentials, DKG für FROST explizit an Companion-Profile delegiert. | §Typed Hive | mittel | Referenzwahl ADR-0021: MLS (RFC 9420) via OpenMLS/Bindings, FROST (RFC 9591) via `frost-ed25519`, Secure Aggregation nach Bonawitz et al. als Simulator zuerst. | WP-070 | RESOLVED_IN_IMPLEMENTATION (Referenzprofil ADR-0021: FROST RFC 9591 byte-exakt, Pedersen-DKG mit Proofs of Knowledge, Bonawitz-Masked-Sums; MLS und anonyme Credentials weiter offen) |
 | GAP-018 | XCF `GATED_CEK`: Gate-Protokoll, Guardian-Quorum und `access_material`-Layout nicht spezifiziert. | §XCF | mittel | CS-XCF-GATE, Referenz-Gate-Service (lokal) + Threshold-Variante. ADR-0022 | WP-068 | RESOLVED_IN_IMPLEMENTATION (ADR-0022 PROPOSED) |
-| GAP-019 | Transparenzlog für Key-Rotation/DP-Ledger (RFC 9162-artig) ohne Profil. | §Forward Secrecy, §Consent | mittel | Referenz: lokaler Merkle-Log nach RFC 9162-Struktur + Witness-Signaturen; externer Betrieb später. ADR-0023 | WP-053 | RESOLVED_IN_IMPLEMENTATION for the mechanism (C2SP-compatible signed-note checkpoints + Ed25519 cosignature/v1, quorum of independent witnesses, byte-exact against c2sp.org/golang.org vectors; ADR-0023 PROPOSED); operator/witness/quorum choice pending maintainer decision |
+| GAP-019 | Transparenzlog für Key-Rotation/DP-Ledger (RFC 9162-artig) ohne Profil. | §Forward Secrecy, §Consent | mittel | Referenz: lokaler Merkle-Log nach RFC 9162-Struktur + Witness-Signaturen; externer Betrieb später. ADR-0023 | WP-053 | RESOLVED (ADR-0023 ACCEPTED 2026-09-30: C2SP-compatible witness quorum; maintainer operates the reference log; ≥3 witnesses, 2-of-3 for L1, 3-of-5 for L2+) |
 | GAP-020 | Repository-Rollen: V13 nennt das Movie-Engine-Repo „official implementation repository“; TAOSS-Repo ist dort nicht genannt. | Präambel, §L1, §V12→V13 | niedrig | V13-Errata: TAOSS-Repo als „reference implementation (wire/conformance)“ eintragen. | WP-085 | ERRATA_PROPOSED (docs/errata/V13-ERRATA.md) |
 | GAP-021 | Emotionstheorie-Pluralismus des Plans (Kategorien, Appraisal, Episode) geht über V13-Default (8 Anker + V/A/I) hinaus. | §6.4 EMO-Struktur | niedrig | bleibt `V13_COMPATIBLE_ADDENDUM`; nie im V13-Default-Profil Pflicht. | WP-004 | RESOLVED_IN_PLAN |
 | GAP-022 | Decoder-Referenz-Companion „planned“: keine Referenzarchitektur, aber Pflichten (⊥-Handling, Policy pro Typ). | §Decoder | mittel | CS-DECODER + Referenz-Renderer (Text, Vektor, Visualisierung). | WP-059 | RESOLVED_IN_IMPLEMENTATION (WP-059 Decoder-Schicht) |
@@ -4247,10 +4247,18 @@ Empfänger-Transparenzpanel (WP-059). AGPL-§13-Quelllink und NOTICE sichtbar.
 
 ## WP-084 — Rechtsprüfung vor v1.0
 
-**Status:** `NOT_STARTED` · **Extern**
+**Status:** `REJECTED` · Maintainer-Entscheidung 2026-09-30
 
 Anwaltliche Prüfung von Lizenzmatrix, NOTICE-§7(b)-Formulierung,
 Markenrichtlinie, Patentzusage, Regulatorik-Doku.
+
+Entscheidung: keine externe Rechtsprüfung. ESP/TAOSS ist eine
+Forschungs-Referenzimplementierung. Es gelten die Gewährleistungs- und
+Haftungsausschlüsse der Lizenzen (AGPL §§15–16, CC). Wer ESP einsetzt, ist für
+die Rechtskonformität seines Einsatzes selbst verantwortlich (`docs/DISCLAIMER.md`).
+Es bestehen keine Patente oder Patentanmeldungen, und keine sind geplant
+(`PATENTS.md`). Das Briefing `docs/release/LEGAL_REVIEW_BRIEF.md` bleibt als
+Orientierung für Einsetzende erhalten.
 
 ---
 
@@ -4897,7 +4905,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0003 | Appraisal-Ursachen über Semantic Bindings statt EMO-Duplikation | ACCEPTED |
 | ADR-0004 | Legacy Movie Ontology nur als Vocabulary/Mapping Seed | ACCEPTED |
 | ADR-0005 | Lizenzmatrix AGPL-3.0-or-later / CC BY-SA 4.0 / CC BY 4.0, DCO statt CLA | ACCEPTED |
-| ADR-0006 | Patent-Nichtangriffszusage für konforme Implementierungen | PROPOSED (Rechtsprüfung WP-084) |
+| ADR-0006 | Patent-Nichtangriffszusage für konforme Implementierungen | SUPERSEDED (2026-09-30: Erklärung, dass keine Patente bestehen oder geplant sind) |
 | ADR-0007 | Markenrichtlinie und Siegel „ESP-Conformant“ nur nach bestandener Conformance-Suite | PROPOSED |
 | ADR-0008 | `affect_scope` (CONTENT / SELF_DECLARED / INFERRED_SUBJECT / MACHINE_RELAY) | ACCEPTED |
 | ADR-0009 | Deterministische Nonce-Ableitung (GAP-002) | ACCEPTED |
@@ -4905,7 +4913,7 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0011 | Addendum-TLV-Profil `esp-addendum-v1` (GAP-004) | ACCEPTED |
 | ADR-0012 | Session Descriptor + Control-TLVs (GAP-005) | ACCEPTED |
 | ADR-0013 | Static-Key-Cross-Signatur (GAP-006) | ACCEPTED |
-| ADR-0014 | Layout `TLV_ANCHOR_COORDS` (GAP-007) | PROPOSED |
+| ADR-0014 | Layout `TLV_ANCHOR_COORDS` (GAP-007) | ACCEPTED (2026-09-30) |
 | ADR-0015 | Kanonisches Weglassen optionaler Capability-Felder (GAP-008) | ACCEPTED |
 | ADR-0016 | `segment_seq`-Erschöpfung ⇒ Session-Neuaufbau (GAP-009) | ACCEPTED |
 | ADR-0017 | Reservierte Header-Bits ablehnen; Capability-Bits 0–11 senden 0, empfangen ignorieren (GAP-011) | ACCEPTED |
@@ -4916,11 +4924,11 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0028 | MEB- und ESP-Agent-Profil, TLV 0x98/0x99 | PROPOSED (implementiert) |
 | ADR-0030 | Replay-Watermark 0x89 (GAP-016) | PROPOSED (implementiert) |
 | ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED (implementiert) |
-| ADR-0023 | Transparenzlog-Profil (GAP-019) | PROPOSED |
+| ADR-0023 | Transparenzlog-Profil (GAP-019) | ACCEPTED (2026-09-30) |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
 | ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |
-| ADR-0026 | SOS-Kodierung (GAP-028) | PROPOSED |
-| ADR-0027 | Metadatenschutz-Profil (GAP-029) | PROPOSED |
+| ADR-0026 | SOS-Kodierung (GAP-028) | ACCEPTED (2026-09-30) |
+| ADR-0027 | Metadatenschutz-Profil (GAP-029) | ACCEPTED (2026-09-30) |
 
 ---
 
