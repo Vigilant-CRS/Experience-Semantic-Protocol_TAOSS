@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Vigilant e.K. and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# cargo-deny policy for esp-rs, used by scripts/security_review.py (`check advisories`).
+# Every exception names exactly one advisory, with the reason. Any other advisory fails.
+
+[advisories]
+ignore = [
+    # proc-macro-error2 is unmaintained (not a vulnerability). It is a compile-time
+    # procedural-macro helper, pulled in only through hax-lib-macros -> libcrux-sha3 ->
+    # hpke-rs -> openmls_rust_crypto (the MLS group layer, GAP-017, ADR-0021). No code
+    # from it runs in the esp-rs binary, and no upgrade is available upstream yet.
+    # Re-check when openmls_rust_crypto / hpke-rs update libcrux.
+    { id = "RUSTSEC-2026-0173", reason = "unmaintained compile-time proc-macro via openmls_rust_crypto; no runtime code, no upgrade available" },
+]

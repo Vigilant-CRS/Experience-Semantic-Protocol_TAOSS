@@ -18,5 +18,10 @@ hex = "0.4"
 serde_json = "1"
 snow = { version = "0.9", default-features = false, features = ["default-resolver", "risky-raw-split"] }  # ADR-0009 derives ESP keys from Split()
 thiserror = "1"
+# MLS (RFC 9420) group layer for the Typed Hive (GAP-017, ADR-0021); MIT-licensed
+openmls = "0.9"
+openmls_rust_crypto = "0.6"
+openmls_basic_credential = "0.6"
+openmls_traits = "0.6"
 
 [dev-dependencies]

@@ -24,8 +24,11 @@ coupling, budget or looseness than it granted. Normative rules enforced here:
 - **Seal.** Only an episode whose audit passes may be sealed and labelled a
   Hive Capsule; otherwise the capsule is labelled a Collective Capsule.
 
-``mls_epoch`` carries the round number. MLS itself (RFC 9420 group transport)
-is **not** implemented (ADR-0021). A join in ANONYMOUS mode is a
+Without an MLS group, ``mls_epoch`` carries the round number (reference mode).
+With an MLS group bound (:class:`MlsEpochSource`, implemented by
+:class:`esp.hive.mls.HiveGroup`), a contribution must carry the group's *current*
+RFC 9420 epoch, stale or future epochs are refused, and every secure-aggregation
+round is keyed by the MLS exporter round secret (ADR-0021). A join in ANONYMOUS mode is a
 ``HIVE_CONTRIBUTION`` at epoch 0 whose commitment is the join commitment.
 """
 
@@ -39,7 +42,7 @@ import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum
-from typing import Final
+from typing import Final, Protocol
 
 import numpy as np
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PublicKey
@@ -322,11 +325,21 @@ class PendingIntent:
     ratified: bool = False
 
 
+class MlsEpochSource(Protocol):
+    """An MLS group as seen by an episode: its epoch and its per-round exporter secret."""
+
+    def epoch(self) -> int: ...
+
+    def round_secret(self, episode_id: uuid.UUID, type_code: int, round_no: int) -> bytes: ...
+
+
 @dataclass
 class Episode:
     config: EpisodeConfig
     guardians: frost.GroupInfo | None = None
     """FROST group that signs Collective Intents (INT episodes)."""
+    mls: MlsEpochSource | None = None
+    """RFC 9420 group of the members; ``None`` is the reference mode (epoch = round)."""
     suite: CredentialSuite | None = None
     membership_root: bytes | None = None
     test_only_transparent: bool = False
@@ -463,6 +476,11 @@ class Episode:
 
     # --- rounds ----------------------------------------------------------------------------------
 
+    @property
+    def current_epoch(self) -> int:
+        """The ``mls_epoch`` a contribution must carry now."""
+        return self.round_no if self.mls is None else self.mls.epoch()
+
     def start_rounds(self) -> None:
         self._require(Phase.JOIN)
         if len(self.active) < self.config.min_group:
@@ -504,8 +522,12 @@ class Episode:
         if t not in m.types:
             msg = f"member has no {t.name} consent in this episode"
             raise HiveError(msg)
-        if obj.mls_epoch != self.round_no:
-            msg = "contribution is for another round"
+        if obj.mls_epoch != self.current_epoch:
+            msg = (
+                "contribution is for another MLS epoch"
+                if self.mls is not None
+                else "contribution is for another round"
+            )
             raise HiveError(msg)
         x = np.asarray(state, dtype=np.float64)
         if contribution_commitment(self.config.episode_id, t, self.round_no, x, opening) != (
@@ -554,6 +576,11 @@ class Episode:
                 rng=rng,
                 round_id=c.episode_id.bytes + struct.pack(">BI", int(t), self.round_no),
                 min_group=c.min_group,
+                epoch_secret=(
+                    None
+                    if self.mls is None
+                    else self.mls.round_secret(c.episode_id, int(t), self.round_no)
+                ),
             )
             eps = out.epsilon
         spent = self.spent(t) + eps

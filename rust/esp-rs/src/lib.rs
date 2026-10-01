@@ -7,6 +7,7 @@
 
 pub mod crypto;
 pub mod header;
+pub mod mls;
 pub mod neural;
 pub mod session;
 pub mod tlv;

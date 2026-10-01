@@ -207,7 +207,7 @@ def contribute(ep: Episode, m: SimMember, t: TaossType, x: F64, *, adds_noise: b
     obj = HiveContribution(
         ep.config.episode_id,
         m.ref,
-        ep.round_no,
+        ep.current_epoch,  # the round (reference mode) or the current MLS epoch
         contribution_commitment(ep.config.episode_id, t, ep.round_no, x, opening),
         b"",
     )

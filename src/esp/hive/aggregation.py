@@ -96,14 +96,35 @@ class SecAggMember:
     def public(self) -> bytes:
         return self.dh.public_key().public_bytes_raw()
 
-    def mask(self, value: U64, peers: Mapping[int, bytes], round_id: bytes) -> U64:
-        """``enc(y_i) + sum_{j>i} PRG(s_ij) - sum_{j<i} PRG(s_ij)`` modulo ``2^64``."""
+    def mask(
+        self,
+        value: U64,
+        peers: Mapping[int, bytes],
+        round_id: bytes,
+        epoch_secret: bytes | None = None,
+    ) -> U64:
+        """``enc(y_i) + sum_{j>i} PRG(s_ij) - sum_{j<i} PRG(s_ij)`` modulo ``2^64``.
+
+        With an MLS round secret (``epoch_secret``, RFC 9420 exporter), every pairwise seed
+        is additionally *keyed* by it: masking then needs both the pairwise X25519 secret
+        and membership in the current MLS epoch. A removed member cannot take part, and
+        members still cannot unmask each other, because the exporter secret alone is not
+        enough.
+        """
+        if epoch_secret is not None and len(epoch_secret) != 32:
+            msg = "the MLS round secret must be 32 bytes"
+            raise HiveError(msg)
         out = value.copy()
         for j, pk in peers.items():
             if j == self.index:
                 continue
             shared = self.dh.exchange(X25519PublicKey.from_public_bytes(pk))
-            seed = hashlib.blake2b(round_id + shared, digest_size=32).digest()
+            if epoch_secret is None:  # reference derivation (unchanged)
+                seed = hashlib.blake2b(round_id + shared, digest_size=32).digest()
+            else:
+                seed = hashlib.blake2b(
+                    round_id + shared, digest_size=32, key=epoch_secret, person=b"esp-hive-mls"
+                ).digest()
             m = _prg(seed, value.size)
             with np.errstate(over="ignore"):
                 out = out + m if j > self.index else out - m
@@ -160,8 +181,12 @@ def secure_round(
     round_id: bytes,
     min_group: int,
     completed: Sequence[int] | None = None,
+    epoch_secret: bytes | None = None,
 ) -> RoundRelease:
-    """One distributed-noise secure-aggregation release of the member mean."""
+    """One distributed-noise secure-aggregation release of the member mean.
+
+    ``epoch_secret`` is the MLS round secret when the episode runs over an MLS group.
+    """
     n = len(inputs)
     if n < min_group:
         msg = f"group of {n} below the minimum group size {min_group}"
@@ -183,7 +208,7 @@ def secure_round(
         y = clip(inp.state, clip_norm)
         if inp.adds_noise:
             y = y + rng.normal(0.0, sigma / math.sqrt(honest_min), size=y.shape)
-        masked[inp.index] = members[inp.index].mask(to_fixed(y), publics, round_id)
+        masked[inp.index] = members[inp.index].mask(to_fixed(y), publics, round_id, epoch_secret)
     total = from_fixed(masked_sum(masked, list(members)))
     return RoundRelease(
         mean=total / n,

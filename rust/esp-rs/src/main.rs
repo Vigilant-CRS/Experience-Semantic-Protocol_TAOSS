@@ -381,13 +381,97 @@ fn neural_sim(m: &HashMap<String, String>) -> Res<()> {
     Ok(())
 }
 
+/// `esp-rs mls --name <id>`: one long-lived MLS member (GAP-017, ADR-0021).
+///
+/// Reads one JSON request per stdin line and writes one JSON response per stdout line.
+/// Keys and group state live only in this process; the caller relays opaque MLS
+/// messages (hex) between members, like an untrusted delivery service.
+///
+/// Requests (`op`): `key_package`, `create`, `add {key_packages}`, `join {welcome}`,
+/// `process {message}`, `remove {members}`, `update`, `export {label, context, length}`,
+/// `state`. Every response has `ok` and, on success, the current `epoch`.
+fn mls_member(m: &HashMap<String, String>) -> Res<()> {
+    use esp_rs::mls::Member;
+    use serde_json::{json, Value};
+    use std::io::BufRead;
+    let name = m.get("name").ok_or("missing --name")?;
+    let mut member = Member::new(name)?;
+    let stdin = std::io::stdin();
+    let mut out = std::io::stdout();
+    for line in stdin.lock().lines() {
+        let line = line?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        let reply = (|| -> Res<Value> {
+            let req: Value = serde_json::from_str(&line)?;
+            let op = req["op"].as_str().ok_or("missing op")?;
+            let hexfield = |k: &str| -> Res<Vec<u8>> {
+                Ok(hex::decode(req[k].as_str().ok_or(format!("missing {k}"))?)?)
+            };
+            let commit_json = |c: esp_rs::mls::CommitOut| {
+                json!({"commit": hex::encode(c.commit),
+                       "welcome": c.welcome.map(hex::encode), "epoch": c.epoch})
+            };
+            Ok(match op {
+                "key_package" => json!({"key_package": hex::encode(member.key_package()?)}),
+                "create" => json!({"epoch": member.create()?}),
+                "add" => {
+                    let kps = req["key_packages"]
+                        .as_array()
+                        .ok_or("missing key_packages")?
+                        .iter()
+                        .map(|v| hex::decode(v.as_str().unwrap_or_default()))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    commit_json(member.add(&kps)?)
+                }
+                "join" => json!({"epoch": member.join(&hexfield("welcome")?)?}),
+                "process" => json!({"epoch": member.process(&hexfield("message")?)?}),
+                "remove" => {
+                    let names = req["members"]
+                        .as_array()
+                        .ok_or("missing members")?
+                        .iter()
+                        .map(|v| v.as_str().unwrap_or_default().to_string())
+                        .collect::<Vec<_>>();
+                    commit_json(member.remove(&names)?)
+                }
+                "update" => commit_json(member.update()?),
+                "export" => {
+                    let label = req["label"].as_str().ok_or("missing label")?;
+                    let length = req["length"].as_u64().ok_or("missing length")? as usize;
+                    let secret = member.export(label, &hexfield("context")?, length)?;
+                    json!({"secret": hex::encode(secret), "epoch": member.epoch()?})
+                }
+                "state" => json!({
+                    "active": member.active(),
+                    "epoch": member.epoch().ok(),
+                    "members": member.members().unwrap_or_default(),
+                }),
+                _ => return Err(format!("unknown op {op}").into()),
+            })
+        })();
+        let mut v = match reply {
+            Ok(v) => v,
+            Err(e) => json!({"ok": false, "error": e.to_string()}),
+        };
+        if v.get("ok").is_none() {
+            v["ok"] = json!(true);
+        }
+        writeln!(out, "{v}")?;
+        out.flush()?;
+    }
+    Ok(())
+}
+
 fn main() {
     let m = args();
     let result = match m["cmd"].as_str() {
         "send" => sender(&m),
         "receive" => receiver(&m),
         "neural-sim" => neural_sim(&m),
-        _ => Err("usage: esp-rs send|receive|neural-sim ...".into()),
+        "mls" => mls_member(&m),
+        _ => Err("usage: esp-rs send|receive|neural-sim|mls ...".into()),
     };
     if let Err(e) = result {
         eprintln!("esp-rs: {e}");

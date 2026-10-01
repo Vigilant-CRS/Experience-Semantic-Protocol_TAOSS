@@ -125,8 +125,45 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 | Threshold signature for the CIC | FROST(Ed25519, SHA-512), RFC 9591 | **Implemented** in pure Python (`esp.hive.frost`), byte-exact against RFC 9591 Appendix E.1; signatures verify with the `cryptography` Ed25519 verifier. Not constant time. |
 | FROST key setup | Pedersen DKG with Schnorr proofs of knowledge (Komlo–Goldberg, FROST KeyGen) in `esp.hive.dkg`; RFC 9591 Appendix C trusted dealer kept for the RFC test vectors | Implemented. Complaints name the misbehaving participant; the protocol aborts (no robust recovery). Round-2 private channels are the caller's responsibility. |
 | Secure aggregation | Bonawitz-style pairwise masks (X25519 + BLAKE2b PRG, fixed point mod 2^64) with distributed Gaussian noise `N(0, σ²/h)`, honest-contributor threshold `h`, RDP accounting | **Implemented as a reference.** No dropout recovery: a missing member aborts the round. Float Gaussian, not the distributed discrete Gaussian of Kairouz et al. (same limitation as errata E-11). |
-| Group transport | MLS (RFC 9420), e.g. OpenMLS | **Not implemented.** `mls_epoch` carries the round number only. |
+| Group transport | MLS (RFC 9420) via `openmls` 0.9 (MIT), ciphersuite 0x0001 | **Implemented** (see *MLS binding* below). |
 | Anonymous credentials / nullifiers | Semaphore V4 (V13 reference) | **Not implemented.** `CredentialSuite` is the plug-in interface. The shipped `esp-hive-transparent-test-v0` proves Merkle membership and one-per-episode uniqueness but reveals the credential key. It sets `provides_anonymity = False`, episodes refuse it in ANONYMOUS mode unless marked as a test, and reports then say "anonymity NOT PROVIDED". |
+
+## MLS binding (GAP-017, implemented)
+
+- **Library:** `openmls` 0.9.0 with `openmls_rust_crypto` 0.6 and
+  `openmls_basic_credential` 0.6, all MIT-licensed. MLS is never re-implemented in this
+  repository.
+- **Ciphersuite:** `MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519` (0x0001), the RFC 9420
+  mandatory-to-implement suite.
+- **Process model:** one `esp-rs mls --name <id>` process per member, speaking JSON lines on
+  stdin/stdout. Its signature keys, HPKE keys and group state never leave that process.
+  `esp.hive.mls.HiveGroup` is only the delivery service: it relays opaque key packages,
+  commits and welcomes, and refuses if members disagree on the epoch or the round secret.
+- **Operations:**
+  - create, add (Welcome), remove (exit), self-update (post-compromise security);
+  - every operation is a commit and starts a new epoch;
+  - key packages, commits and welcomes are authenticated by MLS, and tampered ones are
+    refused.
+- **Epoch binding:** with an MLS group bound to an `Episode`, a `HIVE_CONTRIBUTION` must
+  carry the group's *current* MLS epoch in `mls_epoch`. Stale and future epochs are refused.
+  Without a group (reference mode), `mls_epoch` stays the round number, and the golden
+  vectors are unchanged.
+- **Round secret:** `MLS-Exporter("esp/v1/hive-round", episode_id ‖ u8 type ‖ u32 round,
+  32)`. Every pairwise Bonawitz seed is BLAKE2b-*keyed* with it (person `esp-hive-mls`). So
+  masking needs both the pairwise X25519 secret and current-epoch membership.
+  - A removed member's process refuses to export, so it cannot take part in later rounds.
+  - Members still cannot unmask each other, because the exporter secret alone is not enough.
+- **Tests:** `rust/esp-rs/src/mls.rs` (6 unit tests) and `tests/interop/test_hive_mls.py`
+  (6 member processes, exit, self-update, tampering, stale/future epochs, an episode over
+  MLS). All mutants are killed; skipping key-package validation cannot even be expressed,
+  because openmls requires `validate` to obtain a `KeyPackage`.
+- **Still open:** anonymous credentials. MLS basic credentials show member names to the
+  other members.
+- **Supply chain:** `cargo deny check advisories` reports one finding, RUSTSEC-2026-0173:
+  `proc-macro-error2` is unmaintained. It is a compile-time macro crate, reached via
+  libcrux/hpke-rs in `openmls_rust_crypto`, and runs no code in the binary. No upgrade
+  exists. It is the single, documented exception in `rust/esp-rs/deny.toml`, to be
+  re-checked when hpke-rs updates libcrux.
 
 ## Consequences
 
@@ -135,7 +172,6 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 - A synthetic episode with at least 5 members runs the full lifecycle (M15). This is **not**
   evidence about humans or collective cognition: H_Hive stays a horizon hypothesis.
 - **Open for the maintainer:**
-  - the MLS binding;
   - a Semaphore V4 (or equivalent) suite and issuer-unlinkable enrollment;
   - robust DKG (recovery after complaints) and a pinned private-channel profile for DKG round 2;
   - the distributed discrete Gaussian;
