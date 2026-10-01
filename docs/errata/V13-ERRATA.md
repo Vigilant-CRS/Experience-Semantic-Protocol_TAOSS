@@ -199,7 +199,14 @@ only once V13.1 adopts them. Each entry records:
 - EMO is released only as a DP histogram over anchor bins; EMO coupling is always 0.
 - Key setup without a trusted dealer: Pedersen DKG with Schnorr proofs of knowledge (FROST
   KeyGen), domain `esp/v1/hive-frost-dkg`, challenge bound to participant id and episode.
-- *Still open:* MLS and anonymous-credential companion profiles.
+- MLS binding (implemented): Hive members form an RFC 9420 group (ciphersuite 0x0001).
+  - `mls_epoch` in HIVE_CONTRIBUTION is the current MLS epoch; stale or future epochs are
+    refused.
+  - The per-round secret is `MLS-Exporter("esp/v1/hive-round", episode_id ‖ u8 type ‖ u32
+    round, 32)`. It keys every pairwise secure-aggregation seed, so a removed member cannot
+    take part.
+  - Without an MLS group, the reference mode (`mls_epoch` = round) stays valid.
+- *Still open:* the anonymous-credential companion profile.
 - *Tests:* `vectors/hive/tlvs.json`, `tests/unit/hive/`.
 
 **E-25 (FINDING, ADR-0028): machine and agent profiles**
@@ -284,5 +291,5 @@ only once V13.1 adopts them. Each entry records:
 
 ## Still open (not yet proposed as errata)
 
-- **GAP-017 (partial):** MLS and anonymous-credential companion profiles for the Typed Hive.
+- **GAP-017 (partial):** anonymous-credential companion profile for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.
