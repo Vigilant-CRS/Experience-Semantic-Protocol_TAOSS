@@ -468,10 +468,21 @@ not. Both plug into the same contract; ESP carries their output with consent, pr
 recalibration history.
 
 These numbers come from data we developed the method on, so they are exploratory. The
-confirmatory test is **preregistered** before anyone looked at its data: decoding attempted
-*handwriting* into text on later days of a different implant dataset (FALCON H2), see
-[preregistration](docs/research/prereg-falcon-h2.md). Its result will be published whether it
-supports the claim or not.
+confirmatory test was **preregistered** before anyone looked at its data
+([preregistration](docs/research/prereg-falcon-h2.md), public commit `656b7ff`): decoding
+attempted *handwriting* into text, on later days of a different implant dataset (FALCON H2).
+**Its primary hypothesis held** ([result](docs/research/result-falcon-h2.md)):
+
+| Attempted handwriting → text | Character error rate |
+|---|---:|
+| same day | **0.06** (about 94 % of characters right) |
+| later, unseen days, frozen decoder | **0.53** (null 0.73, p = 0.0005) |
+| without day normalization | 0.85 |
+| time-shuffled control | 0.93 |
+
+This is a narrow result: one participant, one task, a small test set. It is the first
+preregistered, confirmed claim of the project (claims level 4). Across days, the text is not
+yet usable; drift is still the main obstacle.
 
 Data credits and full citations: [§ Data used](#data-used-and-credits).
 
@@ -675,7 +686,7 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | 1 | Implementation conforms to wire and consent tests | ✅ two interoperable implementations |
 | 2 | Semantic states transfer correctly in ground-truth tests | ✅ |
 | 3 | Physiological and multimodal adapters operate reliably | ✅ 30-min soak, zero loss |
-| 4 | Models predict selected states on held-out real data | 🟡 first step on public implant data (see below) |
+| 4 | Models predict selected states on held-out real data | ✅ **preregistered and confirmed** for attempted handwriting from public implant data ([result](docs/research/result-falcon-h2.md)) |
 | 5 | H1–H3 supported by preregistered ExperienceBench | open for studies |
 | 6 | Neural interfaces populate TAOSS fields in controlled experiments | open for device partners |
 
@@ -688,7 +699,8 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | Physiology features work | heart rate from an Empatica wristband agrees with the device (median deviation < 8 bpm) | ✅ real human recordings |
 | Streaming is reliable for 30 min | BrainFlow **synthetic** board → LSL → receiver, 0 samples lost | synthetic signal, real software stack |
 | Implant data can travel as typed, consented ESP | FALCON H1 recording end to end through an encrypted session (M18 gate) | ✅ real human implant data |
-| Attempted movement is decodable | R² 0.89 within a day, 0.35 on later days with a GRU and unsupervised day normalization (exploratory, FALCON H1); preregistered confirmatory test on FALCON H2 pending | ✅ real, exploratory |
+| Attempted movement is decodable | R² 0.89 within a day, 0.35 on later days with a GRU and unsupervised day normalization (FALCON H1) | ✅ real, exploratory |
+| Attempted handwriting is decodable on later, unseen days | **preregistered** on FALCON H2: character error rate 0.53 against a null of 0.73 (p = 0.0005); 0.06 within a day | ✅ real, **confirmatory** (one participant) |
 | TAOSS separates types; leakage audits work | encoder training, audits, ExperienceBench smoke runs | ❌ synthetic worlds only |
 | ESP beats language or embeddings (H1–H3) | not tested yet; needs preregistered studies | ❌ open |
 | Human experience transfer | not claimed | ❌ open |

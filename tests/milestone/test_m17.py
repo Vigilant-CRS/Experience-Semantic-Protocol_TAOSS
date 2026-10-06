@@ -66,10 +66,16 @@ def test_all_gaps_resolved() -> None:
     assert open_gaps == {}, f"M17 blocked on gaps: {sorted(open_gaps)}"
 
 
-def test_claims_ladder_level_three_with_evidence_and_nothing_higher() -> None:
+def test_claims_ladder_level_with_evidence_and_nothing_higher() -> None:
     claims = (ROOT / "docs" / "CLAIMS.md").read_text(encoding="utf-8")
     level = int(re.search(r"<!-- claims-level: (\d) -->", claims).group(1))  # type: ignore[union-attr]
-    assert level == 3
+    assert level == 4
+    # level 4 rests on a preregistered confirmatory run whose primary hypothesis held
+    study = json.loads((ROOT / "artifacts/research/falcon_h2_study.json").read_text())
+    prereg = json.loads((ROOT / "research/prereg/falcon-h2.json").read_text())
+    assert study["primary_supported"] is True
+    assert study["label"].startswith("PREREGISTERED")
+    assert study["prereg_digest"] == prereg["digest"]
     for m in ("M3", "M2", "M5", "M6", "M7"):
         report = json.loads((ROOT / "artifacts" / "test-reports" / f"{m}.json").read_text())
         assert report["verdict"] == "PASS", m
