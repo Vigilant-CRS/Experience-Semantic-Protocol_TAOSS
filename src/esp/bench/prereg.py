@@ -21,6 +21,8 @@ class Hypothesis(StrEnum):
     H1 = "H1"
     H2 = "H2"
     H3 = "H3"
+    L4 = "L4"
+    """Claims level 4: empirical models predict selected states on held-out real data."""
 
 
 class SplitUnit(StrEnum):
