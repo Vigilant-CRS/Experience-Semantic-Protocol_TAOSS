@@ -464,6 +464,158 @@ fn mls_member(m: &HashMap<String, String>) -> Res<()> {
     Ok(())
 }
 
+/// `esp-rs credential`: stateless anonymous-credential operations (GAP-017, ADR-0021).
+///
+/// One JSON request per stdin line, one JSON response per stdout line. Byte fields are hex.
+/// Ops: `keygen {ikm?}`, `commit {committed}`, `blind_sign {sk, pk, commitment, header,
+/// messages}`, `finalize {pk, header, messages, committed, prover_nym, signer_nym_entropy,
+/// prover_blind, signature}`, `prove {pk, signature, header, ph, nym_secret, context,
+/// messages, committed, disclosed, disclosed_committed, prover_blind}`, `verify {pk, header,
+/// ph, proof, pseudonym, context, total, disclosed: {idx: hex}, disclosed_committed}`.
+fn credential_tool() -> Res<()> {
+    use esp_rs::credential as cr;
+    use serde_json::{json, Value};
+    use std::io::BufRead;
+    let stdin = std::io::stdin();
+    let mut out = std::io::stdout();
+    for line in stdin.lock().lines() {
+        let line = line?;
+        if line.trim().is_empty() {
+            continue;
+        }
+        let reply = (|| -> Res<Value> {
+            let req: Value = serde_json::from_str(&line)?;
+            let op = req["op"].as_str().ok_or("missing op")?;
+            let b = |k: &str| -> Res<Vec<u8>> {
+                Ok(hex::decode(req[k].as_str().ok_or(format!("missing {k}"))?)?)
+            };
+            let list = |k: &str| -> Res<Vec<Vec<u8>>> {
+                match req.get(k) {
+                    None | Some(Value::Null) => Ok(vec![]),
+                    Some(v) => Ok(v
+                        .as_array()
+                        .ok_or(format!("{k} must be a list"))?
+                        .iter()
+                        .map(|x| hex::decode(x.as_str().unwrap_or_default()))
+                        .collect::<Result<Vec<_>, _>>()?),
+                }
+            };
+            let idx = |k: &str| -> Vec<usize> {
+                req.get(k)
+                    .and_then(Value::as_array)
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(Value::as_u64)
+                            .map(|i| i as usize)
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            };
+            let disclosed = |k: &str| -> Res<Vec<(usize, Vec<u8>)>> {
+                let mut v: Vec<(usize, Vec<u8>)> = Vec::new();
+                if let Some(m) = req.get(k).and_then(Value::as_object) {
+                    for (i, x) in m {
+                        v.push((i.parse()?, hex::decode(x.as_str().unwrap_or_default())?));
+                    }
+                }
+                v.sort_by_key(|(i, _)| *i);
+                Ok(v)
+            };
+            let e = |s: String| -> Box<dyn std::error::Error> { s.into() };
+            Ok(match op {
+                "keygen" => {
+                    let ikm = match req.get("ikm").and_then(Value::as_str) {
+                        Some(h) => hex::decode(h)?,
+                        None => {
+                            let mut k = [0u8; 32];
+                            rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut k);
+                            k.to_vec()
+                        }
+                    };
+                    let k = cr::keygen(&ikm).map_err(e)?;
+                    json!({"sk": hex::encode(k.sk), "pk": hex::encode(k.pk)})
+                }
+                "commit" => {
+                    let c = cr::commit(&list("committed")?).map_err(e)?;
+                    json!({"commitment": hex::encode(c.commitment),
+                           "prover_blind": hex::encode(c.prover_blind),
+                           "prover_nym": hex::encode(c.prover_nym)})
+                }
+                "blind_sign" => {
+                    let s = cr::blind_sign(
+                        &b("sk")?,
+                        &b("pk")?,
+                        &b("commitment")?,
+                        &b("header")?,
+                        &list("messages")?,
+                    )
+                    .map_err(e)?;
+                    json!({"signature": hex::encode(s.signature),
+                           "signer_nym_entropy": hex::encode(s.signer_nym_entropy)})
+                }
+                "finalize" => {
+                    let n = cr::finalize(
+                        &b("pk")?,
+                        &b("header")?,
+                        &list("messages")?,
+                        &list("committed")?,
+                        &b("prover_nym")?,
+                        &b("signer_nym_entropy")?,
+                        &b("prover_blind")?,
+                        &b("signature")?,
+                    )
+                    .map_err(e)?;
+                    json!({"nym_secret": hex::encode(n)})
+                }
+                "prove" => {
+                    let p = cr::prove(
+                        &b("pk")?,
+                        &b("signature")?,
+                        &b("header")?,
+                        &b("ph")?,
+                        &b("nym_secret")?,
+                        &b("context")?,
+                        &list("messages")?,
+                        &list("committed")?,
+                        &idx("disclosed"),
+                        &idx("disclosed_committed"),
+                        &b("prover_blind")?,
+                    )
+                    .map_err(e)?;
+                    json!({"proof": hex::encode(p.proof), "pseudonym": hex::encode(p.pseudonym)})
+                }
+                "verify" => {
+                    let total = req["total"].as_u64().ok_or("missing total")? as usize;
+                    cr::verify(
+                        &b("pk")?,
+                        &b("header")?,
+                        &b("ph")?,
+                        &b("proof")?,
+                        &b("pseudonym")?,
+                        &b("context")?,
+                        total,
+                        &disclosed("disclosed")?,
+                        &disclosed("disclosed_committed")?,
+                    )
+                    .map_err(e)?;
+                    json!({"valid": true})
+                }
+                _ => return Err(format!("unknown op {op}").into()),
+            })
+        })();
+        let mut v = match reply {
+            Ok(v) => v,
+            Err(err) => json!({"ok": false, "error": err.to_string()}),
+        };
+        if v.get("ok").is_none() {
+            v["ok"] = json!(true);
+        }
+        writeln!(out, "{v}")?;
+        out.flush()?;
+    }
+    Ok(())
+}
+
 fn main() {
     let m = args();
     let result = match m["cmd"].as_str() {
@@ -471,7 +623,8 @@ fn main() {
         "receive" => receiver(&m),
         "neural-sim" => neural_sim(&m),
         "mls" => mls_member(&m),
-        _ => Err("usage: esp-rs send|receive|neural-sim|mls ...".into()),
+        "credential" => credential_tool(),
+        _ => Err("usage: esp-rs send|receive|neural-sim|mls|credential ...".into()),
     };
     if let Err(e) = result {
         eprintln!("esp-rs: {e}");

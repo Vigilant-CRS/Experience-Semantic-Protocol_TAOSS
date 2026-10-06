@@ -12,14 +12,16 @@ episode_id || member_pk)``, so contributions do not need the master key online:
 
 **ANONYMOUS**: V13 names Semaphore V4 as the reference construction for
 membership proofs with scope-bound nullifiers, and forbids replacing it with
-an ad-hoc hash. This reference does **not** implement Semaphore. It defines
-the :class:`CredentialSuite` interface that such a suite plugs into, and
-ships :class:`TransparentTestSuite` (``esp-hive-transparent-test-v0``). That
-suite proves Merkle membership and one-per-episode uniqueness, but it
-**reveals the credential key**, so it provides **no anonymity**
-(``provides_anonymity = False``). An episode refuses to run ANONYMOUS mode on
-it unless explicitly told it is a test, and it then reports the missing
-anonymity instead of claiming it.
+an ad-hoc hash. Suites plug into the :class:`CredentialSuite` interface.
+
+- The anonymous suite is :class:`esp.hive.credentials.BbsCredentialSuite`
+  (``esp-hive-bbs-nym-v1``). It uses blind BBS credentials with per-episode
+  pseudonyms (IRTF CFRG drafts, via the ``zkryptium`` crate) in place of
+  Semaphore.
+- :class:`TransparentTestSuite` (``esp-hive-transparent-test-v0``) is for tests
+  only. It **reveals the credential key**, so it provides **no anonymity**
+  (``provides_anonymity = False``). An episode refuses it in ANONYMOUS mode
+  unless explicitly told it is a test, and then reports the missing anonymity.
 """
 
 from __future__ import annotations

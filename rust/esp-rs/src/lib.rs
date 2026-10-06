@@ -5,6 +5,7 @@
 //! Python reference; interoperability is checked against the shared vectors and live.
 //! `neural` mirrors the neural vendor contract 1.0.0 (WP-090).
 
+pub mod credential;
 pub mod crypto;
 pub mod header;
 pub mod mls;

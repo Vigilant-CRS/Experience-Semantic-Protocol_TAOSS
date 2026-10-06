@@ -126,7 +126,7 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 | FROST key setup | Pedersen DKG with Schnorr proofs of knowledge (Komlo–Goldberg, FROST KeyGen) in `esp.hive.dkg`; RFC 9591 Appendix C trusted dealer kept for the RFC test vectors | Implemented. Complaints name the misbehaving participant; the protocol aborts (no robust recovery). Round-2 private channels are the caller's responsibility. |
 | Secure aggregation | Bonawitz-style pairwise masks (X25519 + BLAKE2b PRG, fixed point mod 2^64) with distributed Gaussian noise `N(0, σ²/h)`, honest-contributor threshold `h`, RDP accounting | **Implemented as a reference.** No dropout recovery: a missing member aborts the round. Float Gaussian, not the distributed discrete Gaussian of Kairouz et al. (same limitation as errata E-11). |
 | Group transport | MLS (RFC 9420) via `openmls` 0.9 (MIT), ciphersuite 0x0001 | **Implemented** (see *MLS binding* below). |
-| Anonymous credentials / nullifiers | Semaphore V4 (V13 reference) | **Not implemented.** `CredentialSuite` is the plug-in interface. The shipped `esp-hive-transparent-test-v0` proves Merkle membership and one-per-episode uniqueness but reveals the credential key. It sets `provides_anonymity = False`, episodes refuse it in ANONYMOUS mode unless marked as a test, and reports then say "anonymity NOT PROVIDED". |
+| Anonymous credentials / nullifiers | Semaphore V4 (V13 reference) | **Implemented with BBS instead** (`esp-hive-bbs-nym-v1`, see below): blind BBS credentials with per-episode pseudonyms, via `zkryptium` (IRTF CFRG drafts). The transparent test suite `esp-hive-transparent-test-v0` remains for tests only and still reports "anonymity NOT PROVIDED". |
 
 ## MLS binding (GAP-017, implemented)
 
@@ -157,13 +157,67 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
   (6 member processes, exit, self-update, tampering, stale/future epochs, an episode over
   MLS). All mutants are killed; skipping key-package validation cannot even be expressed,
   because openmls requires `validate` to obtain a `KeyPackage`.
-- **Still open:** anonymous credentials. MLS basic credentials show member names to the
-  other members.
+- MLS basic credentials show member names to the other members of the MLS group. The
+  Hive's anonymity towards the episode verifier comes from the BBS suite below.
 - **Supply chain:** `cargo deny check advisories` reports one finding, RUSTSEC-2026-0173:
   `proc-macro-error2` is unmaintained. It is a compile-time macro crate, reached via
   libcrux/hpke-rs in `openmls_rust_crypto`, and runs no code in the binary. No upgrade
   exists. It is the single, documented exception in `rust/esp-rs/deny.toml`, to be
   re-checked when hpke-rs updates libcrux.
+
+## Anonymous credentials (GAP-017, implemented)
+
+- **Library:** `zkryptium` 0.7.1 (Apache-2.0), features `bbsplus`, `bbsplus_blind` and
+  `bbsplus_nym`. It is labelled experimental by its authors. No pairing or proof arithmetic
+  is written here; `rust/esp-rs/src/credential.rs` only calls the library.
+- **Drafts and ciphersuite:**
+  - `draft-irtf-cfrg-bbs-signatures-12` (the current revision);
+  - `draft-irtf-cfrg-bbs-blind-signatures-02` (the library's revision; the current one is -03);
+  - `draft-irtf-cfrg-bbs-per-verifier-linkability-03` (current);
+  - ciphersuite BLS12-381-SHA-256.
+- **Issuance is blind.**
+  1. The member commits to a random pseudonym secret.
+  2. The issuer verifies the commitment proof and signs it, together with the public
+     attribute `class:<episode class>` and the header `esp/v1/hive-credential`, adding its
+     own entropy.
+  3. The member verifies the signature and derives the final pseudonym secret.
+
+  The issuer never learns that secret.
+- **Joining and acting in an episode:**
+  - The member proves possession of the credential and discloses only the class attribute.
+  - The pseudonym is bound to `context_id = "esp/v1/hive-episode" ‖ episode_id`.
+  - The presentation header is the object's authorization domain plus its signed fields, so
+    one proof authorizes exactly one join, contribution or exit object.
+  - Wire: `member_ref = BLAKE2b-256("esp/v1/hive-bbs-nym" ‖ pseudonym)` and
+    `proof = pseudonym[48] ‖ bbs_proof`.
+  - The membership root `BLAKE2b-256("esp/v1/hive-bbs-issuer" ‖ len ‖ issuer_pk ‖ class)`
+    binds the trusted issuer and the class.
+- **Properties:**
+  - The pseudonym is deterministic per member and episode, so a second join with the same
+    credential is refused as a duplicate.
+  - Pseudonyms of different episodes are unlinkable.
+  - Proofs are re-randomized on every presentation.
+- **Tests:**
+  - Rust (`credential.rs`):
+    - draft vectors byte-exact: `signature001` (deterministic signing), and the nym secret
+      and pseudonym of `nymProof001`;
+    - the official `nymProof001` proof verifies, and tampering, another context or a false
+      disclosed message fail;
+    - full blind issuance with per-context pseudonyms;
+    - a forged commitment is refused.
+  - Python (`tests/interop/test_hive_anoncred.py`):
+    - five members join anonymously and their contributions and exits are authorized;
+    - a double join is refused, and pseudonyms differ across episodes;
+    - tampered proofs are refused, as are proofs replayed onto another object or episode,
+      swapped pseudonyms, a rogue issuer, the wrong class and a wrong membership root.
+  - Mutation: 6 of 6 killed.
+- **Limits:**
+  - The library is experimental and not independently audited.
+  - Blind issuance follows draft -02, not -03.
+  - The issuer still learns *who* asks for a credential. Only the per-episode pseudonym is
+    unlinkable, not the issuance event.
+  - There is no credential revocation (an accumulator or status list would be needed).
+  - Credentials carry no expiry attribute yet.
 
 ## Consequences
 
@@ -172,7 +226,7 @@ Only a passing episode is sealed as `esp-hive-capsule-v1`. Otherwise the record 
 - A synthetic episode with at least 5 members runs the full lifecycle (M15). This is **not**
   evidence about humans or collective cognition: H_Hive stays a horizon hypothesis.
 - **Open for the maintainer:**
-  - a Semaphore V4 (or equivalent) suite and issuer-unlinkable enrollment;
+  - credential revocation and expiry for the BBS suite, and an audited BBS library;
   - robust DKG (recovery after complaints) and a pinned private-channel profile for DKG round 2;
   - the distributed discrete Gaussian;
   - a constant-time or audited FROST implementation (for example the Rust `frost-ed25519`

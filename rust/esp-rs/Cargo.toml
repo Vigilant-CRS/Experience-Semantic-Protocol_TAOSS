@@ -23,5 +23,6 @@ openmls = "0.9"
 openmls_rust_crypto = "0.6"
 openmls_basic_credential = "0.6"
 openmls_traits = "0.6"
+zkryptium = { version = "0.7.1", default-features = false, features = ["bbsplus", "bbsplus_blind", "bbsplus_nym"] }
 
 [dev-dependencies]
