@@ -5,7 +5,7 @@
   "train": "held-in calib (last 20 % of each session = validation)",
   "within_day": "held-in minival",
   "held_out": "held-out calib: first 25 % = calibration block, last 75 % = test",
-  "aggregation": "R2 variance-weighted per session on eval_mask, mean per day, mean of days"
+  "aggregation": "weighted R2 per session (eval_mask), mean per day, then of days"
  },
  "features": {
   "sqrt": true,
@@ -38,7 +38,7 @@
   "cuda": "12.6",
   "cudnn": 91002
  },
- "runtime_s": 177.2,
+ "runtime_s": 532.5,
  "methods": {
   "ridge_raw": {
    "within_day_mean": 0.3658,

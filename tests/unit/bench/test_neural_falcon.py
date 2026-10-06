@@ -77,3 +77,11 @@ def test_one_real_day_within_session_generalization() -> None:
         _r2(dec, feats[s.name][rng.permutation(len(s.counts))], s.velocity, s.mask) for s in test
     ]
     assert np.mean(shuffled) < 0.02
+
+
+def test_every_session_of_a_day_counts() -> None:
+    """Regression: two sessions on one day were overwritten instead of averaged."""
+    from esp.bench.neural_falcon import _per_day  # noqa: PLC0415
+
+    out = _per_day([("20250101", 0.2), ("20250101", 0.6), ("20250102", 0.1)])
+    assert out == {"20250101": pytest.approx(0.4), "20250102": pytest.approx(0.1)}

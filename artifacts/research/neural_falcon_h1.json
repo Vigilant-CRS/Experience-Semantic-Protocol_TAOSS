@@ -16,57 +16,64 @@
     "tau_bins": 3.0
   },
   "held_out_frozen_r2": {
-    "19250126 (+25 d)": 0.1454,
-    "19250127 (+26 d)": 0.0087,
-    "19250129 (+28 d)": 0.0171,
-    "19250202 (+32 d)": -0.0988,
-    "19250203 (+33 d)": -0.0544,
-    "19250206 (+36 d)": -0.0087,
-    "19250209 (+39 d)": 0.019
+    "19250126 (+25 d)": 0.1476,
+    "19250127 (+26 d)": 0.0379,
+    "19250129 (+28 d)": 0.0557,
+    "19250202 (+32 d)": -0.0983,
+    "19250203 (+33 d)": -0.1141,
+    "19250206 (+36 d)": 0.0162,
+    "19250209 (+39 d)": -0.0044
   },
   "held_out_second_half_frozen_r2": {
-    "19250126": 0.0731,
-    "19250127": -0.0114,
-    "19250129": 0.0583,
-    "19250202": -0.0612,
-    "19250203": -0.1207,
-    "19250206": 0.0446,
-    "19250209": -0.0288
+    "19250126": 0.1481,
+    "19250127": -0.0071,
+    "19250129": 0.09,
+    "19250202": -0.0105,
+    "19250203": -0.1137,
+    "19250206": 0.0131,
+    "19250209": 0.0112
   },
   "held_out_second_half_recalibrated_r2": {
-    "19250126": 0.0891,
-    "19250127": 0.0141,
-    "19250129": 0.0557,
-    "19250202": 0.0134,
-    "19250203": 0.0483,
-    "19250206": 0.1283,
-    "19250209": 0.014
+    "19250126": 0.1643,
+    "19250127": 0.0225,
+    "19250129": 0.0858,
+    "19250202": 0.066,
+    "19250203": 0.0482,
+    "19250206": 0.0673,
+    "19250209": 0.0718
   },
   "label": "EXPLORATORY: FALCON H1 public human iBCI data; not preregistered evidence",
   "recalibration_decoder_ids": {
-    "19250126": "esp-ridge-attempted_movement@33c95cd97c52",
-    "19250127": "esp-ridge-attempted_movement@37bc0101345d",
-    "19250129": "esp-ridge-attempted_movement@4bb2298b5fd6",
-    "19250202": "esp-ridge-attempted_movement@48eef4981f36",
-    "19250203": "esp-ridge-attempted_movement@e2b0233ff25f",
-    "19250206": "esp-ridge-attempted_movement@aa7c4f7d0f2e",
-    "19250209": "esp-ridge-attempted_movement@c68ddf428617"
+    "sub-HumanPitt-held-out-calib_ses-19250126T113454": "esp-ridge-attempted_movement@8dc32889d0b6",
+    "sub-HumanPitt-held-out-calib_ses-19250126T114029": "esp-ridge-attempted_movement@33c95cd97c52",
+    "sub-HumanPitt-held-out-calib_ses-19250127T120333": "esp-ridge-attempted_movement@4312d6f26d56",
+    "sub-HumanPitt-held-out-calib_ses-19250127T120826": "esp-ridge-attempted_movement@37bc0101345d",
+    "sub-HumanPitt-held-out-calib_ses-19250129T112555": "esp-ridge-attempted_movement@145cd9294d17",
+    "sub-HumanPitt-held-out-calib_ses-19250129T113059": "esp-ridge-attempted_movement@4bb2298b5fd6",
+    "sub-HumanPitt-held-out-calib_ses-19250202T113958": "esp-ridge-attempted_movement@a5f122b6ca74",
+    "sub-HumanPitt-held-out-calib_ses-19250202T114452": "esp-ridge-attempted_movement@48eef4981f36",
+    "sub-HumanPitt-held-out-calib_ses-19250203T113515": "esp-ridge-attempted_movement@788daf4f768d",
+    "sub-HumanPitt-held-out-calib_ses-19250203T114018": "esp-ridge-attempted_movement@e2b0233ff25f",
+    "sub-HumanPitt-held-out-calib_ses-19250206T112219": "esp-ridge-attempted_movement@00d2f3eb6868",
+    "sub-HumanPitt-held-out-calib_ses-19250206T112712": "esp-ridge-attempted_movement@aa7c4f7d0f2e",
+    "sub-HumanPitt-held-out-calib_ses-19250209T111826": "esp-ridge-attempted_movement@123268d35121",
+    "sub-HumanPitt-held-out-calib_ses-19250209T112327": "esp-ridge-attempted_movement@c68ddf428617"
   },
   "shuffled_control_r2_mean": -0.2458,
   "summary": {
-    "held_out_frozen_mean": 0.004,
-    "held_out_second_half_frozen_mean": -0.0066,
-    "held_out_second_half_recalibrated_mean": 0.0518,
-    "within_day_mean": 0.2085
+    "held_out_frozen_mean": 0.0058,
+    "held_out_second_half_frozen_mean": 0.0187,
+    "held_out_second_half_recalibrated_mean": 0.0751,
+    "within_day_mean": 0.2168
   },
   "train_bins_masked": 132476,
   "units": 176,
   "within_day_r2": {
-    "19250101": 0.1181,
-    "19250108": 0.2589,
-    "19250113": 0.2341,
-    "19250115": 0.1881,
-    "19250119": 0.2966,
-    "19250120": 0.1553
+    "19250101": 0.2571,
+    "19250108": 0.2413,
+    "19250113": 0.2554,
+    "19250115": 0.1436,
+    "19250119": 0.2287,
+    "19250120": 0.1744
   }
 }

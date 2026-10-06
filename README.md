@@ -453,18 +453,25 @@ typed ESP frame:
 - encrypted and consented;
 - with a versioned decoder calibration in its provenance.
 
-A deliberately simple reference decoder (ridge/Wiener filter) shows why that versioning
-matters:
+Decoding attempted arm velocity (7 DoF) on FALCON H1, exploratory:
 
-| Attempted arm velocity (7 DoF) | R² |
-|---|---:|
-| held-out trials, same days | 0.21 |
-| later days, frozen decoder (+25 … +39 days) | ≈ 0.00 |
-| later days, versioned recalibration | 0.05 |
-| shuffled control | −0.25 |
+| R² | Ridge/Wiener reference | GRU + unsupervised per-day normalization |
+|---|---:|---:|
+| held-out trials, same days | 0.22 | **0.89** |
+| later days, frozen decoder (+25 … +39 days) | 0.01 | **0.35** |
+| later days, versioned recalibration | 0.08 | 0.34 |
+| shuffled control | −0.25 | −0.12 |
 
-Neural drift across days is real. Better decoders plug into the same contract; ESP carries
-their output with consent, provenance and recalibration history.
+Neural drift across days is real. A recurrent decoder that only renormalizes each new day
+without its labels keeps a third of the signal weeks later, and the simple linear filter does
+not. Both plug into the same contract; ESP carries their output with consent, provenance and
+recalibration history.
+
+These numbers come from data we developed the method on, so they are exploratory. The
+confirmatory test is **preregistered** before anyone looked at its data: decoding attempted
+*handwriting* into text on later days of a different implant dataset (FALCON H2), see
+[preregistration](docs/research/prereg-falcon-h2.md). Its result will be published whether it
+supports the claim or not.
 
 Data credits and full citations: [§ Data used](#data-used-and-credits).
 
@@ -681,7 +688,7 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | Physiology features work | heart rate from an Empatica wristband agrees with the device (median deviation < 8 bpm) | ✅ real human recordings |
 | Streaming is reliable for 30 min | BrainFlow **synthetic** board → LSL → receiver, 0 samples lost | synthetic signal, real software stack |
 | Implant data can travel as typed, consented ESP | FALCON H1 recording end to end through an encrypted session (M18 gate) | ✅ real human implant data |
-| Attempted movement is decodable | R² 0.21 within a day, ≈ 0 across days (exploratory, one dataset) | ✅ real, exploratory |
+| Attempted movement is decodable | R² 0.89 within a day, 0.35 on later days with a GRU and unsupervised day normalization (exploratory, FALCON H1); preregistered confirmatory test on FALCON H2 pending | ✅ real, exploratory |
 | TAOSS separates types; leakage audits work | encoder training, audits, ExperienceBench smoke runs | ❌ synthetic worlds only |
 | ESP beats language or embeddings (H1–H3) | not tested yet; needs preregistered studies | ❌ open |
 | Human experience transfer | not claimed | ❌ open |

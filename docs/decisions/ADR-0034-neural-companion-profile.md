@@ -37,6 +37,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 - Vendors implement one Python protocol or Rust trait and pass `esp-conformance`'s `neural`
   category. A C ABI is future work.
-- FALCON H1 shows that day-to-day drift is real (R² 0.21 within a day, about 0 across days
-  with a frozen decoder). Recalibration versioning is therefore part of the contract, not an
-  implementation detail.
+- FALCON H1 shows that day-to-day drift is real. With a frozen decoder, the linear reference
+  falls from R² 0.22 within a day to about 0 on later days; a GRU with unsupervised day
+  normalization keeps 0.35. Recalibration and normalization versioning are therefore part of
+  the contract, not an implementation detail.

@@ -138,6 +138,14 @@ def _halves(m: NDArray[np.bool_], frac: float) -> tuple[NDArray[np.bool_], NDArr
     return first, second
 
 
+def _per_day(scores: list[tuple[str, float]]) -> dict[str, float]:
+    """Mean over every session of a day (a day can have several sessions; none may be lost)."""
+    days: dict[str, list[float]] = {}
+    for day, v in scores:
+        days.setdefault(day, []).append(v)
+    return {d: float(np.nanmean(v)) for d, v in days.items()}
+
+
 def _date(v: str) -> date:
     return date(int(v[:4]), int(v[4:6]), int(v[6:8]))
 
@@ -169,9 +177,10 @@ def evaluate(root: Path, *, lags: int = 4, tau_bins: float = 3.0, seed: int = 0)
         alpha,
         [s.name for s in calib],
     )
-    within = {s.day: _r2(dec, feat[s.name], s.velocity, s.mask) for s in minival}
-    drift = {s.day: _r2(dec, feat[s.name], s.velocity, s.mask) for s in held_out}
-    recal, recal_ids = {}, {}
+    within = _per_day([(s.day, _r2(dec, feat[s.name], s.velocity, s.mask)) for s in minival])
+    drift = _per_day([(s.day, _r2(dec, feat[s.name], s.velocity, s.mask)) for s in held_out])
+    recal_s: list[tuple[str, float]] = []
+    recal_ids: dict[str, str] = {}
     for s in held_out:
         first, second = _halves(s.mask, 0.5)
         d = _fit(
@@ -181,11 +190,12 @@ def evaluate(root: Path, *, lags: int = 4, tau_bins: float = 3.0, seed: int = 0)
             alpha,
             [c.name for c in calib] + [s.name + ":first-half"],
         )
-        recal[s.day] = _r2(d, feat[s.name], s.velocity, second)
-        recal_ids[s.day] = d.decoder_id
-    frozen_second = {
-        s.day: _r2(dec, feat[s.name], s.velocity, _halves(s.mask, 0.5)[1]) for s in held_out
-    }
+        recal_s.append((s.day, _r2(d, feat[s.name], s.velocity, second)))
+        recal_ids[s.name] = d.decoder_id
+    recal = _per_day(recal_s)
+    frozen_second = _per_day(
+        [(s.day, _r2(dec, feat[s.name], s.velocity, _halves(s.mask, 0.5)[1])) for s in held_out]
+    )
     rng = np.random.default_rng(seed)
     shuffled = [
         _r2(dec, feat[s.name][rng.permutation(len(s.counts))], s.velocity, s.mask) for s in minival
