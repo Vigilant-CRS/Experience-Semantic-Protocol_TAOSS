@@ -206,7 +206,16 @@ only once V13.1 adopts them. Each entry records:
     round, 32)`. It keys every pairwise secure-aggregation seed, so a removed member cannot
     take part.
   - Without an MLS group, the reference mode (`mls_epoch` = round) stays valid.
-- *Still open:* the anonymous-credential companion profile.
+- Anonymous credentials (implemented): `esp-hive-bbs-nym-v1` uses blind BBS signatures with
+  per-verifier pseudonyms (BLS12-381-SHA-256) instead of Semaphore V4. Drafts:
+  draft-irtf-cfrg-bbs-signatures-12, -bbs-blind-signatures-02 and
+  -bbs-per-verifier-linkability-03.
+  - The issuer blind-signs `class:<episode class>`.
+  - The pseudonym context is `"esp/v1/hive-episode" ‖ episode_id`, and
+    `member_ref = BLAKE2b-256("esp/v1/hive-bbs-nym" ‖ pseudonym)`.
+  - Each member has one pseudonym per episode, so double joins are refused. Pseudonyms of
+    different episodes cannot be linked.
+- *Still open:* credential revocation and expiry.
 - *Tests:* `vectors/hive/tlvs.json`, `tests/unit/hive/`.
 
 **E-25 (FINDING, ADR-0028): machine and agent profiles**
@@ -291,5 +300,4 @@ only once V13.1 adopts them. Each entry records:
 
 ## Still open (not yet proposed as errata)
 
-- **GAP-017 (partial):** anonymous-credential companion profile for the Typed Hive.
 - **GAP-023:** real ExperienceBench corpora.

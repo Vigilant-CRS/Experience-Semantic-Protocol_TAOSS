@@ -148,7 +148,9 @@ def dependency_audit(offline: bool) -> dict[str, object]:
     if Path(deny).exists():
         cargo_bin = Path.home() / ".cargo" / "bin"
         cargo_env = os.environ | {"PATH": f"{cargo_bin}:{os.environ.get('PATH', '')}"}
-        rc2, out2 = run([deny, "check", "advisories"], env=cargo_env, cwd=ROOT / "rust" / "esp-rs")
+        rc2, out2 = run(
+            [deny, "check", "advisories", "licenses"], env=cargo_env, cwd=ROOT / "rust" / "esp-rs"
+        )
         result["rust"] = {"rc": rc2, "output": out2}
     result["status"] = (
         "ok" if all(v["rc"] == 0 for k, v in result.items() if isinstance(v, dict)) else "findings"

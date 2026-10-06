@@ -304,9 +304,9 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate; ADR-0014/0023/0026/0027 accepted. Waits only for the independent threat-model review ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ one human step |
 | M13 | Machine Experience Bridge (machines never author EMO; handover, surgical and drone profiles) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit) | ✅ PASS |
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
-| M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation | ✅ PASS |
+| M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation, MLS group (RFC 9420), anonymous membership with blind BBS credentials | ✅ PASS |
 | M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ PASS |
-| M17 | Every V13 section maps to finished work; errata E-01…E-28 for V13.1; claims level 3. Blocked only on GAP-017 (MLS, anonymous credentials), GAP-019 (who runs the witnesses) and GAP-023 (real corpora) | 🧑‍⚖️ partly human |
+| M17 | Every V13 section maps to finished work; errata E-01…E-29 for V13.1; claims level 4. Blocked only on GAP-023: real, licensed experience corpora for the preregistered H1–H3 studies | 🔬 needs real data |
 | M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust) and neural conformance | ✅ PASS |
 
 ---
@@ -665,8 +665,9 @@ Choose a thread:
   decoder boundary is defined; everything above it already works.
 - **Adversaries.** Break the covert-channel defences. Every stego sender you build becomes a
   regression test.
-- **Collective cognition.** MLS group transport and anonymous credentials for the Typed Hive, and
-  emergence audits on real groups.
+- **Collective cognition.** The Typed Hive now has an MLS group (RFC 9420), threshold signatures
+  with distributed key generation, and anonymous membership with per-episode pseudonyms. Open:
+  credential revocation, and emergence audits on real groups.
 - **A third implementation.** Go, C, TypeScript, Swift: the frozen v1 vectors and the conformance
   CLI (`esp-conformance`) tell you when you are done.
 
