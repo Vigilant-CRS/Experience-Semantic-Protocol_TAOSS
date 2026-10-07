@@ -1,0 +1,199 @@
+{
+  "P1_taoss_leace_vs_mono_leace": {
+    "acc": {
+      "ctx": [
+        0.5623497997329773,
+        0.5695594125500667
+      ],
+      "int": [
+        0.7509043927648579,
+        0.7457364341085271
+      ]
+    },
+    "ctx_diff_q05": -0.012475602225880627,
+    "int_diff_q05": -0.0005212847773367223,
+    "leak_baseline": 0.8324633554372346,
+    "leak_mechanism": 0.8181121196244066,
+    "leak_reduction": 0.014351235812828045,
+    "noninferior": true,
+    "p_leak": 0.014598540145985401
+  },
+  "S1_taoss_leace_vs_raw_leace": {
+    "acc": {
+      "ctx": [
+        0.5623497997329773,
+        0.5845126835781042
+      ],
+      "int": [
+        0.7509043927648579,
+        0.775968992248062
+      ]
+    },
+    "ctx_diff_q05": -0.03562272297935499,
+    "int_diff_q05": -0.033475839080300634,
+    "leak_baseline": 0.841054584281052,
+    "leak_mechanism": 0.8181121196244066,
+    "leak_reduction": 0.0229424646566454,
+    "noninferior": false,
+    "p_leak": 0.008599140085991401
+  },
+  "S2_taoss_leace_vs_mono_filter": {
+    "acc": {
+      "ctx": [
+        0.5623497997329773,
+        0.5583444592790388
+      ],
+      "int": [
+        0.7509043927648579,
+        0.7638242894056848
+      ]
+    },
+    "ctx_diff_q05": -0.0015894045045541925,
+    "int_diff_q05": -0.018415632039323154,
+    "leak_baseline": 0.8901992175926619,
+    "leak_mechanism": 0.8181121196244066,
+    "leak_reduction": 0.0720870979682553,
+    "noninferior": true,
+    "p_leak": 9.999000099990002e-05
+  },
+  "S3_P1_on_dialogs_unseen_in_train": {
+    "acc": {
+      "ctx": [
+        0.5528455284552846,
+        0.5606952621250351
+      ],
+      "int": [
+        0.7481481481481481,
+        0.7410202655485675
+      ]
+    },
+    "ctx_diff_q05": -0.013221001751557387,
+    "int_diff_q05": 0.001268374037971626,
+    "leak_baseline": 0.8260550289145935,
+    "leak_mechanism": 0.8131713776003897,
+    "leak_reduction": 0.01288365131420377,
+    "noninferior": true,
+    "p_leak": 0.030496950304969503
+  },
+  "S4_taoss_leace_vs_taoss": {
+    "acc": {
+      "ctx": [
+        0.5623497997329773,
+        0.5690253671562083
+      ],
+      "int": [
+        0.7509043927648579,
+        0.7693798449612403
+      ]
+    },
+    "ctx_diff_q05": -0.011057360055286791,
+    "int_diff_q05": -0.023657882365250044,
+    "leak_baseline": 0.8919840371701213,
+    "leak_mechanism": 0.8181121196244066,
+    "leak_reduction": 0.07387191754571476,
+    "noninferior": false,
+    "p_leak": 9.999000099990002e-05
+  },
+  "config": {
+    "delta": 0.02,
+    "encoder": {
+      "batch": 512,
+      "d_ctx": 16,
+      "d_emo": 16,
+      "d_int": 16,
+      "d_kno": 64,
+      "epochs": 20,
+      "hidden": 256,
+      "lam_adv": 1.0,
+      "lam_cov": 1.0,
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "methods": [
+      "taoss",
+      "taoss_leace",
+      "mono",
+      "mono_leace",
+      "mono_filter",
+      "raw_leace"
+    ],
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "n_boot": 10000,
+    "probe": {
+      "batch": 1024,
+      "epochs": 20,
+      "hidden": 256,
+      "lr": 0.002,
+      "weight_decay": 0.0001
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "hardware": {
+    "cpu": "x86_64",
+    "cuda": "12.6",
+    "cudnn": 91002,
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU",
+    "numpy": "2.5.3",
+    "python": "3.12.13",
+    "torch": "2.14.0+cu126",
+    "torch_threads": 8
+  },
+  "holm_secondary": {
+    "S1_taoss_leace_vs_raw_leace": false,
+    "S2_taoss_leace_vs_mono_filter": true,
+    "S3_P1_on_dialogs_unseen_in_train": true,
+    "S4_taoss_leace_vs_taoss": false
+  },
+  "label": "PREREGISTERED confirmatory analysis (typing plus erasure, H2 follow-up)",
+  "n_test_dialogs": 1000,
+  "n_test_unseen_utterances": 7155,
+  "n_test_utterances": 7740,
+  "prereg_commit": "9eb1f7c93715aec28e740404f4f525895e08d4ab",
+  "prereg_digest": "728538da43f961b93c5b414bd1462c9eb8f74b04487208522f9b058008a708ba",
+  "primary_supported": true,
+  "runtime_s": 3297.9,
+  "summary": {
+    "mono": {
+      "ctx_acc": 0.5728971962616822,
+      "fidelity_r2": 0.6022857916520455,
+      "int_acc": 0.7711886304909561,
+      "leak_auroc": 0.8920685631589562
+    },
+    "mono_filter": {
+      "ctx_acc": 0.5583444592790388,
+      "fidelity_r2": 0.2813703683781091,
+      "int_acc": 0.7638242894056848,
+      "leak_auroc": 0.8901992175926619
+    },
+    "mono_leace": {
+      "ctx_acc": 0.5695594125500667,
+      "fidelity_r2": 0.5507619855650384,
+      "int_acc": 0.7457364341085271,
+      "leak_auroc": 0.8324633554372346
+    },
+    "raw_leace": {
+      "ctx_acc": 0.5845126835781042,
+      "fidelity_r2": 0.9566994081203255,
+      "int_acc": 0.775968992248062,
+      "leak_auroc": 0.841054584281052
+    },
+    "taoss": {
+      "ctx_acc": 0.5690253671562083,
+      "fidelity_r2": 0.5766877967997314,
+      "int_acc": 0.7693798449612403,
+      "leak_auroc": 0.8919840371701213
+    },
+    "taoss_leace": {
+      "ctx_acc": 0.5623497997329773,
+      "fidelity_r2": 0.5317373304720734,
+      "int_acc": 0.7509043927648579,
+      "leak_auroc": 0.8181121196244066
+    }
+  }
+}
