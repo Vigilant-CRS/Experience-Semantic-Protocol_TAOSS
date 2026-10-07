@@ -21,12 +21,20 @@ ROOT = Path(__file__).resolve().parents[3]
 REGISTRY = ROOT / "datasets" / "registry.json"
 DATA = ROOT / "data" / "external"
 CONSENT_STATUSES = frozenset(
-    {"participant_consent_documented_by_source", "test_fixture_no_personal_data", "synthetic"}
+    {
+        "participant_consent_documented_by_source",
+        "test_fixture_no_personal_data",
+        "synthetic",
+        # public posts collected under the platform's terms, no individual research consent:
+        # aggregate, non-re-identifying text research only
+        "public_text_platform_terms",
+    }
 )
 SPLIT_UNITS = {
     "subject": SplitUnit.SUBJECT,
     "session": SplitUnit.SESSION,
     "recording": SplitUnit.MEDIA_ITEM,
+    "text_item": SplitUnit.MEDIA_ITEM,
 }
 
 

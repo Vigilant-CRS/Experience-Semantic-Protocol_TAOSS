@@ -84,6 +84,26 @@
    "consent_status": "test_fixture_no_personal_data",
    "split_unit": "recording",
    "use": "replay / adapter / feature tests; exploratory only (no H1-H3 evidence)"
+  },
+  {
+   "id": "goemotions",
+   "title": "GoEmotions: 58k English Reddit comments annotated with 27 emotion categories + neutral (raw rater annotations and the official train/dev/test split)",
+   "license": "Apache-2.0",
+   "attribution": "Demszky, Movshovitz-Attias, Ko, Cowen, Nemade, Ravi: GoEmotions: A Dataset of Fine-Grained Emotions, ACL 2020 (arXiv:2005.00547); released by Google Research (google-research/goemotions) under Apache-2.0; Hugging Face card google-research-datasets/go_emotions: apache-2.0.",
+   "landing": "https://github.com/google-research/google-research/tree/master/goemotions",
+   "personal_data": "public Reddit comments with usernames in the raw files; no research consent of the authors; aggregate text research only, never attempt re-identification, never redistribute",
+   "files": [
+    "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_1.csv",
+    "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_2.csv",
+    "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_3.csv",
+    "https://raw.githubusercontent.com/google-research/google-research/master/goemotions/data/train.tsv",
+    "https://raw.githubusercontent.com/google-research/google-research/master/goemotions/data/dev.tsv",
+    "https://raw.githubusercontent.com/google-research/google-research/master/goemotions/data/test.tsv",
+    "https://raw.githubusercontent.com/google-research/google-research/master/goemotions/data/emotions.txt"
+   ],
+   "consent_status": "public_text_platform_terms",
+   "split_unit": "text_item",
+   "use": "preregistered H2 leakage study (docs/research/prereg-goemotions-h2.md); EMO = rater annotations of text (affect_scope CONTENT)"
   }
  ]
 }

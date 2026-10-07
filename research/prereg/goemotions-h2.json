@@ -1,0 +1,38 @@
+{
+  "digest": "cbfaf9e3b1554d5ccdf97bcda061d86f89ee715303f57252ba5c5e2707efb640",
+  "osf": {
+    "analysis_plan": "baselines ['monolithic_masking', 'mono_leace', 'mono_learned_filter', 'raw_embedding']; seeds [0, 1, 2]",
+    "dependent_variables": "test macro-AUROC of the strongest EMO probe on released KNO+CTX: TAOSS < monolithic masking, with subreddit accuracy non-inferior (delta 0.02)",
+    "digest": "cbfaf9e3b1554d5ccdf97bcda061d86f89ee715303f57252ba5c5e2707efb640",
+    "hypotheses": "H2",
+    "inference_criteria": "test macro-AUROC of the strongest EMO probe on released KNO+CTX: TAOSS < monolithic masking, with subreddit accuracy non-inferior (delta 0.02) threshold 0.05; alpha 0.05",
+    "multiple_comparisons": "holm",
+    "sampling_plan": "split unit media_item; datasets ['goemotions@google-research (Apache-2.0), official train/dev/test']",
+    "title": "ESP ExperienceBench H2"
+  },
+  "preregistration": {
+    "alpha": 0.05,
+    "baselines": [
+      "monolithic_masking",
+      "mono_leace",
+      "mono_learned_filter",
+      "raw_embedding"
+    ],
+    "datasets": [
+      "goemotions@google-research (Apache-2.0), official train/dev/test"
+    ],
+    "hypothesis": "H2",
+    "multiplicity": "holm",
+    "notes": "{\"analysis_code\": \"src/esp/bench/goemotions_study.py:analyse\", \"config\": {\"delta\": 0.02, \"encoder\": {\"batch\": 512, \"d_ctx\": 32, \"d_emo\": 16, \"d_kno\": 64, \"epochs\": 30, \"hidden\": 256, \"lam_adv\": 3.0, \"lam_cov\": 3.0, \"lr\": 0.001, \"weight_decay\": 0.0001}, \"model\": \"sentence-transformers/all-MiniLM-L6-v2\", \"model_revision\": \"1110a243fdf4706b3f48f1d95db1a4f5529b4d41\", \"n_boot\": 10000, \"probe\": {\"batch\": 1024, \"epochs\": 20, \"hidden\": 256, \"lr\": 0.002, \"weight_decay\": 0.0001}, \"seeds\": [0, 1, 2]}, \"pinned_files\": {\"dev.tsv\": \"575489c079c9de1097062a01738f998590d6b7ead66dd1c9fd1d2ba01fd8bc62\", \"emotions.txt\": \"45c3ef86782d2a4d7fedcd6d8c111aa0d0e94720689bd164fac94fefb4495a89\", \"goemotions_1.csv\": \"cac049036bad5d68d1081f72b65f2cc51e4df82af05e3e22cfa747051cac1af3\", \"goemotions_2.csv\": \"f699ecc5aa425c1720c1d02475f1e41815244b680bd75b282eb770d2c76cd84d\", \"goemotions_3.csv\": \"467f1e7191af00f2e76cc7f425885c2dc304bea8aff284b10e8c460d22f2e1af\", \"test.tsv\": \"0587b2dd8b27b97352adbfc3fb083d46005c8946657fdc2b1ca8b1cc7f1f8be4\", \"train.tsv\": \"1c254a142be5c00e80d819b9ae1bbd36d94b2eeb8f4b1271846508d57e57d9c5\"}}",
+    "primary_metric": "test macro-AUROC of the strongest EMO probe on released KNO+CTX: TAOSS < monolithic masking, with subreddit accuracy non-inferior (delta 0.02)",
+    "registered_at_ns": 0,
+    "registry_ref": "github:Vigilant-CRS/Experience-Semantic-Protocol_TAOSS:research/prereg/goemotions-h2.json",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "split_unit": "media_item",
+    "threshold": 0.05
+  }
+}

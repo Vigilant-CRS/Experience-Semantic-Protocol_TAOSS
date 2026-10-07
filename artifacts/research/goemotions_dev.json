@@ -1,0 +1,106 @@
+{
+  "baselines": {
+    "mono": {
+      "ctx_acc": 0.05842241061555473,
+      "ctx_acc_linear": 0.05842241061555473,
+      "ctx_acc_mlp": 0.05105049760412827,
+      "fidelity_r2": 0.5693043094343913,
+      "leak_auroc": 0.8709036157782784,
+      "leak_auroc_linear": 0.8580024441249122,
+      "leak_auroc_mlp": 0.8709036157782784
+    },
+    "mono_filter": {
+      "ctx_acc": 0.056210836712126795,
+      "ctx_acc_linear": 0.056210836712126795,
+      "ctx_acc_mlp": 0.0499447106524143,
+      "fidelity_r2": 0.3418781215707481,
+      "leak_auroc": 0.8355256211887417,
+      "leak_auroc_linear": 0.8238228869908776,
+      "leak_auroc_mlp": 0.8355256211887417
+    },
+    "mono_leace": {
+      "ctx_acc": 0.0475488389237007,
+      "ctx_acc_linear": 0.0475488389237007,
+      "ctx_acc_mlp": 0.045337265020272764,
+      "fidelity_r2": 0.35277625958598335,
+      "leak_auroc": 0.6704970357876795,
+      "leak_auroc_linear": 0.490585597061021,
+      "leak_auroc_mlp": 0.6704970357876795
+    },
+    "raw": {
+      "ctx_acc": 0.05307777368227055,
+      "ctx_acc_linear": 0.05307777368227055,
+      "ctx_acc_mlp": 0.04791743457427202,
+      "fidelity_r2": 0.999999998249533,
+      "leak_auroc": 0.8818227234615433,
+      "leak_auroc_linear": 0.8704810342037581,
+      "leak_auroc_mlp": 0.8818227234615433
+    }
+  },
+  "chosen": "cov=3.0,adv=3.0",
+  "device": "cuda",
+  "label": "EXPLORATORY method development on GoEmotions train -> dev; test split blinded",
+  "runtime_s": 1000.5,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "selection_rule": "lowest dev leak_auroc with ctx_acc >= mono ctx_acc - 0.02",
+  "taoss_grid": {
+    "cov=0.0,adv=0.0": {
+      "ctx_acc": 0.06044968669369701,
+      "ctx_acc_linear": 0.06044968669369701,
+      "ctx_acc_mlp": 0.04976041282712864,
+      "fidelity_r2": 0.57872848552351,
+      "leak_auroc": 0.8760599066708504,
+      "leak_auroc_linear": 0.860611332390615,
+      "leak_auroc_mlp": 0.8760599066708504
+    },
+    "cov=0.0,adv=1.0": {
+      "ctx_acc": 0.060081091043125694,
+      "ctx_acc_linear": 0.060081091043125694,
+      "ctx_acc_mlp": 0.04791743457427202,
+      "fidelity_r2": 0.5735985175598964,
+      "leak_auroc": 0.8667202297962172,
+      "leak_auroc_linear": 0.8528283135999004,
+      "leak_auroc_mlp": 0.8667202297962172
+    },
+    "cov=1.0,adv=0.0": {
+      "ctx_acc": 0.05989679321784003,
+      "ctx_acc_linear": 0.05989679321784003,
+      "ctx_acc_mlp": 0.04810173239955769,
+      "fidelity_r2": 0.5788727014735119,
+      "leak_auroc": 0.8763461226894904,
+      "leak_auroc_linear": 0.8601849538607464,
+      "leak_auroc_mlp": 0.8763461226894904
+    },
+    "cov=1.0,adv=1.0": {
+      "ctx_acc": 0.05989679321784003,
+      "ctx_acc_linear": 0.05989679321784003,
+      "ctx_acc_mlp": 0.04681164762255805,
+      "fidelity_r2": 0.5734252887939747,
+      "leak_auroc": 0.8658995304033414,
+      "leak_auroc_linear": 0.8526988662986109,
+      "leak_auroc_mlp": 0.8658995304033414
+    },
+    "cov=1.0,adv=3.0": {
+      "ctx_acc": 0.05657943236269812,
+      "ctx_acc_linear": 0.05657943236269812,
+      "ctx_acc_mlp": 0.04773313674898636,
+      "fidelity_r2": 0.5602628944719404,
+      "leak_auroc": 0.8460122720267534,
+      "leak_auroc_linear": 0.8251841431859283,
+      "leak_auroc_mlp": 0.8460122720267534
+    },
+    "cov=3.0,adv=3.0": {
+      "ctx_acc": 0.05657943236269812,
+      "ctx_acc_linear": 0.05657943236269812,
+      "ctx_acc_mlp": 0.04607445632141541,
+      "fidelity_r2": 0.5604024040035401,
+      "leak_auroc": 0.8444888259167264,
+      "leak_auroc_linear": 0.8275722812150529,
+      "leak_auroc_mlp": 0.8444888259167264
+    }
+  }
+}
