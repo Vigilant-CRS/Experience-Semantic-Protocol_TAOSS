@@ -1,0 +1,76 @@
+{
+  "device": "cuda",
+  "encoder": "TAOSS_CONFIG of the GoEmotions H2 preregistration (frozen)",
+  "label": "EXPLORATORY: typing plus erasure, GoEmotions train -> dev; test split unused",
+  "results": {
+    "mono": {
+      "ctx_acc": 0.05842241061555473,
+      "ctx_acc_linear": 0.05842241061555473,
+      "ctx_acc_mlp": 0.05105049760412827,
+      "fidelity_r2": 0.5693043094343913,
+      "leak_auroc": 0.8709036157782784,
+      "leak_auroc_linear": 0.8580024441249122,
+      "leak_auroc_mlp": 0.8709036157782784
+    },
+    "mono_filter": {
+      "ctx_acc": 0.056210836712126795,
+      "ctx_acc_linear": 0.056210836712126795,
+      "ctx_acc_mlp": 0.0499447106524143,
+      "fidelity_r2": 0.3418781215707481,
+      "leak_auroc": 0.8355256211887417,
+      "leak_auroc_linear": 0.8238228869908776,
+      "leak_auroc_mlp": 0.8355256211887417
+    },
+    "mono_leace": {
+      "ctx_acc": 0.0475488389237007,
+      "ctx_acc_linear": 0.0475488389237007,
+      "ctx_acc_mlp": 0.045337265020272764,
+      "fidelity_r2": 0.3527762595859833,
+      "leak_auroc": 0.6704970357876795,
+      "leak_auroc_linear": 0.490585597061021,
+      "leak_auroc_mlp": 0.6704970357876795
+    },
+    "raw_leace": {
+      "ctx_acc": 0.048470328050129005,
+      "ctx_acc_linear": 0.048470328050129005,
+      "ctx_acc_mlp": 0.044600073719130114,
+      "fidelity_r2": 0.8370412063435886,
+      "leak_auroc": 0.7515599166845749,
+      "leak_auroc_linear": 0.4935764803055535,
+      "leak_auroc_mlp": 0.7515599166845749
+    },
+    "taoss": {
+      "ctx_acc": 0.05657943236269812,
+      "ctx_acc_linear": 0.05657943236269812,
+      "ctx_acc_mlp": 0.04607445632141541,
+      "fidelity_r2": 0.5604024040035401,
+      "leak_auroc": 0.8444888259167264,
+      "leak_auroc_linear": 0.8275722812150529,
+      "leak_auroc_mlp": 0.8444888259167264
+    },
+    "taoss_filter": {
+      "ctx_acc": 0.0475488389237007,
+      "ctx_acc_linear": 0.0475488389237007,
+      "ctx_acc_mlp": 0.0451529671949871,
+      "fidelity_r2": 0.2911324687639643,
+      "leak_auroc": 0.7874684300184305,
+      "leak_auroc_linear": 0.7664092321612295,
+      "leak_auroc_mlp": 0.7874684300184305
+    },
+    "taoss_leace": {
+      "ctx_acc": 0.04810173239955769,
+      "ctx_acc_linear": 0.04810173239955769,
+      "ctx_acc_mlp": 0.042204201990416516,
+      "fidelity_r2": 0.342228751188793,
+      "leak_auroc": 0.6397455247499477,
+      "leak_auroc_linear": 0.5004594033130326,
+      "leak_auroc_mlp": 0.6397455247499477
+    }
+  },
+  "runtime_s": 393.2,
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

@@ -104,6 +104,20 @@
    "consent_status": "public_text_platform_terms",
    "split_unit": "text_item",
    "use": "preregistered H2 leakage study (docs/research/prereg-goemotions-h2.md); EMO = rater annotations of text (affect_scope CONTENT)"
+  },
+  {
+   "id": "dailydialog",
+   "title": "DailyDialog: 13,118 multi-turn English dialogues with per-utterance emotion and dialog act and per-dialog topic (official train/validation/test segmentation)",
+   "license": "CC-BY-NC-SA-4.0",
+   "attribution": "Li, Su, Shen, Li, Cao, Niu: DailyDialog: A Manually Labelled Multi-turn Dialogue Dataset, IJCNLP 2017 (arXiv:1710.03957); CC BY-NC-SA 4.0 per the dataset card li2017dailydialog/daily_dialog; original homepage yanran.li/dailydialog offline, zip retrieved from the Internet Archive.",
+   "landing": "https://huggingface.co/datasets/li2017dailydialog/daily_dialog",
+   "personal_data": "practice dialogues written for English learning; no personal data of identifiable people; non-commercial research use only, never redistributed",
+   "files": [
+    "https://web.archive.org/web/20210805035316if_/http://yanran.li/files/ijcnlp_dailydialog.zip"
+   ],
+   "consent_status": "published_corpus_no_personal_data",
+   "split_unit": "dialog",
+   "use": "preregistered typing-plus-erasure study (docs/research/prereg-dailydialog-erasure.md); EMO = annotated emotion of utterances (affect_scope CONTENT), INT = dialog act, CTX = topic"
   }
  ]
 }

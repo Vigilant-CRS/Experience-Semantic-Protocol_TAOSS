@@ -28,6 +28,8 @@ CONSENT_STATUSES = frozenset(
         # public posts collected under the platform's terms, no individual research consent:
         # aggregate, non-re-identifying text research only
         "public_text_platform_terms",
+        # a published, scripted corpus (e.g. practice dialogues) without personal data
+        "published_corpus_no_personal_data",
     }
 )
 SPLIT_UNITS = {
@@ -35,6 +37,7 @@ SPLIT_UNITS = {
     "session": SplitUnit.SESSION,
     "recording": SplitUnit.MEDIA_ITEM,
     "text_item": SplitUnit.MEDIA_ITEM,
+    "dialog": SplitUnit.SESSION,
 }
 
 

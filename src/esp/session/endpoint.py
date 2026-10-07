@@ -82,6 +82,7 @@ from esp.privacy.dp import (
     rdp_coefficient,
     secure_rng,
 )
+from esp.privacy.erasure import ErasureProfile, missing_erasures
 from esp.privacy.metadata import REGISTRY_NAME as METADATA_REGISTRY
 from esp.privacy.metadata import MetadataProtection
 from esp.regulatory.guard import (
@@ -165,6 +166,7 @@ class SenderEndpoint:
         declaration: RegulatoryDeclaration | None,
         dp: DpConfig | None = None,
         metadata: MetadataProtection | None = None,
+        erasure: ErasureProfile | None = None,
     ) -> None:
         # WP-078: no declaration, or a prohibited one, and the pipeline does not start
         self.regulatory: Assessment = require_permitted(declaration)
@@ -195,6 +197,7 @@ class SenderEndpoint:
         self._dp = dp
         _check_metadata_pin(metadata, descriptor)
         self._metadata = metadata
+        self._erasure = erasure
         self._rng = secure_rng()
         self.decoys_sent = 0
         if descriptor.dp_level != 0 and dp is None:
@@ -367,6 +370,8 @@ class SenderEndpoint:
         _need(self._profile, "type-set profile").check(
             frozenset(disclosed.present_types), frozenset(disclosed.masked_types)
         )
+        if self._erasure is not None:  # erase masked concepts from the released latents
+            disclosed = self._erasure.apply(disclosed)
         if self._dp is not None:
             disclosed, trailer = self._privatize(disclosed)
         encoded = frame_to_payload(disclosed, self._wire)
@@ -542,6 +547,8 @@ class ReceiverHardening:
     """T19: accept anchor coordinates only; raw typed latents are refused."""
     replay_watermark: ReplayWatermarkPolicy | None = None
     """GAP-016: replay segments (0x51) are accepted only with a verified watermark (0x89)."""
+    require_erasure: frozenset[TaossType] = frozenset()
+    """Masked types whose concept erasure the sender must declare (``esp.privacy.erasure``)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -856,6 +863,10 @@ class ReceiverEndpoint:
         try:
             frame = payload_to_frame(header, plaintext, self._wire)
             check_frame(self._declaration, frame)  # never deliver undeclared affect scopes
+            missing = missing_erasures(frame, self._hardening.require_erasure)
+            if missing:
+                names = ",".join(sorted(t.name for t in missing))
+                return self._reject((f"erasure:masked {names} without declared erasure",))
         except WireError as exc:
             return self._reject((f"1:{exc}",))
         except MisdeclarationError as exc:

@@ -1,0 +1,38 @@
+{
+  "digest": "728538da43f961b93c5b414bd1462c9eb8f74b04487208522f9b058008a708ba",
+  "osf": {
+    "analysis_plan": "baselines ['mono_leace', 'raw_leace', 'mono_learned_filter', 'taoss_without_erasure']; seeds [0, 1, 2]",
+    "dependent_variables": "test macro-AUROC of the strongest EMO probe on released KNO+CTX+INT: typed + LEACE erasure < monolithic + LEACE (same dimension), with topic (CTX) and dialog-act (INT) accuracy non-inferior (delta 0.02); dialog-cluster bootstrap",
+    "digest": "728538da43f961b93c5b414bd1462c9eb8f74b04487208522f9b058008a708ba",
+    "hypotheses": "H2",
+    "inference_criteria": "test macro-AUROC of the strongest EMO probe on released KNO+CTX+INT: typed + LEACE erasure < monolithic + LEACE (same dimension), with topic (CTX) and dialog-act (INT) accuracy non-inferior (delta 0.02); dialog-cluster bootstrap threshold 0.05; alpha 0.05",
+    "multiple_comparisons": "holm",
+    "sampling_plan": "split unit session; datasets ['dailydialog@Li-et-al-2017 (CC BY-NC-SA 4.0), official train/validation/test']",
+    "title": "ESP ExperienceBench H2"
+  },
+  "preregistration": {
+    "alpha": 0.05,
+    "baselines": [
+      "mono_leace",
+      "raw_leace",
+      "mono_learned_filter",
+      "taoss_without_erasure"
+    ],
+    "datasets": [
+      "dailydialog@Li-et-al-2017 (CC BY-NC-SA 4.0), official train/validation/test"
+    ],
+    "hypothesis": "H2",
+    "multiplicity": "holm",
+    "notes": "{\"analysis_code\": \"src/esp/bench/dailydialog_erasure_study.py:analyse\", \"config\": {\"delta\": 0.02, \"encoder\": {\"batch\": 512, \"d_ctx\": 16, \"d_emo\": 16, \"d_int\": 16, \"d_kno\": 64, \"epochs\": 20, \"hidden\": 256, \"lam_adv\": 1.0, \"lam_cov\": 1.0, \"lr\": 0.001, \"weight_decay\": 0.0001}, \"methods\": [\"taoss\", \"taoss_leace\", \"mono\", \"mono_leace\", \"mono_filter\", \"raw_leace\"], \"model\": \"sentence-transformers/all-MiniLM-L6-v2\", \"model_revision\": \"1110a243fdf4706b3f48f1d95db1a4f5529b4d41\", \"n_boot\": 10000, \"probe\": {\"batch\": 1024, \"epochs\": 20, \"hidden\": 256, \"lr\": 0.002, \"weight_decay\": 0.0001}, \"seeds\": [0, 1, 2]}, \"mechanism\": \"src/esp/privacy/erasure.py:LeaceEraser\", \"pinned_files\": {\"ijcnlp_dailydialog.zip\": \"c641e88cbf21fd7c1b57289387f9107d33fe8685a2b37fe8066b82776535ea89\", \"ijcnlp_dailydialog/dialogues_text.txt\": \"f48c07116eadb93eaff6af3d07fd70cfcc28474e76bd027005ab5166f80c3b76\", \"ijcnlp_dailydialog/dialogues_topic.txt\": \"659b8146f7e42ab3b5829f50afdeea5e362f8b6b160c73e80673f039b16072c6\", \"ijcnlp_dailydialog/test/dialogues_act_test.txt\": \"566649e92babfa528a77757b161deeee91e9c91fe0db71760063747e132d3f4c\", \"ijcnlp_dailydialog/test/dialogues_emotion_test.txt\": \"482b7235f91a1441055a09241b2d2709bb1702f4a08d7316c27fa807cba7d3c9\", \"ijcnlp_dailydialog/test/dialogues_test.txt\": \"3c323651cdfb09f7b529f850eddf96a638fc6cc9b43330b77956ab248484a1a8\", \"ijcnlp_dailydialog/train/dialogues_act_train.txt\": \"e910d5cfedc500d03dbedd3bcf8661ae8cf0e44d029e56a291f49a7b67042adf\", \"ijcnlp_dailydialog/train/dialogues_emotion_train.txt\": \"5c94e57c6e6c6641f4b1386513085f9d9b934229e732a556424ca7dfae4b6c77\", \"ijcnlp_dailydialog/train/dialogues_train.txt\": \"2128f3b82140b7d72d8d5bb989e5982a0394e4e40655995270d84c7eeee373b1\", \"ijcnlp_dailydialog/validation/dialogues_act_validation.txt\": \"fbeee7a1b2927c9cb33d6fdc384bb3ea55abf040928d2de4dcea57ab4a669682\", \"ijcnlp_dailydialog/validation/dialogues_emotion_validation.txt\": \"3d4094299a995e998bbc3492ce1755c9abc1e7f56500c840e83b12dd16580596\", \"ijcnlp_dailydialog/validation/dialogues_validation.txt\": \"2ad64701fe3a4449e7a6ee7cdc6c2a71c80f77b8a34f708ac0532395f499081c\"}}",
+    "primary_metric": "test macro-AUROC of the strongest EMO probe on released KNO+CTX+INT: typed + LEACE erasure < monolithic + LEACE (same dimension), with topic (CTX) and dialog-act (INT) accuracy non-inferior (delta 0.02); dialog-cluster bootstrap",
+    "registered_at_ns": 0,
+    "registry_ref": "github:Vigilant-CRS/Experience-Semantic-Protocol_TAOSS:research/prereg/dailydialog-erasure.json",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "split_unit": "session",
+    "threshold": 0.05
+  }
+}

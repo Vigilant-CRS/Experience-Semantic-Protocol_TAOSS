@@ -1,0 +1,82 @@
+{
+  "baselines": {
+    "mono": {
+      "ctx_acc": 0.5528919330289194,
+      "fidelity_r2": 0.6060413015434946,
+      "int_acc": 0.7346635270789441,
+      "leak_auroc": 0.9284749292703813
+    },
+    "mono_filter": {
+      "ctx_acc": 0.5270167427701674,
+      "fidelity_r2": 0.2853889055124554,
+      "int_acc": 0.7282191101747428,
+      "leak_auroc": 0.9199848538672853
+    },
+    "mono_leace": {
+      "ctx_acc": 0.5511161846778285,
+      "fidelity_r2": 0.557721616233981,
+      "int_acc": 0.7150824141777172,
+      "leak_auroc": 0.8836553233941078
+    },
+    "raw_leace": {
+      "ctx_acc": 0.5979198376458651,
+      "fidelity_r2": 0.96032657847425,
+      "int_acc": 0.743214772586442,
+      "leak_auroc": 0.8875603758264117
+    }
+  },
+  "chosen": "cov=1.0,adv=1.0",
+  "device": "cuda",
+  "label": "EXPLORATORY: DailyDialog train -> validation; test split blinded",
+  "runtime_s": 605.8,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "selection_rule": "lowest taoss_leace leakage with CTX and INT within DELTA of mono_leace",
+  "typed_grid": {
+    "cov=0.0,adv=0.0": {
+      "taoss": {
+        "ctx_acc": 0.5574581430745814,
+        "fidelity_r2": 0.6019758732584536,
+        "int_acc": 0.739248977568472,
+        "leak_auroc": 0.9291031562383755
+      },
+      "taoss_leace": {
+        "ctx_acc": 0.556570268899036,
+        "fidelity_r2": 0.5544363557236179,
+        "int_acc": 0.72958235221217,
+        "leak_auroc": 0.9062370659527524
+      }
+    },
+    "cov=1.0,adv=1.0": {
+      "taoss": {
+        "ctx_acc": 0.5370370370370371,
+        "fidelity_r2": 0.5806711079578475,
+        "int_acc": 0.7292105589292354,
+        "leak_auroc": 0.9254780812490055
+      },
+      "taoss_leace": {
+        "ctx_acc": 0.5376712328767124,
+        "fidelity_r2": 0.5395595832104286,
+        "int_acc": 0.7121080679142396,
+        "leak_auroc": 0.8935056500095481
+      }
+    },
+    "cov=3.0,adv=3.0": {
+      "taoss": {
+        "ctx_acc": 0.5279046169457129,
+        "fidelity_r2": 0.5410253672695717,
+        "int_acc": 0.7144627587061594,
+        "leak_auroc": 0.9096055174810757
+      },
+      "taoss_leace": {
+        "ctx_acc": 0.5246067985794013,
+        "fidelity_r2": 0.4978822918566483,
+        "int_acc": 0.6941380592390631,
+        "leak_auroc": 0.8360057892288028
+      }
+    }
+  }
+}
