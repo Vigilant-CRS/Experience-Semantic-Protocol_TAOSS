@@ -19,7 +19,7 @@ narrow proxy (attempted handwriting from public human intracortical data, prereg
 | 2 | Semantic states transfer correctly in synthetic / manual ground-truth tests. | M2 and M5 gates (simulator oracle, two-process demo) | ✅ |
 | 3 | Physiological and multimodal adapters operate reliably. | M6 gate (30-min soak, 0 lost samples, open-data readers match reference libraries), M7 gate | ✅ |
 | 4 | Empirical models predict selected states on held-out data. | **preregistered and confirmed** on FALCON H2 (public human intracortical data): attempted handwriting decoded into text on later, unseen days, CER 0.53 against a null of 0.73 (p = 0.0005); within a day CER 0.06 ([result](research/result-falcon-h2.md), [preregistration](research/prereg-falcon-h2.md)). One participant, one task, small test set; within-day exploratory evidence on FALCON H1 (R² 0.89 / 0.35) | ✅ narrow |
-| 5 | H1/H2/H3 supported by preregistered ExperienceBench. | needs preregistered runs with all baselines on real corpora | ❌ |
+| 5 | H1/H2/H3 supported by preregistered ExperienceBench. | First preregistered H2 test on real text (GoEmotions, [result](research/result-goemotions-h2.md)): typed decomposition leaks less than naive masking (AUROC 0.848 vs 0.870, p < 0.001), but **more than LEACE (0.678) and an adversarial filter (0.832)**, so H2 is not supported against all baselines. H1 and H3 still need real experience data | ❌ (H2 partial) |
 | 6 | Neural interface populates selected TAOSS fields in controlled experiments. | interface only (WP-045); needs hardware and ethics approval | ❌ |
 
 Smoke benchmarks, the type-discovery frontier (`artifacts/research/type_frontier.json`) and

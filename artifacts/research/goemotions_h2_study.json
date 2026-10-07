@@ -1,0 +1,142 @@
+{
+  "P1_taoss_vs_mono": {
+    "acc_base": 0.06099133959830477,
+    "acc_diff_q05": -0.012714206744057481,
+    "acc_taoss": 0.05343652109821264,
+    "leak_base": 0.8699249665068987,
+    "leak_reduction": 0.021761878029440518,
+    "leak_taoss": 0.8481630884774581,
+    "noninferior": true,
+    "p_leak": 9.999000099990002e-05
+  },
+  "S1_taoss_vs_mono_leace": {
+    "acc_base": 0.05472636815920398,
+    "acc_diff_q05": -0.006449235304956696,
+    "acc_taoss": 0.05343652109821264,
+    "leak_base": 0.6784206673076787,
+    "leak_reduction": -0.16974242116977944,
+    "leak_taoss": 0.8481630884774581,
+    "noninferior": true,
+    "p_leak": 1.0
+  },
+  "S2_taoss_vs_mono_filter": {
+    "acc_base": 0.05785885387875438,
+    "acc_diff_q05": -0.009222406486088075,
+    "acc_taoss": 0.05343652109821264,
+    "leak_base": 0.8319857460583059,
+    "leak_reduction": -0.016177342419152252,
+    "leak_taoss": 0.8481630884774581,
+    "noninferior": true,
+    "p_leak": 1.0
+  },
+  "S3_taoss_vs_mono_unseen_author_thread": {
+    "acc_base": 0.06185908038372478,
+    "acc_diff_q05": -0.015547469401257029,
+    "acc_taoss": 0.053258352629837906,
+    "leak_base": 0.8745322655623481,
+    "leak_reduction": 0.020567525911917683,
+    "leak_taoss": 0.8539647396504304,
+    "noninferior": true,
+    "p_leak": 9.999000099990002e-05
+  },
+  "config": {
+    "delta": 0.02,
+    "encoder": {
+      "batch": 512,
+      "d_ctx": 32,
+      "d_emo": 16,
+      "d_kno": 64,
+      "epochs": 30,
+      "hidden": 256,
+      "lam_adv": 3.0,
+      "lam_cov": 3.0,
+      "lr": 0.001,
+      "weight_decay": 0.0001
+    },
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "n_boot": 10000,
+    "probe": {
+      "batch": 1024,
+      "epochs": 20,
+      "hidden": 256,
+      "lr": 0.002,
+      "weight_decay": 0.0001
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "hardware": {
+    "cpu": "x86_64",
+    "cuda": "12.6",
+    "cudnn": 91002,
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU",
+    "numpy": "2.5.3",
+    "python": "3.12.13",
+    "torch": "2.14.0+cu126",
+    "torch_threads": 8
+  },
+  "holm_secondary": {
+    "S1_taoss_vs_mono_leace": false,
+    "S2_taoss_vs_mono_filter": false,
+    "S3_taoss_vs_mono_unseen_author_thread": true
+  },
+  "label": "PREREGISTERED confirmatory analysis (H2, claims level 5 track)",
+  "n_test": 5427,
+  "n_test_unseen_author_thread": 3023,
+  "prereg_commit": "09bf3daff7360f75728d5431852ebf3b22f6e7a6",
+  "prereg_digest": "cbfaf9e3b1554d5ccdf97bcda061d86f89ee715303f57252ba5c5e2707efb640",
+  "primary_supported": true,
+  "runtime_s": 6305.2,
+  "summary": {
+    "mono": {
+      "ctx_acc": 0.06099133959830477,
+      "ctx_acc_linear": 0.06099133959830477,
+      "ctx_acc_mlp": 0.048277132854247284,
+      "fidelity_r2": 0.5706863059620795,
+      "leak_auroc": 0.8699249665068987,
+      "leak_auroc_linear": 0.8599960202814174,
+      "leak_auroc_mlp": 0.8699249665068987
+    },
+    "mono_filter": {
+      "ctx_acc": 0.05785885387875438,
+      "ctx_acc_linear": 0.05785885387875438,
+      "ctx_acc_mlp": 0.04975124378109453,
+      "fidelity_r2": 0.3433362210774569,
+      "leak_auroc": 0.8319857460583059,
+      "leak_auroc_linear": 0.8242522903423672,
+      "leak_auroc_mlp": 0.8319857460583059
+    },
+    "mono_leace": {
+      "ctx_acc": 0.05472636815920398,
+      "ctx_acc_linear": 0.05472636815920398,
+      "ctx_acc_mlp": 0.046618758061544134,
+      "fidelity_r2": 0.3546195403623895,
+      "leak_auroc": 0.6784206673076787,
+      "leak_auroc_linear": 0.49795915217965464,
+      "leak_auroc_mlp": 0.6784206673076787
+    },
+    "raw": {
+      "ctx_acc": 0.054542104293348076,
+      "ctx_acc_linear": 0.054542104293348076,
+      "ctx_acc_mlp": 0.046618758061544134,
+      "fidelity_r2": 0.9999999982552051,
+      "leak_auroc": 0.8797295063268884,
+      "leak_auroc_linear": 0.8714143208364897,
+      "leak_auroc_mlp": 0.8797295063268884
+    },
+    "taoss": {
+      "ctx_acc": 0.05343652109821264,
+      "ctx_acc_linear": 0.05343652109821264,
+      "ctx_acc_mlp": 0.05343652109821264,
+      "fidelity_r2": 0.5612172336931652,
+      "leak_auroc": 0.8481630884774581,
+      "leak_auroc_linear": 0.8274038746674716,
+      "leak_auroc_mlp": 0.8481630884774581
+    }
+  }
+}

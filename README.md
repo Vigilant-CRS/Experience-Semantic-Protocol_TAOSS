@@ -688,7 +688,7 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | 2 | Semantic states transfer correctly in ground-truth tests | ✅ |
 | 3 | Physiological and multimodal adapters operate reliably | ✅ 30-min soak, zero loss |
 | 4 | Models predict selected states on held-out real data | ✅ **preregistered and confirmed** for attempted handwriting from public implant data ([result](docs/research/result-falcon-h2.md)) |
-| 5 | H1–H3 supported by preregistered ExperienceBench | open for studies |
+| 5 | H1–H3 supported by preregistered ExperienceBench | ❌ first H2 test: beats naive masking, loses to LEACE ([result](docs/research/result-goemotions-h2.md)) |
 | 6 | Neural interfaces populate TAOSS fields in controlled experiments | open for device partners |
 
 ### What is shown on real data, and what is not
@@ -703,7 +703,8 @@ level of the [claims ladder](docs/CLAIMS.md), and CI checks the claims:
 | Attempted movement is decodable | R² 0.89 within a day, 0.35 on later days with a GRU and unsupervised day normalization (FALCON H1) | ✅ real, exploratory |
 | Attempted handwriting is decodable on later, unseen days | **preregistered** on FALCON H2: character error rate 0.53 against a null of 0.73 (p = 0.0005); 0.06 within a day | ✅ real, **confirmatory** (one participant) |
 | TAOSS separates types; leakage audits work | encoder training, audits, ExperienceBench smoke runs | ❌ synthetic worlds only |
-| ESP beats language or embeddings (H1–H3) | not tested yet; needs preregistered studies | ❌ open |
+| Typed parts reduce cross-type leakage (H2) | **preregistered** on real text (GoEmotions): less leakage than naive masking, but more than LEACE and an adversarial filter; all methods still leak strongly ([result](docs/research/result-goemotions-h2.md)) | ✅ real, confirmatory: **partial, H2 not supported** |
+| ESP beats language or embeddings (H1, H3) | not tested yet; needs real experience data | ❌ open |
 | Human experience transfer | not claimed | ❌ open |
 
 ### Data used and credits
@@ -723,6 +724,7 @@ git-ignored folder, and never redistributed by this repository. Pins:
 | physionet-eegmmidb-s001 | ODC-By-1.0 | Schalk et al., BCI2000: A General-Purpose Brain-Computer Interface (BCI) System, IEEE TBME 51(6), 2004; Goldberger et al., Circulation 101(23), 2000. [https://physionet.org/content/eegmmidb/1.0.0/](https://physionet.org/content/eegmmidb/1.0.0/) |
 | mne-test-files | BSD-3-Clause | MNE-Python developers, https://github.com/mne-tools/mne-python (BSD-3-Clause). [https://github.com/mne-tools/mne-python](https://github.com/mne-tools/mne-python) |
 | xdf-example-files | MIT | Copyright (c) 2019 xdf-modules, https://github.com/xdf-modules/example-files (MIT). [https://github.com/xdf-modules/example-files](https://github.com/xdf-modules/example-files) |
+| goemotions | Apache-2.0 | Demszky, Movshovitz-Attias, Ko, Cowen, Nemade, Ravi: GoEmotions: A Dataset of Fine-Grained Emotions, ACL 2020 (arXiv:2005.00547); released by Google Research (google-research/goemotions) under Apache-2.0; Hugging Face card google-research-datasets/go_emotions: apache-2.0. [https://github.com/google-research/google-research/tree/master/goemotions](https://github.com/google-research/google-research/tree/master/goemotions) |
 
 Leakage between the parts is *measured*, never assumed to be zero. That is how we found that the
 reference encoder leaks masked emotion into the other parts (see
