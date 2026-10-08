@@ -118,7 +118,7 @@ both agree.
 | M8 | PASS | `artifacts/test-reports/M8.json` (commit 62e2f33; trainable TAOSS, bitwise-reproducible checkpoints, leakage harness) |
 | M9 | PASS | `artifacts/test-reports/M9.json` (commit 49ad9a4; ExperienceBench smoke, audit suite, red-team sender detected) |
 | M10 | PASS | `artifacts/test-reports/M10.json` (commit ce1fae2; Python<->Rust interop matrix, conformance runner with Rust peer) |
-| M11 | PASS | `artifacts/test-reports/M11.json` (commit ce1fae2; Gate at ce1fae2 in a pinned worktree: 771 passed, 1 skipped (proprietary legacy data). 1M-iteration fuzz, perf 300 frames/profile (wire bytes = V13 arithmetic), security review clean; manual threat-model review PENDING (human).) |
+| M11 | PASS | `artifacts/test-reports/M11.json` (commit 17e11bf; Final re-run after the perf metric fix (sustainable rate from mean cost); full dependency + license audit (105 packages), 1M fuzz.) |
 | M14 | PASS | `artifacts/test-reports/M14.json` (commit a647372; Gate in a pinned worktree (ontology projection, registry governance, content affect, XCF capsules/gate/recall/trust).) |
 | M13 | PASS | `artifacts/test-reports/M13.json` (commit 1349314; Gate in a pinned worktree: MEB (machines never author EMO, domain profiles enforced before decoding) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit); scripted agents, no real LLM.) |
 | M16 | PASS | `artifacts/test-reports/M16.json` (commit f79f0ce; Gate in a pinned worktree: neural adapter interface (interface only), experience-legacy policies (policy objects only), PQ declaration (CLASSICAL_ONLY; hybrid outer channel not verifiable with aioquic 1.3.0) and repository claim lint.) |
