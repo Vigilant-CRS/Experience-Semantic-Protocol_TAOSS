@@ -195,7 +195,10 @@ def bench_profile(sf: int, encoding: LatentEncoding, n: int = 300) -> dict[str, 
             "wire_bytes_per_frame": size,
             "v13_bytes_per_release": release_bytes(frozenset(types), bytes_per_coordinate=bpc),
             "kbit_s": {f"{hz}Hz": round(bitrate_kbit_s(size, hz), 1) for hz in RATES_HZ},
-            "max_sustainable_hz": round(1000 / _stats(total_ms)["p99_ms"]),
+            # throughput: frames per second one core can process back to back (mean cost);
+            # the tail latency is reported separately as total_send_receive.p99_ms
+            "max_sustainable_hz": round(1000 / _stats(total_ms)["mean_ms"]),
+            "tail_bound_hz": round(1000 / _stats(total_ms)["p99_ms"]),
             "peak_memory_kib": round(peak / 1024, 1),
             "cpu_fraction": round(cpu, 3),
         }
