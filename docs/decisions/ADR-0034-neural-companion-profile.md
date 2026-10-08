@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0034: Neural companion profile (M18, implant-ready)
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Context: V13 defines the decoder interface boundary `f_decode` but leaves the neural source
   side to vendors. M18 makes that boundary testable with public human intracortical and ECoG
   recordings instead of an implant.

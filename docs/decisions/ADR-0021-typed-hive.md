@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0021: Typed Hive reference profile (MLS, FROST, secure aggregation)
 
-- Status: PROPOSED (implemented as a research-track reference; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Resolves: GAP-017 (partially; see "Not implemented")
 - Work package: WP-070 · Milestone: M15
 

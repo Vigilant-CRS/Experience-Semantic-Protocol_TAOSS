@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0030 — Replay-pattern watermark
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Resolves: GAP-016
 - Work package: WP-057 (covert-channel hardening), WP-068 (recall path)
 - Code: `src/esp/xcf/watermark.py`, `src/esp/session/endpoint.py`

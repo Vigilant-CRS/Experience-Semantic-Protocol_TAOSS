@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0028 — MEB type-set profiles and ESP-Agent TLVs
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Work packages: WP-066 (MEB), WP-067 (ESP-Agent)
 - Related: ADR-0011 (addendum profile), ADR-0025 (strict SF levels, custom type-set profiles)
 

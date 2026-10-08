@@ -4920,10 +4920,13 @@ Neue Decisions werden hier kurz gespiegelt und ausführlich als ADR gespeichert.
 | ADR-0018 | DP-Referenzprofile und Accountant (GAP-012) | ACCEPTED |
 | ADR-0019 | Default Δ_clock pro Profil (GAP-013) | ACCEPTED |
 | ADR-0020 | Fehlercode-Register (GAP-014) | PROPOSED |
-| ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | PROPOSED (implementiert) |
-| ADR-0028 | MEB- und ESP-Agent-Profil, TLV 0x98/0x99 | PROPOSED (implementiert) |
-| ADR-0030 | Replay-Watermark 0x89 (GAP-016) | PROPOSED (implementiert) |
-| ADR-0022 | XCF-Gate-Protokoll (GAP-018) | PROPOSED (implementiert) |
+| ADR-0021 | Referenzwahl MLS/FROST/Secure Aggregation für Hive (GAP-017) | ACCEPTED (2026-10-08) |
+| ADR-0028 | MEB- und ESP-Agent-Profil, TLV 0x98/0x99 | ACCEPTED (2026-10-08) |
+| ADR-0030 | Replay-Watermark 0x89 (GAP-016) | ACCEPTED (2026-10-08) |
+| ADR-0033 | Härtung nach externem Review (F01–F14) | ACCEPTED |
+| ADR-0034 | Neural-Companion-Profil (M18) | ACCEPTED (2026-10-08) |
+| ADR-0035 | Masked-Type-Erasure (Typisieren plus Löschen) | ACCEPTED (2026-10-08) |
+| ADR-0022 | XCF-Gate-Protokoll (GAP-018) | ACCEPTED (2026-10-08) |
 | ADR-0023 | Transparenzlog-Profil (GAP-019) | ACCEPTED (2026-09-30) |
 | ADR-0024 | Datensatz-Register und Lizenzprüfung für ExperienceBench (GAP-023) | PROPOSED |
 | ADR-0025 | Strikte SF-Level, Custom-Typ-Set-Profile (GAP-027) | ACCEPTED |

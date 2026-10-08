@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0035: Masked-type erasure (typing plus concept erasure)
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Context: the preregistered GoEmotions H2 study (`docs/research/result-goemotions-h2.md`)
   showed that typed heads leak less of a masked type than naive masking, but more than LEACE
   or an adversarial filter. Masking removes a block from the wire. It does not remove what the

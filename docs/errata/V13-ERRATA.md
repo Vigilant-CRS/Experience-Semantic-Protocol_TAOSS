@@ -137,7 +137,7 @@ only once V13.1 adopts them. Each entry records:
 - Who operates the log and the witnesses is still open; the maintainer decides this in
   ADR-0023.
 
-**E-23 (GAP-018, PROPOSED, ADR-0022): XCF `GATED_CEK` gate protocol**
+**E-23 (GAP-018, ACCEPTED, ADR-0022): XCF `GATED_CEK` gate protocol**
 
 - `access_material = gate_id ‖ wrap_nonce ‖ AEAD(gate_secret, CEK)`.
 - Release checks signature, tombstone, capability and types, then re-wraps the CEK with HPKE
@@ -188,7 +188,7 @@ only once V13.1 adopts them. Each entry records:
 - *Finding:* with aioquic 1.3.0 and Python 3.12 the hybrid group is neither offered nor
   observable, so a hybrid outer channel cannot currently be verified in the reference stack.
 
-**E-24 (GAP-017, PROPOSED, ADR-0021): Typed Hive reference profile**
+**E-24 (GAP-017, ACCEPTED, ADR-0021): Typed Hive reference profile**
 
 - *Proposed:* the 0x70–0x73 layouts as in ADR-0021 (grant 153+9n, contribution 92+p, exit
   52+p, collective intent 169 bytes).
@@ -225,7 +225,7 @@ only once V13.1 adopts them. Each entry records:
 - Agent state travels as a signed opaque-latent descriptor (0x98) and agent events (0x99). It
   is never labelled TAOSS without a passed leakage audit.
 
-**E-26 (GAP-016, PROPOSED, ADR-0030): replay-pattern watermark**
+**E-26 (GAP-016, ACCEPTED, ADR-0030): replay-pattern watermark**
 
 - *V13:* "Replay segments include vendor-side watermark TLVs" names no TLV code, body or
   verification rule.

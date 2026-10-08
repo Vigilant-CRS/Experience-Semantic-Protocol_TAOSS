@@ -8,7 +8,9 @@
   <a href="docs/LICENSING.md"><img alt="Vectors: CC BY 4.0" src="https://img.shields.io/badge/vectors-CC%20BY%204.0-lightgrey"></a>
   <img alt="Python 3.12 + Rust" src="https://img.shields.io/badge/python%203.12%20%2B%20rust-interoperable-3776ab">
   <img alt="Milestones M0–M11, M13–M16, M18 PASS" src="https://img.shields.io/badge/milestones-M0%E2%80%93M11%2C%20M13%E2%80%93M16%2C%20M18%20PASS-2e8b57">
-  <img alt="1300+ tests" src="https://img.shields.io/badge/tests-1300%2B-2e8b57">
+  <img alt="1380+ tests" src="https://img.shields.io/badge/tests-1380%2B-2e8b57">
+  <a href="docs/CLAIMS.md"><img alt="Claims level 4 of 6" src="https://img.shields.io/badge/claims%20level-4%20of%206-0969da"></a>
+  <a href="#preregistered-studies-on-real-data"><img alt="3 preregistered studies" src="https://img.shields.io/badge/preregistered%20studies-3-0969da"></a>
   <img alt="Spec ESP V13" src="https://img.shields.io/badge/spec-ESP%20V13-8250df">
 </p>
 
@@ -39,6 +41,7 @@ for collective cognition, and interfaces for machines, agents and neural devices
 [How it works](#6-how-it-works-step-by-step) ·
 [Built today](#7-built-today) ·
 [Test results](#8-test-results) ·
+[Studies](#preregistered-studies-on-real-data) ·
 [Deep dive](#9-technical-deep-dive) ·
 [Invitation](#10-an-invitation) ·
 [Evidence](#11-how-we-keep-it-honest) ·
@@ -226,7 +229,7 @@ uv run esp-demo send $D/keys --port 4433 --capture $D/send.jsonl    # the 11-ste
 uv run esp-demo inspect --events $D/recv.jsonl --capture $D/send.jsonl --out $D/inspector.html
 ```
 
-Full verification (lint, types, licenses, plan sync, schemas, frozen vectors, 1,300+ tests):
+Full verification (lint, types, licenses, plan sync, schemas, frozen vectors, 1,380+ tests):
 
 ```bash
 make verify
@@ -301,7 +304,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M9 | Audit suite (KSG/MINE/HSIC/dCor, V-information ladder, red-team steganography) and ExperienceBench (9 task families, H1–H3 evaluators, preregistration guard) | ✅ PASS |
 | M10 | **Independent Rust implementation** (`rust/esp-rs`): same vectors, live interop matrix Python⇄Rust, conformance CLI | ✅ PASS |
 | M11 | Performance benchmark, security review (dependency audit, 1 M-input fuzz, threat model T1–T19), failure-mode regressions | ✅ PASS |
-| M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate; ADR-0014/0023/0026/0027 accepted. Waits only for the independent threat-model review ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ one human step |
+| M12 | Release candidate 1.0: guides with executed examples, **frozen v1 vectors**, automated release gate; all design decisions (ADRs) accepted. Waits only for the independent threat-model review ([sign-off table](docs/release/RELEASE_1.0.md)) | 🧑‍⚖️ one human step |
 | M13 | Machine Experience Bridge (machines never author EMO; handover, surgical and drone profiles) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit) | ✅ PASS |
 | M14 | Anchor projection, registry governance, content-side affect, **experience capsules (XCF)** with gate, tombstones, recall and trust vector | ✅ PASS |
 | M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation, MLS group (RFC 9420), anonymous membership with blind BBS credentials | ✅ PASS |
@@ -313,7 +316,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 
 ## 8. Test results
 
-The full suite has more than 1,300 automated tests: unit, property-based (Hypothesis), conformance
+The full suite has more than 1,380 automated tests: unit, property-based (Hypothesis), conformance
 vectors, fuzzing (1 million inputs locally), integration over real QUIC, and milestone gates.
 Security rules are **mutation-checked**: each rule is deliberately broken once, and a test must
 fail.
@@ -432,6 +435,22 @@ under a fresh consent check. Access to a capsule can be gated by a guardian quor
 tombstone blocks any future release. A "no replay" flag anywhere in the capsule's history blocks
 recall. Each recall also reports a **trust vector** (signature, anchor age, drift, privacy
 budget, lineage) instead of a single opaque score.
+
+### Preregistered studies on real data
+
+Each study was registered publicly *before* its test data was looked at, then run exactly once.
+Results are published whatever they show.
+
+| Study | Question | Outcome |
+|---|---|---|
+| [FALCON H2](docs/research/result-falcon-h2.md) (human implant data) | Can attempted handwriting be decoded into text on later, unseen days? | ✅ **confirmed**: character error rate 0.53 against a null of 0.73 (p = 0.0005); 0.06 within a day. Claims level 4 |
+| [GoEmotions](docs/research/result-goemotions-h2.md) (Reddit text) | Do typed parts leak less hidden emotion than masking an untyped latent? | ◐ **partly**: less than naive masking (p < 0.001), but more than LEACE and an adversarial filter |
+| [DailyDialog](docs/research/result-dailydialog-erasure.md) (dialogues) | Does *typing plus erasure* leak less than erasure alone, at equal utility? | ◐ **supported, small effect**: 0.818 against 0.832 AUROC (p = 0.015), also on unseen dialogues; utility cost against some baselines |
+
+Together these shaped a design decision ([ADR-0035](docs/decisions/ADR-0035-masked-type-erasure.md)):
+a masked type is not only left out of the message, its traces are also erased from the parts
+that are sent. Hidden emotion still leaks with every method tested, which is why the leakage
+audit stays part of the protocol.
 
 ### Real human implant data (M18, exploratory)
 
@@ -642,7 +661,9 @@ and live against the Python peer.
 
 Design decisions are recorded as ADRs in [`docs/decisions/`](docs/decisions/). Places where
 V13 is ambiguous are tracked as numbered gaps (GAP-001…) in the
-[master plan](docs/MASTER_IMPLEMENTATION_PLAN.md) §52b and fed back as errata.
+[master plan](docs/MASTER_IMPLEMENTATION_PLAN.md) §52b and fed back as errata (E-01 … E-29 for
+V13.1). **All ADRs are accepted**, and every gap is closed except GAP-023: real experience
+data for the human studies of H1 and H3.
 
 ---
 

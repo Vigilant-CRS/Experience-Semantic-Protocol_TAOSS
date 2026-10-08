@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # ADR-0022: XCF `GATED_CEK` gate protocol
 
-- Status: PROPOSED (implemented; awaiting maintainer review)
+- Status: ACCEPTED (2026-10-08, maintainer decision)
 - Resolves: GAP-018
 - Work package: WP-068
 

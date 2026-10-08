@@ -41,12 +41,16 @@ approved.
 | ADR-0027 metadata-protection profile | yes | APPROVED | maintainer | 2026-09-30 |
 <!-- signoffs:end -->
 
-Not blocking 1.0; these are decided with their own tracks:
+Also accepted by maintainer decision on 2026-10-08 (not blocking 1.0):
 
 - ADR-0021 (Typed Hive);
 - ADR-0022 (XCF gate);
 - ADR-0028 (MEB and agent profile);
-- ADR-0030 (replay watermark).
+- ADR-0030 (replay watermark);
+- ADR-0034 (neural companion profile);
+- ADR-0035 (masked-type erasure).
+
+With these decisions, no ADR is open any more.
 
 ## Known, documented limitations of 1.0
 
