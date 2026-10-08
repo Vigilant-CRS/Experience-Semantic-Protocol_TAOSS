@@ -23,6 +23,7 @@ EXPECTED = {
     "ADAPTER_GUIDE.md",
     "README.md",
     "VISION.md",
+    "DOCKING.md",
 }
 
 

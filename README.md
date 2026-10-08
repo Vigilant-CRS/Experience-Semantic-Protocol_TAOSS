@@ -692,7 +692,8 @@ Choose a thread:
 - **A third implementation.** Go, C, TypeScript, Swift: the frozen v1 vectors and the conformance
   CLI (`esp-conformance`) tell you when you are done.
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [guides](docs/guide/README.md).
+Start with **[Docking](docs/guide/DOCKING.md)** (how to connect a device, an implementation, an
+agent framework or a study), [CONTRIBUTING.md](CONTRIBUTING.md) and the [guides](docs/guide/README.md).
 Contributions need a DCO sign-off, and there is no CLA. Or refute the whole frame and propose a
 better one: the architecture is built to absorb that.
 

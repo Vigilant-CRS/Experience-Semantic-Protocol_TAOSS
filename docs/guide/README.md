@@ -17,6 +17,8 @@ Read them in this order:
 7. [Security examples](SECURITY_EXAMPLES.md): tamper evidence and malformed input.
 8. [Adapter guide](ADAPTER_GUIDE.md): connecting sensors and files.
 9. [Conformance](../CONFORMANCE.md): testing another implementation.
+10. [Docking](DOCKING.md): how device makers, other implementations, agent frameworks and
+    researchers connect to ESP.
 
 Every ```` ```python ```` block in these guides is executed by `tests/unit/test_docs_examples.py`.
 The examples therefore cannot silently go stale.
