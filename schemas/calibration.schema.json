@@ -109,6 +109,7 @@
         "seeg",
         "lfp",
         "mua",
+        "broadband",
         "spikes",
         "spike_counts",
         "neural_features"

@@ -47,6 +47,8 @@ class Modality(StrEnum):
     SEEG = "seeg"
     LFP = "lfp"
     MUA = "mua"
+    BROADBAND = "broadband"
+    """Unfiltered wideband intracortical voltage (e.g. Neuropixels at 30 kHz)."""
     SPIKES = "spikes"
     SPIKE_COUNTS = "spike_counts"
     NEURAL_FEATURES = "neural_features"

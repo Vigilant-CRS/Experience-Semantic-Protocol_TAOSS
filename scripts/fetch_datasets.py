@@ -42,6 +42,9 @@ def main(argv: list[str]) -> int:
     for ds in registry["datasets"]:
         if wanted and ds["id"] not in wanted:
             continue
+        if "fetcher" in ds:  # large or streamed data has its own fetcher
+            print(f"{ds['id']}: use {ds['fetcher']}")
+            continue
         target = OUT / ds["id"]
         target.mkdir(parents=True, exist_ok=True)
         files = {}

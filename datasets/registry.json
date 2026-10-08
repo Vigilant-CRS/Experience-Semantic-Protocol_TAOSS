@@ -118,6 +118,47 @@
    "consent_status": "published_corpus_no_personal_data",
    "split_unit": "dialog",
    "use": "preregistered typing-plus-erasure study (docs/research/prereg-dailydialog-erasure.md); EMO = annotated emotion of utterances (affect_scope CONTENT), INT = dialog act, CTX = topic"
+  },
+  {
+   "id": "ds003688-seeg",
+   "title": "Open multimodal iEEG-fMRI dataset (OpenNeuro ds003688 v1.0.7), sub-01 clinical sEEG rest run (103 SEEG + ECG/TRIG/MISC channels, 2048 Hz, BIDS-iEEG / BrainVision float32)",
+   "license": "CC0-1.0",
+   "attribution": "Berezutskaya, Vansteensel, Aarnoutse, Freudenburg, Piantoni, Branco, Ramsey: Open multimodal iEEG-fMRI dataset from naturalistic stimulation with a short audiovisual film, Sci Data 9, 91 (2022); OpenNeuro doi:10.18112/openneuro.ds003688.v1.0.7",
+   "landing": "https://openneuro.org/datasets/ds003688/versions/1.0.7",
+   "personal_data": "pseudonymized human intracranial recordings (epilepsy patients, UMC Utrecht; Medical Ethical Committee approval and informed consent per the source); no re-identification, no linkage",
+   "files": [
+    "https://s3.amazonaws.com/openneuro.org/ds003688/dataset_description.json",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/participants.tsv",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/participants.json",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/README",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_acq-clinical_coordsystem.json",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_acq-clinical_electrodes.tsv",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_acq-clinical_run-1_channels.tsv",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_acq-clinical_run-1_ieeg.json",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_acq-clinical_run-1_ieeg.vhdr",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_acq-clinical_run-1_ieeg.vmrk",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_acq-clinical_run-1_ieeg.eeg",
+    "https://s3.amazonaws.com/openneuro.org/ds003688/sub-01/ses-iemu/ieeg/sub-01_ses-iemu_task-rest_run-1_events.tsv"
+   ],
+   "fetcher": "scripts/fetch_openneuro.py ds003688-seeg",
+   "consent_status": "participant_consent_documented_by_source",
+   "split_unit": "subject",
+   "use": "WP-087 real sEEG replay through the BIDS-iEEG adapter under L4-REPLAY (tests/unit/adapters/neural/test_bids_seeg_real.py)"
+  },
+  {
+   "id": "dandi-000397-raw",
+   "title": "Human Neuropixels recordings in cortex (DANDI:000397), sub-Pt03 ElectricalSeriesRaw 384 ch int16 at 30 kHz; streamed by HTTP range, never downloaded whole (6.29 GB asset)",
+   "license": "CC0-1.0",
+   "attribution": "Paulk, Kfir, Khanna, Mustroph, Trautmann, Soper, Stavisky, Welkenhuysen, Dutta, Shenoy, Hochberg, Richardson, Williams, Cash: Large-scale neural recordings with single neuron resolution using Neuropixels probes in human cortex, Nat Neurosci 25, 252-263 (2022); DANDI:000397 (draft)",
+   "landing": "https://dandiarchive.org/dandiset/000397",
+   "personal_data": "pseudonymized intraoperative human recordings; consent basis per Paulk et al. 2022 and the dandiset documentation; tests read only a 1 s x 3 channel slice",
+   "files": [
+    "https://api.dandiarchive.org/api/assets/c6b42439-de35-4619-b406-b1c45e935ba0/download/"
+   ],
+   "fetcher": "streamed with remfile by tests/unit/features/test_neural_crossings.py (ESP_NETWORK_TESTS=1)",
+   "consent_status": "participant_consent_documented_by_source",
+   "split_unit": "subject",
+   "use": "WP-088 full-rate raw broadband through the NWB adapter and the threshold-crossing feature"
   }
  ]
 }

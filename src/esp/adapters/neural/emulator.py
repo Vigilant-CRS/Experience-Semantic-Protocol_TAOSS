@@ -79,8 +79,11 @@ class EmulatorConfig:
     clock_drift_ppm: float = 0.0
     reconnects: tuple[int, ...] = ()
     reconnect_gap_ns: int = 250_000_000
-    reconnect_offset_ns: int = 7_345_679
-    """Clock offset added after each reconnect; deliberately not a multiple of any period."""
+    reconnect_offset_ns: int | None = None
+    """Clock offset added after each reconnect. Default: 15.5 sample periods of the source,
+    so the sample phase jumps by half a period at every rate. A fixed offset (formerly
+    7 345 679 ns) is almost a whole number of periods at some rates (2048 Hz: 0.044 period)
+    and then looks like packet loss; real sEEG at 2048 Hz exposed this."""
     day_drift_gain_per_hour: float = 0.0
     """Relative gain change per hour of stream time (per-channel rate factor 0.5-1.5)."""
     day_drift_offset_per_hour: float = 0.0
@@ -305,11 +308,14 @@ class ImplantStreamEmulator:
         ts = self._t0 + np.round(t_rel * (1.0 + cfg.clock_drift_ppm * 1e-6)).astype(np.int64)
         keep = np.ones(t_rel.size, dtype=bool)
         offset = np.zeros(t_rel.size, dtype=np.int64)
+        shift = cfg.reconnect_offset_ns
+        if shift is None:
+            shift = round(15.5 * 1e9 / self._src.info.nominal_rate_hz)
         for r in sorted(cfg.reconnects):
             gap = (t_rel >= r) & (t_rel < r + cfg.reconnect_gap_ns)
             after = t_rel >= r + cfg.reconnect_gap_ns
             keep &= ~gap
-            offset[after] += cfg.reconnect_offset_ns
+            offset[after] += shift
             if gap.any() or after.any():
                 self._log(P.RECONNECT, r, r, detail=f"gap {cfg.reconnect_gap_ns} ns")
         ts = ts + offset

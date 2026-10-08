@@ -7,11 +7,16 @@ A BIDS-iEEG recording becomes the same
 or a live device. The reader uses:
 
 - ``*_ieeg.json``: ``SamplingFrequency`` (required) and ``iEEGReference``;
-- ``*_channels.tsv``: ``name``, ``type``, ``units``, and ``status``
-  (good/bad). Types map to ESP modalities: ECOG, SEEG, DBS→LFP, EEG, EMG,
-  EOG→EYE. Other types (ECG, TRIG, MISC, …) are skipped unless requested;
+- ``*_channels.tsv``: ``name``, ``type``, ``units``, ``status`` (good/bad),
+  ``group`` and the hardware filter (``low_cutoff``, ``high_cutoff``, ``notch``).
+  Types map to ESP modalities: ECOG, SEEG, DBS→LFP, EEG, EMG, EOG→EYE, ECG.
+  TRIG and MISC have no neutral ESP modality and are refused when requested;
+  by default only ECOG, SEEG and DBS are replayed;
 - ``*_electrodes.tsv`` (subject/session level): ``x``, ``y``, ``z``, ``group``
   and ``location``;
+- sidecars follow the BIDS inheritance principle: a file whose entities are a
+  subset of the recording's entities applies (e.g. ``task-rest_run-1_events.tsv``
+  for ``task-rest_acq-clinical_run-1``); the most specific one wins;
 - ``*_events.tsv``: ``onset`` and ``trial_type`` (or ``value``) become an
   :class:`~esp.adapters.physio.stream.EventBlock`;
 - ``dataset_description.json``: ``License``, ``EthicsApprovals`` and
@@ -70,10 +75,30 @@ BIDS_TYPES: Final = {
     "EEG": Modality.EEG,
     "EMG": Modality.EMG,
     "EOG": Modality.EYE,
+    "ECG": Modality.ECG,
 }
 DEFAULT_TYPES: Final = ("ECOG", "SEEG", "DBS")
 _SUFFIX: Final = re.compile(r"_ieeg\.(edf|bdf|vhdr|nwb)$", re.IGNORECASE)
 _DOI_VERSION: Final = re.compile(r"\.v(\d+(?:\.\d+)*)$")
+
+
+def _entities(stem: str) -> dict[str, str]:
+    """BIDS ``key-value`` entities of a file stem (the trailing suffix is not an entity)."""
+    return dict(p.split("-", 1) for p in stem.split("_") if "-" in p and not p.startswith("-"))
+
+
+def _inherited(
+    folder: Path, suffix: str, mine: dict[str, str], *, required: Sequence[str] = ("sub", "task")
+) -> Path | None:
+    """Most specific sidecar ``*_<suffix>`` whose entities are a subset of ``mine``."""
+    best: tuple[int, str, Path] | None = None
+    for p in folder.glob(f"*_{suffix}"):
+        ent = _entities(p.name[: -len(suffix) - 1])
+        if not ent.items() <= mine.items() or any(k not in ent for k in required if k in mine):
+            continue
+        if best is None or (len(ent), p.name) > best[:2]:
+            best = (len(ent), p.name, p)
+    return best[2] if best else None
 
 
 def _tsv(path: Path) -> list[dict[str, str]]:
@@ -106,20 +131,17 @@ class BidsRecording:
             if not p.is_file():
                 msg = f"missing BIDS file {p.name}"
                 raise ReplayError(msg)
-        events = d / f"{prefix}_events.tsv"
-        entities = dict(
-            part.split("-", 1) for part in prefix.split("_") if "-" in part and part[0] != "-"
-        )
-        head = "_".join(f"{k}-{entities[k]}" for k in ("sub", "ses") if k in entities)
-        electrodes = sorted(d.glob(f"{head}*_electrodes.tsv"))
+        mine = _entities(prefix)
+        events = _inherited(d, "events.tsv", mine)
+        electrodes = _inherited(d, "electrodes.tsv", mine, required=("sub",))
         root = next((p for p in data.parents if (p / "dataset_description.json").is_file()), None)
         return cls(
             data,
             prefix,
             sidecar,
             channels,
-            events if events.is_file() else None,
-            electrodes[0] if electrodes else None,
+            events,
+            electrodes,
             root,
         )
 
@@ -137,7 +159,7 @@ def bids_declaration(
         return None
     ethics = [str(e) for e in desc.get("EthicsApprovals") or []]
     return ReplayDeclaration(
-        dataset_id=f"BIDS:{desc.get('Name', root.name)}",
+        dataset_id=f"DOI:{doi}" if doi else f"BIDS:{desc.get('Name', root.name)}",
         version=version,
         license=spdx_license(desc.get("License")),
         consent_basis="; ".join(ethics) if ethics else f"see dataset documentation {url}",
@@ -174,9 +196,10 @@ def _electrode(name: str, channel: dict[str, str], coords: dict[str, str]) -> El
         return None if v in {"", "n/a"} else float(v)
 
     status = channel.get("status", "").lower()
+    group = coords.get("group", "") or channel.get("group", "")
     return ElectrodeSpec(
         name=name,
-        group=coords.get("group", ""),
+        group="" if group == "n/a" else group,
         location=coords.get("location", "") or coords.get("anat", ""),
         x_mm=num("x"),
         y_mm=num("y"),
@@ -187,10 +210,20 @@ def _electrode(name: str, channel: dict[str, str], coords: dict[str, str]) -> El
     )
 
 
+def _hardware_filter(rows: Sequence[dict[str, str]]) -> tuple[ProcessingStep, ...]:
+    """The channels' hardware filter as declared in ``channels.tsv`` (values as written, Hz)."""
+    params = []
+    for key in ("low_cutoff", "high_cutoff", "notch"):
+        values = {r.get(key) or "n/a" for r in rows}
+        if values != {"n/a"}:
+            params.append((f"{key}_hz", values.pop() if len(values) == 1 else "mixed"))
+    return (ProcessingStep("hardware_filter", tuple(params)),) if params else ()
+
+
 def _select(rec: BidsRecording, types: Sequence[str], *, include_bad: bool) -> list[dict[str, str]]:
     unknown = set(types) - set(BIDS_TYPES)
     if unknown:
-        msg = f"unsupported channel types {sorted(unknown)}"
+        msg = f"no neutral ESP modality for channel types {sorted(unknown)}"
         raise ReplayError(msg)
     rows = [r for r in _tsv(rec.channels) if r.get("type", "").upper() in set(types)]
     if not include_bad:
@@ -260,10 +293,13 @@ def bids_ieeg_adapter(
         clock_domain=clock,
         sampling_rate_hz=rate,
         reference=str(meta.get("iEEGReference") or ""),
-        processing=tuple(
-            ProcessingStep(k.lower(), (("hz", str(meta[k])),))
-            for k in ("PowerLineFrequency", "SoftwareFilters")
-            if k in meta and not isinstance(meta[k], dict)
+        processing=(
+            *_hardware_filter(rows),
+            *(
+                ProcessingStep(k.lower(), (("hz", str(meta[k])),))
+                for k in ("PowerLineFrequency", "SoftwareFilters")
+                if k in meta and not isinstance(meta[k], dict)
+            ),
         ),
     )
     info = NeuralAdapterInfo(

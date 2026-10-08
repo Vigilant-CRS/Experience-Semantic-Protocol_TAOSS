@@ -44,13 +44,16 @@ INVASIVE: Final = frozenset(
         Modality.SEEG,
         Modality.LFP,
         Modality.MUA,
+        Modality.BROADBAND,
         Modality.SPIKES,
         Modality.SPIKE_COUNTS,
         Modality.NEURAL_FEATURES,
     }
 )
-AUXILIARY: Final = frozenset({Modality.MOTION, Modality.BEHAVIOR, Modality.EVENT, Modality.AUDIO})
-"""Streams recorded alongside neural data (kinematics, pose, task events, audio)."""
+AUXILIARY: Final = frozenset(
+    {Modality.MOTION, Modality.BEHAVIOR, Modality.EVENT, Modality.AUDIO, Modality.ECG}
+)
+"""Streams recorded alongside neural data (kinematics, pose, task events, audio, ECG)."""
 
 OPEN_LICENSES: Final = frozenset({"CC-BY-4.0", "CC0-1.0", "CC-BY-SA-4.0", "PDDL-1.0", "ODC-BY-1.0"})
 _DEVICE_ID: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:\-]{0,127}$")

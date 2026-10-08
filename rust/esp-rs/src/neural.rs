@@ -21,11 +21,12 @@ const INVASIVE: &[&str] = &[
     "seeg",
     "lfp",
     "mua",
+    "broadband",
     "spikes",
     "spike_counts",
     "neural_features",
 ];
-const AUXILIARY: &[&str] = &["motion", "behavior", "event", "audio"];
+const AUXILIARY: &[&str] = &["motion", "behavior", "event", "audio", "ecg"];
 const UNITS: &[&str] = &[
     "Hz",
     "bpm",

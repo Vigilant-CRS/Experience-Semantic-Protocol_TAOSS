@@ -203,8 +203,9 @@ def test_bad_channels_can_be_excluded_and_types_selected(data: Path) -> None:
 def test_no_channels_of_the_requested_type_is_refused(data: Path) -> None:
     with pytest.raises(ReplayError, match="no channels"):
         bids_ieeg_adapter(data, types=("EEG",))
-    with pytest.raises(ReplayError, match="unsupported channel types"):
-        bids_ieeg_adapter(data, types=("ECG",))
+    for kind in ("TRIG", "MISC"):  # no neutral ESP modality for triggers and misc channels
+        with pytest.raises(ReplayError, match="no neutral ESP modality"):
+            bids_ieeg_adapter(data, types=(kind,))
 
 
 def test_non_invasive_eeg_replays_under_l3_without_declaration(tmp_path: Path) -> None:
