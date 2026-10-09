@@ -41,8 +41,19 @@ The contract has already been exercised with public human recordings of these ki
 - ECoG (DANDI 000019, AJILE12);
 - physiology from PhysioNet and Empatica.
 
-Rust implementers use the trait `esp_rs::neural::NeuralAdapter`. Other languages speak the
-JSON-lines protocol of `esp.neural_sdk.jsonl`.
+Rust implementers use the trait `esp_rs::neural::NeuralAdapter`.
+
+C and C++ drivers and SDKs implement the C ABI in `rust/esp-rs/include/esp_neural.h`: one
+exported function that fills a vtable. All memory stays with the vendor. Prove the contract
+with:
+
+```bash
+esp-conformance run --neural-rust esp-rs --neural-c libyour_adapter.so
+```
+
+See [`examples/neural_vendor_adapter_c/`](../../examples/neural_vendor_adapter_c/README.md).
+
+Other languages speak the JSON-lines protocol of `esp.neural_sdk.jsonl`.
 
 ## 2. Other implementations of the protocol
 

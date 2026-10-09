@@ -381,6 +381,29 @@ fn neural_sim(m: &HashMap<String, String>) -> Res<()> {
     Ok(())
 }
 
+/// `esp-rs neural-capi --lib <path.so> [--config <s>] [--blocks N] [--samples M]`: load a C-ABI
+/// vendor adapter (include/esp_neural.h), run it and print the same JSON lines as
+/// `neural-sim` (info, blocks or malformed reads, verdict) for the Python cross-check.
+fn neural_capi(m: &HashMap<String, String>) -> Res<()> {
+    use esp_rs::{neural, neural_capi::CAdapter};
+    let lib = m.get("lib").ok_or("missing --lib")?;
+    let blocks: usize = m.get("blocks").map_or(Ok(4), |v| v.parse())?;
+    let samples: usize = m.get("samples").map_or(Ok(64), |v| v.parse())?;
+    let mut adapter = CAdapter::load(lib, m.get("config").map(String::as_str))?;
+    let (items, report) = adapter.check(blocks, samples);
+    let mut out = std::io::stdout().lock();
+    writeln!(
+        out,
+        "{}",
+        neural::info_json(neural::NeuralAdapter::info(&adapter))
+    )?;
+    for item in &items {
+        writeln!(out, "{}", neural::item_json(item))?;
+    }
+    writeln!(out, "{}", neural::verdict_json(&report))?;
+    Ok(())
+}
+
 /// `esp-rs mls --name <id>`: one long-lived MLS member (GAP-017, ADR-0021).
 ///
 /// Reads one JSON request per stdin line and writes one JSON response per stdout line.
@@ -622,9 +645,10 @@ fn main() {
         "send" => sender(&m),
         "receive" => receiver(&m),
         "neural-sim" => neural_sim(&m),
+        "neural-capi" => neural_capi(&m),
         "mls" => mls_member(&m),
         "credential" => credential_tool(),
-        _ => Err("usage: esp-rs send|receive|neural-sim|mls|credential ...".into()),
+        _ => Err("usage: esp-rs send|receive|neural-sim|neural-capi|mls|credential ...".into()),
     };
     if let Err(e) = result {
         eprintln!("esp-rs: {e}");

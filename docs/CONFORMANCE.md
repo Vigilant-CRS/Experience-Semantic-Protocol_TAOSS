@@ -12,6 +12,8 @@ uv run esp-conformance run --json report.json                     # this impleme
 uv run esp-conformance run --peer path/to/your-binary --json report.json   # yours, live
 uv run esp-conformance run --neural-adapter your_pkg.module:factory       # your neural device
 uv run esp-conformance run --neural-rust rust/esp-rs/target/release/esp-rs  # Rust neural mirror
+uv run esp-conformance run --neural-rust rust/esp-rs/target/release/esp-rs \
+    --neural-c libyour_adapter.so --neural-c-config ""          # your C/C++ adapter
 ```
 
 Categories:
@@ -31,7 +33,7 @@ Categories:
 | `ontology` | registry digest |
 | `xcf` | experience capsules |
 | `hive` | Typed Hive TLVs |
-| `neural` | neural vendor contract 1.0.0: reference adapters and decoders pass; every built-in broken adapter or decoder is refused with exactly its rule; `--neural-adapter` checks yours; `--neural-rust` cross-checks the Rust implementation |
+| `neural` | neural vendor contract 1.0.0: reference adapters and decoders pass; every built-in broken adapter or decoder is refused with exactly its rule; `--neural-adapter` checks yours; `--neural-rust` cross-checks the Rust implementation; `--neural-c` checks a C/C++ adapter library |
 | `interop` | only with `--peer`: both directions, including revocation |
 
 ## Implementing a peer for `--peer`
@@ -73,9 +75,50 @@ Rules:
 | `decode` | decoders answer only consented types, with finite vectors of the typed dimension |
 
 Other languages print the JSON-lines protocol of `esp.neural_sdk.jsonl`. `esp-rs neural-sim`
-is the reference: an info line, block lines, and the Rust checker's verdict. A C ABI for
-device drivers is planned but not part of contract 1.0.0. Template:
+is the reference: an info line, block lines, and the Rust checker's verdict. Template:
 [`examples/neural_vendor_adapter/`](../examples/neural_vendor_adapter/README.md).
+
+### C and C++ adapters
+
+Drivers and SDKs in C or C++ implement the same contract through the C ABI in
+[`rust/esp-rs/include/esp_neural.h`](../rust/esp-rs/include/esp_neural.h). The library exports
+one function, `esp_neural_adapter_create(config, vtable)`. It fills a vtable with these
+callbacks: `info`, `start`, `read`, `release`, `stop` and `destroy`.
+
+- **Ownership.** All memory stays with the vendor.
+  - `info` pointers must stay valid until `destroy`.
+  - A block's buffers must stay valid until the host calls `release`. The host calls it
+    exactly once per successful `read`, right after copying.
+  - The host never writes through or frees vendor pointers.
+- **Host-side validation** (`esp_rs::neural_capi::CAdapter`). These are refused when loading:
+  - NULL pointers or invalid UTF-8;
+  - a wrong ABI version;
+  - a NULL callback;
+  - a level other than 3 or 4.
+
+  The context is destroyed on refusal.
+- **Blocks.** Some blocks become a contract violation:
+  - a NULL buffer, an Inf sample or a `read` error → `output`;
+  - a block width that differs from the declaration → `channels`.
+
+  NaN marks a dropout and is allowed.
+- **Check.** `esp-rs neural-capi --lib libx.so --config "..."` prints the JSON lines of
+  `neural-sim`. `esp-conformance run --neural-rust <esp-rs> --neural-c libx.so` requires that
+  Python and the Rust host find the same rules, and that the adapter passes.
+
+The example [`examples/neural_vendor_adapter_c/`](../examples/neural_vendor_adapter_c/README.md)
+has one mode per broken rule. Each mode is refused with the same rule in Python and Rust:
+
+| Mode | Rule |
+|---|---|
+| `non-monotonic-clock` | `clock` |
+| `interpretive-channel` | `neutral` |
+| `l4-live-undeclared` | `level` |
+| `null-buffer`, `inf-sample`, `read-error` | `output` |
+| `length-mismatch` | `channels` |
+
+The host cannot verify that the buffer lengths a vendor reports are honest; no C interface
+can.
 
 ## The conformance mark
 

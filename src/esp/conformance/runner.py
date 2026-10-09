@@ -99,11 +99,15 @@ class Suite:
         *,
         neural_adapter: str | None = None,
         neural_rust: Path | None = None,
+        neural_c: Path | None = None,
+        neural_c_config: str = "",
     ) -> None:
         self.vectors = vectors
         self.report = Report()
         self.neural_adapter = neural_adapter
         self.neural_rust = neural_rust
+        self.neural_c = neural_c
+        self.neural_c_config = neural_c_config
 
     def load(self, rel: str) -> list[dict[str, Any]]:
         vs: list[dict[str, Any]] = json.loads((self.vectors / rel).read_text(encoding="utf-8"))[
@@ -240,7 +244,9 @@ class Suite:
         """WP-090: neural adapter/decoder contract, broken sources, optional external and Rust."""
         from esp.conformance.neural import neural_checks  # noqa: PLC0415 - heavier imports
 
-        for name, fn in neural_checks(self.neural_adapter, self.neural_rust):
+        for name, fn in neural_checks(
+            self.neural_adapter, self.neural_rust, self.neural_c, self.neural_c_config
+        ):
             self.check("neural", name, fn)
 
     def run_all(self) -> Report:
@@ -502,8 +508,23 @@ def main(argv: list[str] | None = None) -> int:
         metavar="ESP_RS",
         help="cross-check the Rust neural contract via `esp-rs neural-sim`",
     )
+    run.add_argument(
+        "--neural-c",
+        type=Path,
+        metavar="LIB",
+        help="check a C/C++ vendor adapter library (include/esp_neural.h); needs --neural-rust",
+    )
+    run.add_argument("--neural-c-config", default="", help="config string passed to the C adapter")
     args = parser.parse_args(argv)
-    suite = Suite(args.vectors, neural_adapter=args.neural_adapter, neural_rust=args.neural_rust)
+    if args.neural_c is not None and args.neural_rust is None:
+        parser.error("--neural-c needs --neural-rust (the esp-rs binary hosts the C library)")
+    suite = Suite(
+        args.vectors,
+        neural_adapter=args.neural_adapter,
+        neural_rust=args.neural_rust,
+        neural_c=args.neural_c,
+        neural_c_config=args.neural_c_config,
+    )
     report = suite.run_all()
     if args.peer is not None:
         from esp.conformance.interop import run_interop  # noqa: PLC0415 - optional part

@@ -60,6 +60,20 @@ RUST_BREAK_MODES: Final[Mapping[str, frozenset[str]]] = {
     "bad-unit": frozenset({"unit"}),
     "replay-closed-license": frozenset({"replay:replay"}),
 }
+#: modes of the C example adapter (examples/neural_vendor_adapter_c) and the rules both
+#: the Rust host (`esp-rs neural-capi`) and Python must report for them
+C_EXAMPLE_MODES: Final[Mapping[str, frozenset[str]]] = {
+    "": frozenset(),
+    "l4-replay": frozenset(),
+    "nan-dropout": frozenset(),
+    "non-monotonic-clock": frozenset({"clock"}),
+    "interpretive-channel": frozenset({"neutral"}),
+    "l4-live-undeclared": frozenset({"level"}),
+    "null-buffer": frozenset({"output"}),
+    "length-mismatch": frozenset({"channels"}),
+    "inf-sample": frozenset({"output"}),
+    "read-error": frozenset({"output"}),
+}
 RUST_BLOCKS: Final = 4
 RUST_SAMPLES: Final = 64
 
@@ -309,7 +323,11 @@ def run_rust_sim(binary: Path, mode: str) -> JsonLinesAdapter:
 
 
 def check_rust_mode(binary: Path, mode: str, expected: frozenset[str]) -> None:
-    adapter = run_rust_sim(binary, mode)
+    _cross_check(run_rust_sim(binary, mode), expected, f"mode {mode}")
+
+
+def _cross_check(adapter: JsonLinesAdapter, expected: frozenset[str], what: str) -> None:
+    """Python's rules == the producer's own verdict == ``expected``."""
     _require(adapter.contract_version == CONTRACT_VERSION, "contract version differs")
     verdict = adapter.verdict
     if verdict is None:
@@ -318,12 +336,48 @@ def check_rust_mode(binary: Path, mode: str, expected: frozenset[str]) -> None:
     py = _rules(check_adapter_contract(adapter, reads=RUST_BLOCKS + 2, max_samples=RUST_SAMPLES))
     rs = frozenset(v["rule"] for v in verdict["violations"])
     _require(py == rs, f"Python rules {sorted(py)} != Rust rules {sorted(rs)}")
-    _require(py == expected, f"mode {mode}: expected {sorted(expected)}, got {sorted(py)}")
+    _require(py == expected, f"{what}: expected {sorted(expected)}, got {sorted(py)}")
     _require(verdict["ok"] == (not py), "Rust verdict flag disagrees")
 
 
+def run_c_adapter(binary: Path, library: Path, config: str = "") -> JsonLinesAdapter:
+    """Run a C-ABI vendor adapter through `esp-rs neural-capi` and parse its JSON lines."""
+    out = subprocess.run(  # noqa: S603 - binary and library chosen by the operator
+        [
+            str(binary),
+            "neural-capi",
+            "--lib",
+            str(library),
+            "--config",
+            config,
+            "--blocks",
+            str(RUST_BLOCKS),
+            "--samples",
+            str(RUST_SAMPLES),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    if out.returncode != 0:
+        msg = f"esp-rs neural-capi refused the library: {out.stderr.strip()}"
+        raise NeuralConformanceError(msg)
+    return JsonLinesAdapter.parse(out.stdout.splitlines())
+
+
+def check_c_adapter(
+    binary: Path, library: Path, config: str = "", expected: frozenset[str] = frozenset()
+) -> None:
+    """Rust host and Python must agree on a C adapter, and report exactly ``expected``."""
+    _cross_check(run_c_adapter(binary, library, config), expected, f"C adapter {config!r}")
+
+
 def neural_checks(
-    neural_adapter: str | None = None, neural_rust: Path | None = None
+    neural_adapter: str | None = None,
+    neural_rust: Path | None = None,
+    neural_c: Path | None = None,
+    neural_c_config: str = "",
 ) -> list[tuple[str, Callable[[], None]]]:
     """All checks of the ``neural`` category as ``(name, fn)`` pairs."""
     feats = _features()
@@ -350,4 +404,14 @@ def neural_checks(
     if neural_rust is not None:
         for mode, expected in RUST_BREAK_MODES.items():
             checks.append((f"rust:{mode}", partial(check_rust_mode, neural_rust, mode, expected)))
+    if neural_c is not None:
+        if neural_rust is None:
+            msg = "--neural-c needs --neural-rust (the esp-rs binary hosts the C library)"
+            raise ValueError(msg)
+        checks.append(
+            (
+                f"c:{neural_c.name}",
+                partial(check_c_adapter, neural_rust, neural_c, neural_c_config),
+            )
+        )
     return checks

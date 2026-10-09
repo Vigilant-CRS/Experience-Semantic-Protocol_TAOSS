@@ -34,4 +34,5 @@ Rules of contract `1.0.0` (see `esp.neural_sdk`):
 - Out-of-process adapters print the JSON-lines protocol of `esp.neural_sdk.jsonl`.
 - The Rust implementation provides the trait `esp_rs::neural::NeuralAdapter` and
   `esp-rs neural-sim`. The conformance runner cross-checks it with `--neural-rust`.
-- A C ABI for device drivers is planned but not part of contract 1.0.0.
+- C and C++ drivers implement the C ABI `rust/esp-rs/include/esp_neural.h`; see
+  [`../neural_vendor_adapter_c/`](../neural_vendor_adapter_c/README.md).
