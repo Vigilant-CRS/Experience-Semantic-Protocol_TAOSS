@@ -1,8 +1,8 @@
 {
   "milestone": "M14",
-  "git_commit": "a647372f20fa58705da2e392e08a579da614638c",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-09-28T21:16:45+00:00",
+  "timestamp": "2026-10-09T09:39:16+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -11,14 +11,14 @@
   "command_line": "scripts/run_milestone.py M14",
   "tests": {
     "gate": {
-      "passed": 52,
+      "passed": 113,
       "failed": 0,
       "skipped": 0
     },
     "full_suite": {
-      "passed": 783,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 1
+      "skipped": 7
     }
   },
   "verdict": "PASS"

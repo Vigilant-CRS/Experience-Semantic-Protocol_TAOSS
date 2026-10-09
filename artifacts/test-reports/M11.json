@@ -1,8 +1,8 @@
 {
   "milestone": "M11",
-  "git_commit": "17e11bf69b715e01f87486d11dc1826ca9f86efd",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-10-08T01:54:21+00:00",
+  "timestamp": "2026-10-09T09:14:08+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -16,9 +16,9 @@
       "skipped": 0
     },
     "full_suite": {
-      "passed": 1386,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 5
+      "skipped": 7
     }
   },
   "metrics": {
@@ -31,24 +31,24 @@
           "KNO"
         ],
         "encode": {
-          "p50_ms": 0.0243,
-          "p99_ms": 0.033,
-          "mean_ms": 0.0248
+          "p50_ms": 0.0229,
+          "p99_ms": 0.0289,
+          "mean_ms": 0.0232
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.1149,
-          "p99_ms": 0.1962,
-          "mean_ms": 0.122
+          "p50_ms": 0.1059,
+          "p99_ms": 0.153,
+          "mean_ms": 0.1085
         },
         "decode": {
-          "p50_ms": 0.129,
-          "p99_ms": 0.1405,
-          "mean_ms": 0.1298
+          "p50_ms": 0.123,
+          "p99_ms": 0.2609,
+          "mean_ms": 0.1412
         },
         "total_send_receive": {
-          "p50_ms": 5.9298,
-          "p99_ms": 8.6214,
-          "mean_ms": 6.0372
+          "p50_ms": 2.7512,
+          "p99_ms": 4.2619,
+          "mean_ms": 2.8708
         },
         "wire_bytes_per_frame": 1153,
         "v13_bytes_per_release": 1153,
@@ -57,10 +57,10 @@
           "25Hz": 230.6,
           "50Hz": 461.2
         },
-        "max_sustainable_hz": 166,
-        "tail_bound_hz": 116,
-        "peak_memory_kib": 546.5,
-        "cpu_fraction": 0.344
+        "max_sustainable_hz": 348,
+        "tail_bound_hz": 235,
+        "peak_memory_kib": 544.2,
+        "cpu_fraction": 0.65
       },
       {
         "sf_level": 0,
@@ -69,24 +69,24 @@
           "KNO"
         ],
         "encode": {
-          "p50_ms": 0.0275,
-          "p99_ms": 0.0837,
-          "mean_ms": 0.0305
+          "p50_ms": 0.0259,
+          "p99_ms": 0.0313,
+          "mean_ms": 0.0262
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.1121,
-          "p99_ms": 0.2003,
-          "mean_ms": 0.124
+          "p50_ms": 0.1066,
+          "p99_ms": 0.1615,
+          "mean_ms": 0.1089
         },
         "decode": {
-          "p50_ms": 0.1282,
-          "p99_ms": 0.2088,
-          "mean_ms": 0.1365
+          "p50_ms": 0.1185,
+          "p99_ms": 0.1562,
+          "mean_ms": 0.12
         },
         "total_send_receive": {
-          "p50_ms": 5.6001,
-          "p99_ms": 6.6488,
-          "mean_ms": 5.661
+          "p50_ms": 2.7204,
+          "p99_ms": 3.623,
+          "mean_ms": 2.7961
         },
         "wire_bytes_per_frame": 433,
         "v13_bytes_per_release": 433,
@@ -95,10 +95,10 @@
           "25Hz": 86.6,
           "50Hz": 173.2
         },
-        "max_sustainable_hz": 177,
-        "tail_bound_hz": 150,
-        "peak_memory_kib": 246.3,
-        "cpu_fraction": 0.347
+        "max_sustainable_hz": 358,
+        "tail_bound_hz": 276,
+        "peak_memory_kib": 246.2,
+        "cpu_fraction": 0.637
       },
       {
         "sf_level": 3,
@@ -110,24 +110,24 @@
           "TEM"
         ],
         "encode": {
-          "p50_ms": 0.0661,
-          "p99_ms": 0.0751,
-          "mean_ms": 0.0668
+          "p50_ms": 0.0628,
+          "p99_ms": 0.0686,
+          "mean_ms": 0.0633
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.1173,
-          "p99_ms": 0.1325,
-          "mean_ms": 0.1184
+          "p50_ms": 0.1151,
+          "p99_ms": 0.1249,
+          "mean_ms": 0.116
         },
         "decode": {
-          "p50_ms": 0.2128,
-          "p99_ms": 0.2942,
-          "mean_ms": 0.222
+          "p50_ms": 0.2145,
+          "p99_ms": 0.2857,
+          "mean_ms": 0.2196
         },
         "total_send_receive": {
-          "p50_ms": 6.9012,
-          "p99_ms": 8.3741,
-          "mean_ms": 6.3255
+          "p50_ms": 3.6283,
+          "p99_ms": 4.6207,
+          "mean_ms": 3.7112
         },
         "wire_bytes_per_frame": 1768,
         "v13_bytes_per_release": 1768,
@@ -136,10 +136,10 @@
           "25Hz": 353.6,
           "50Hz": 707.2
         },
-        "max_sustainable_hz": 158,
-        "tail_bound_hz": 119,
-        "peak_memory_kib": 825.2,
-        "cpu_fraction": 0.468
+        "max_sustainable_hz": 269,
+        "tail_bound_hz": 216,
+        "peak_memory_kib": 826.5,
+        "cpu_fraction": 0.728
       },
       {
         "sf_level": 3,
@@ -151,24 +151,24 @@
           "TEM"
         ],
         "encode": {
-          "p50_ms": 0.0733,
-          "p99_ms": 0.0985,
-          "mean_ms": 0.0745
+          "p50_ms": 0.0692,
+          "p99_ms": 0.1095,
+          "mean_ms": 0.0706
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.1114,
-          "p99_ms": 0.1818,
-          "mean_ms": 0.1145
+          "p50_ms": 0.1045,
+          "p99_ms": 0.1516,
+          "mean_ms": 0.1067
         },
         "decode": {
-          "p50_ms": 0.2099,
-          "p99_ms": 0.2893,
-          "mean_ms": 0.2145
+          "p50_ms": 0.2068,
+          "p99_ms": 0.2851,
+          "mean_ms": 0.2111
         },
         "total_send_receive": {
-          "p50_ms": 3.4938,
-          "p99_ms": 4.3819,
-          "mean_ms": 3.589
+          "p50_ms": 3.5663,
+          "p99_ms": 7.8683,
+          "mean_ms": 3.9355
         },
         "wire_bytes_per_frame": 616,
         "v13_bytes_per_release": 616,
@@ -177,10 +177,10 @@
           "25Hz": 123.2,
           "50Hz": 246.4
         },
-        "max_sustainable_hz": 279,
-        "tail_bound_hz": 228,
-        "peak_memory_kib": 314.3,
-        "cpu_fraction": 0.718
+        "max_sustainable_hz": 254,
+        "tail_bound_hz": 127,
+        "peak_memory_kib": 314.5,
+        "cpu_fraction": 0.658
       },
       {
         "sf_level": 7,
@@ -194,24 +194,24 @@
           "TEM"
         ],
         "encode": {
-          "p50_ms": 0.086,
-          "p99_ms": 0.1556,
-          "mean_ms": 0.0897
+          "p50_ms": 0.0893,
+          "p99_ms": 0.1781,
+          "mean_ms": 0.1016
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.1112,
-          "p99_ms": 0.1576,
-          "mean_ms": 0.1146
+          "p50_ms": 0.1146,
+          "p99_ms": 0.2299,
+          "mean_ms": 0.1278
         },
         "decode": {
-          "p50_ms": 0.2741,
-          "p99_ms": 0.3501,
-          "mean_ms": 0.2806
+          "p50_ms": 0.3017,
+          "p99_ms": 0.4302,
+          "mean_ms": 0.3176
         },
         "total_send_receive": {
-          "p50_ms": 4.1865,
-          "p99_ms": 5.1962,
-          "mean_ms": 4.2931
+          "p50_ms": 4.3793,
+          "p99_ms": 7.9458,
+          "mean_ms": 4.683
         },
         "wire_bytes_per_frame": 2306,
         "v13_bytes_per_release": 2306,
@@ -220,10 +220,10 @@
           "25Hz": 461.2,
           "50Hz": 922.4
         },
-        "max_sustainable_hz": 233,
-        "tail_bound_hz": 192,
-        "peak_memory_kib": 816.3,
-        "cpu_fraction": 0.768
+        "max_sustainable_hz": 214,
+        "tail_bound_hz": 126,
+        "peak_memory_kib": 816.6,
+        "cpu_fraction": 0.711
       },
       {
         "sf_level": 7,
@@ -237,24 +237,24 @@
           "TEM"
         ],
         "encode": {
-          "p50_ms": 0.103,
-          "p99_ms": 0.289,
-          "mean_ms": 0.118
+          "p50_ms": 0.0994,
+          "p99_ms": 0.1476,
+          "mean_ms": 0.1023
         },
         "open_verify_decrypt": {
-          "p50_ms": 0.116,
-          "p99_ms": 0.1319,
-          "mean_ms": 0.1174
+          "p50_ms": 0.1078,
+          "p99_ms": 0.1698,
+          "mean_ms": 0.1113
         },
         "decode": {
-          "p50_ms": 0.3176,
-          "p99_ms": 0.5314,
-          "mean_ms": 0.3333
+          "p50_ms": 0.2677,
+          "p99_ms": 0.3798,
+          "mean_ms": 0.2756
         },
         "total_send_receive": {
-          "p50_ms": 4.0099,
-          "p99_ms": 5.3003,
-          "mean_ms": 4.1504
+          "p50_ms": 4.3684,
+          "p99_ms": 6.568,
+          "mean_ms": 4.621
         },
         "wire_bytes_per_frame": 770,
         "v13_bytes_per_release": 770,
@@ -263,16 +263,16 @@
           "25Hz": 154.0,
           "50Hz": 308.0
         },
-        "max_sustainable_hz": 241,
-        "tail_bound_hz": 189,
+        "max_sustainable_hz": 216,
+        "tail_bound_hz": 152,
         "peak_memory_kib": 344.9,
-        "cpu_fraction": 0.76
+        "cpu_fraction": 0.689
       }
     ],
     "network_memory_link": {
-      "p50_ms": 1.4161,
-      "p99_ms": 2.1808,
-      "mean_ms": 1.5783,
+      "p50_ms": 1.792,
+      "p99_ms": 3.3812,
+      "mean_ms": 2.0699,
       "frames": 50.0
     }
   },

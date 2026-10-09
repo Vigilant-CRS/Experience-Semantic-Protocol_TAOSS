@@ -1,8 +1,8 @@
 {
   "milestone": "M6",
-  "git_commit": "a780e2572d538b6a29cbfd295e77e10f1cdef82f",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-09-28T20:43:55+00:00",
+  "timestamp": "2026-10-09T08:29:13+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -11,29 +11,29 @@
   "command_line": "scripts/run_milestone.py M6",
   "tests": {
     "gate": {
-      "passed": 55,
+      "passed": 61,
       "failed": 0,
-      "skipped": 0
+      "skipped": 2
     },
     "full_suite": {
-      "passed": 713,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 1
+      "skipped": 7
     }
   },
   "metrics": {
     "duration_s": 1801.3,
-    "samples_received": 449935,
+    "samples_received": 449918,
     "brainflow_dropped": 0,
-    "samples_sent_to_lsl": 449935,
+    "samples_sent_to_lsl": 449918,
     "lsl_lost": 0,
-    "timestamp_gaps_over_1_5_periods": 1231,
+    "timestamp_gaps_over_1_5_periods": 10,
     "non_monotonic": 0,
-    "clock_correction_max_ms": 0.035,
-    "brainflow_lag_p99_ms": 4.2,
-    "rss_start_mb": 77.0,
-    "rss_growth_after_warmup_mb": 0.8,
-    "cpu_fraction_of_one_core": 0.023,
+    "clock_correction_max_ms": 0.038,
+    "brainflow_lag_p99_ms": 4.1,
+    "rss_start_mb": 78.3,
+    "rss_growth_after_warmup_mb": 0.9,
+    "cpu_fraction_of_one_core": 0.026,
     "markers_sent": 1801,
     "markers_received": 1801,
     "feature_windows": 178

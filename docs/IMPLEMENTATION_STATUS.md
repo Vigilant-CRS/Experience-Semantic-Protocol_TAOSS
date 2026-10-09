@@ -106,21 +106,21 @@ both agree.
 
 | Milestone | Verdict | Report |
 |---|---|---|
-| M0 | PASS | `artifacts/test-reports/M0.json` (commit c08c1fc) |
-| M1 | PASS | `artifacts/test-reports/M1.json` (commit 6a98da0) — original v0.1.0 gate; v0.2.0 additions WP-050/WP-077 tracked separately |
-| M2 | PASS | `artifacts/test-reports/M2.json` (commit 7d3baed) |
-| M3 | PASS | `artifacts/test-reports/M3.json` (commit 9314bb6) |
-| M3a | PASS | `artifacts/test-reports/M3a.json` (commit d3372a1) |
-| M4 | PASS | `artifacts/test-reports/M4.json` (commit 0b9e8f3; per-condition network metrics embedded) |
-| M5 | PASS | `artifacts/test-reports/M5.json` (commit 517f7ee; two-process demo over QUIC, transparency panel, active Art. 5(1)(f) guard) |
-| M6 | PASS | `artifacts/test-reports/M6.json` (commit a780e25; 30-min soak: 449,935 samples, 0 lost, 0 dropped, clock correction 0.035 ms, +0.8 MB RSS) |
-| M7 | PASS | `artifacts/test-reports/M7.json` (commit 62e2f33; multimodal baseline, L2 gate, synthetic + replayed PhysioNet chain) |
-| M8 | PASS | `artifacts/test-reports/M8.json` (commit 62e2f33; trainable TAOSS, bitwise-reproducible checkpoints, leakage harness) |
-| M9 | PASS | `artifacts/test-reports/M9.json` (commit 49ad9a4; ExperienceBench smoke, audit suite, red-team sender detected) |
-| M10 | PASS | `artifacts/test-reports/M10.json` (commit ce1fae2; Python<->Rust interop matrix, conformance runner with Rust peer) |
-| M11 | PASS | `artifacts/test-reports/M11.json` (commit 17e11bf; Final re-run after the perf metric fix (sustainable rate from mean cost); full dependency + license audit (105 packages), 1M fuzz.) |
-| M14 | PASS | `artifacts/test-reports/M14.json` (commit a647372; Gate in a pinned worktree (ontology projection, registry governance, content affect, XCF capsules/gate/recall/trust).) |
-| M13 | PASS | `artifacts/test-reports/M13.json` (commit 1349314; Gate in a pinned worktree: MEB (machines never author EMO, domain profiles enforced before decoding) and ESP-Agent profile (signed opaque-latent descriptors, causal event audit); scripted agents, no real LLM.) |
-| M16 | PASS | `artifacts/test-reports/M16.json` (commit f79f0ce; Gate in a pinned worktree: neural adapter interface (interface only), experience-legacy policies (policy objects only), PQ declaration (CLASSICAL_ONLY; hybrid outer channel not verifiable with aioquic 1.3.0) and repository claim lint.) |
-| M15 | PASS | `artifacts/test-reports/M15.json` (commit 98a9e52; Gate in a pinned worktree incl. FROST DKG: Typed Hive TLVs 0x70-0x73, FROST byte-exact vs RFC 9591, secure aggregation, EMO never mixed, 6 synthetic members (no evidence about humans).) |
-| M18 | PASS | `artifacts/test-reports/M18.json` (commit 25e6c78; Gate in a pinned worktree on public human implant/ECoG data (FALCON H1/H2, DANDI 000019, AJILE12): live-device contract, emulator, decoder, typed consented ESP frame end to end; full dependency audit (105 packages) clean.) |
+| M0 | PASS | `artifacts/test-reports/M0.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M1 | PASS | `artifacts/test-reports/M1.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M2 | PASS | `artifacts/test-reports/M2.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M3 | PASS | `artifacts/test-reports/M3.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M3a | PASS | `artifacts/test-reports/M3a.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M4 | PASS | `artifacts/test-reports/M4.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M5 | PASS | `artifacts/test-reports/M5.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M6 | PASS | `artifacts/test-reports/M6.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M7 | PASS | `artifacts/test-reports/M7.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M8 | PASS | `artifacts/test-reports/M8.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M9 | PASS | `artifacts/test-reports/M9.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M10 | PASS | `artifacts/test-reports/M10.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M11 | PASS | `artifacts/test-reports/M11.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M14 | PASS | `artifacts/test-reports/M14.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M13 | PASS | `artifacts/test-reports/M13.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M16 | PASS | `artifacts/test-reports/M16.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M15 | PASS | `artifacts/test-reports/M15.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |
+| M18 | PASS | `artifacts/test-reports/M18.json` (commit 0460d19; Final full gate run on 0460d19 (all milestones sequentially, 1422 tests each, isolated build dir).) |

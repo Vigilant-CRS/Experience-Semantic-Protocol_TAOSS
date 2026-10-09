@@ -1,8 +1,8 @@
 {
   "milestone": "M3",
-  "git_commit": "9314bb697c1a86906f8d281dfa63e840068da431",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-09-28T15:07:57+00:00",
+  "timestamp": "2026-10-09T07:24:48+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -11,14 +11,14 @@
   "command_line": "scripts/run_milestone.py M3",
   "tests": {
     "gate": {
-      "passed": 234,
+      "passed": 431,
       "failed": 0,
       "skipped": 0
     },
     "full_suite": {
-      "passed": 457,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 1
+      "skipped": 7
     }
   },
   "verdict": "PASS"

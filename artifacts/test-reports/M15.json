@@ -1,8 +1,8 @@
 {
   "milestone": "M15",
-  "git_commit": "98a9e521c46e4f1137ac177b2b8cdc23be5d5caf",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-09-28T23:20:09+00:00",
+  "timestamp": "2026-10-09T09:48:03+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -11,14 +11,14 @@
   "command_line": "scripts/run_milestone.py M15",
   "tests": {
     "gate": {
-      "passed": 129,
+      "passed": 169,
       "failed": 0,
       "skipped": 0
     },
     "full_suite": {
-      "passed": 1120,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 3
+      "skipped": 7
     }
   },
   "metrics": {
@@ -33,7 +33,7 @@
           "type": "KNO",
           "psi": 1.2324896598310828,
           "psi_lower_bound": 0.7618633426089877,
-          "normalized_diversity": 0.4797464212389882,
+          "normalized_diversity": 0.4797464212389883,
           "min_autonomy": 0.7619047619047618,
           "max_social_power": 0.1666666666666667,
           "privacy_ok": true,
@@ -63,7 +63,7 @@
           "type": "CTX",
           "psi": null,
           "psi_lower_bound": null,
-          "normalized_diversity": 0.5878102183555315,
+          "normalized_diversity": 0.5878102183555316,
           "min_autonomy": 0.7619047619047618,
           "max_social_power": 0.1666666666666667,
           "privacy_ok": true,

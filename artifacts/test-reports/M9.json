@@ -1,8 +1,8 @@
 {
   "milestone": "M9",
-  "git_commit": "49ad9a48aa8ac7c866caa06ca81d0bba403c5721",
+  "git_commit": "0460d197983807ca45bfdb124b62e19a92e93fbc",
   "working_tree_dirty": false,
-  "timestamp": "2026-09-28T20:58:58+00:00",
+  "timestamp": "2026-10-09T08:55:15+00:00",
   "environment": {
     "python": "3.12.13",
     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
@@ -11,14 +11,14 @@
   "command_line": "scripts/run_milestone.py M9",
   "tests": {
     "gate": {
-      "passed": 41,
+      "passed": 93,
       "failed": 0,
       "skipped": 0
     },
     "full_suite": {
-      "passed": 770,
+      "passed": 1422,
       "failed": 0,
-      "skipped": 1
+      "skipped": 7
     }
   },
   "verdict": "PASS"
