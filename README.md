@@ -464,6 +464,8 @@ the same contract (CC BY 4.0; downloaded locally with checksums, never committed
 | [FALCON H2 (DANDI 000950)](https://dandiarchive.org/dandiset/000950/0.241029.1403) | intracortical, handwriting | 192 channels, identical to direct NWB reads |
 | [DANDI 000019](https://doi.org/10.48324/dandi.000019/0.220126.2148) | 256-channel ECoG while speaking syllables | ECoG in µV at 3,052 Hz, identical to direct NWB reads |
 | [AJILE12 (DANDI 000055)](https://dandiarchive.org/dandiset/000055/0.220127.0436) | long naturalistic intracranial recordings | lazy streaming from 16 GB files |
+| [OpenNeuro ds003688](https://doi.org/10.18112/openneuro.ds003688.v1.0.7) | sEEG depth electrodes, BIDS-iEEG | real sidecars revealed and fixed 6 reader gaps; identical to an independent read |
+| [DANDI 000397](https://dandiarchive.org/dandiset/000397) | human Neuropixels, raw 30 kHz broadband | streamed with < 32 MB memory; neutral threshold-crossing features |
 
 End to end, a real FALCON recording passes the live-device contract, survives an emulated
 reconnect and gain step, and its decoded *attempted movement* arrives at the receiver as a
@@ -748,6 +750,8 @@ git-ignored folder, and never redistributed by this repository. Pins:
 | xdf-example-files | MIT | Copyright (c) 2019 xdf-modules, https://github.com/xdf-modules/example-files (MIT). [https://github.com/xdf-modules/example-files](https://github.com/xdf-modules/example-files) |
 | goemotions | Apache-2.0 | Demszky, Movshovitz-Attias, Ko, Cowen, Nemade, Ravi: GoEmotions: A Dataset of Fine-Grained Emotions, ACL 2020 (arXiv:2005.00547); released by Google Research (google-research/goemotions) under Apache-2.0; Hugging Face card google-research-datasets/go_emotions: apache-2.0. [https://github.com/google-research/google-research/tree/master/goemotions](https://github.com/google-research/google-research/tree/master/goemotions) |
 | dailydialog | CC-BY-NC-SA-4.0 | Li, Su, Shen, Li, Cao, Niu: DailyDialog: A Manually Labelled Multi-turn Dialogue Dataset, IJCNLP 2017 (arXiv:1710.03957); CC BY-NC-SA 4.0 per the dataset card li2017dailydialog/daily_dialog; original homepage yanran.li/dailydialog offline, zip retrieved from the Internet Archive. [https://huggingface.co/datasets/li2017dailydialog/daily_dialog](https://huggingface.co/datasets/li2017dailydialog/daily_dialog) |
+| ds003688-seeg | CC0-1.0 | Berezutskaya, Vansteensel, Aarnoutse, Freudenburg, Piantoni, Branco, Ramsey: Open multimodal iEEG-fMRI dataset from naturalistic stimulation with a short audiovisual film, Sci Data 9, 91 (2022); OpenNeuro doi:10.18112/openneuro.ds003688.v1.0.7 [https://openneuro.org/datasets/ds003688/versions/1.0.7](https://openneuro.org/datasets/ds003688/versions/1.0.7) |
+| dandi-000397-raw | CC0-1.0 | Paulk, Kfir, Khanna, Mustroph, Trautmann, Soper, Stavisky, Welkenhuysen, Dutta, Shenoy, Hochberg, Richardson, Williams, Cash: Large-scale neural recordings with single neuron resolution using Neuropixels probes in human cortex, Nat Neurosci 25, 252-263 (2022); DANDI:000397 (draft) [https://dandiarchive.org/dandiset/000397](https://dandiarchive.org/dandiset/000397) |
 
 Leakage between the parts is *measured*, never assumed to be zero. That is how we found that the
 reference encoder leaks masked emotion into the other parts (see
