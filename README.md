@@ -310,7 +310,7 @@ in [`artifacts/test-reports/`](artifacts/test-reports/) and
 | M15 | Typed Hive: consented collective episodes, EMO never mixed, secure aggregation, FROST threshold signatures (byte-exact against RFC 9591) with distributed key generation, MLS group (RFC 9420), anonymous membership with blind BBS credentials | ✅ PASS |
 | M16 | Horizon interfaces: neural adapter contract, experience legacy policies, honest post-quantum declaration | ✅ PASS |
 | M17 | Every V13 section maps to finished work; errata E-01…E-29 for V13.1; claims level 4. Blocked only on GAP-023: real, licensed experience corpora for the preregistered H1–H3 studies | 🔬 needs real data |
-| M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust) and neural conformance | ✅ PASS |
+| M18 | **Implant-ready profile**: public human implant and ECoG recordings (FALCON H1/H2, DANDI 000019, AJILE12) replay through the same adapter contract as a future device; perturbation emulator; decoded intention travels as typed, consented ESP; vendor SDK (Python, Rust, C ABI) and neural conformance | ✅ PASS |
 
 ---
 
@@ -684,8 +684,8 @@ Choose a thread:
   sets are pluggable.
 - **Real corpora.** Bring licensed, consented datasets to ExperienceBench and run the
   preregistered H1–H3 studies (consent granularity, leakage reduction, downstream benefit).
-- **Neural devices.** Implement the neural adapter contract for your device or open dataset. The
-  decoder boundary is defined; everything above it already works.
+- **Neural devices.** Implement the neural adapter contract for your device or open dataset, in
+  Python, Rust or C/C++. The decoder boundary is defined; everything above it already works.
 - **Adversaries.** Break the covert-channel defences. Every stego sender you build becomes a
   regression test.
 - **Collective cognition.** The Typed Hive now has an MLS group (RFC 9420), threshold signatures

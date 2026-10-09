@@ -39,6 +39,8 @@ boundary.
 The contract has already been exercised with public human recordings of these kinds:
 - intracortical arrays (FALCON H1/H2);
 - ECoG (DANDI 000019, AJILE12);
+- sEEG depth electrodes in BIDS-iEEG (OpenNeuro ds003688);
+- raw 30 kHz Neuropixels broadband (DANDI 000397);
 - physiology from PhysioNet and Empatica.
 
 Rust implementers use the trait `esp_rs::neural::NeuralAdapter`.
